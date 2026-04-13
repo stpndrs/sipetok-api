@@ -74,6 +74,18 @@ namespace sipetok_api.Data
                 .HasForeignKey(o => o.tenant_id)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            // Mengatur Role menjadi tipe data ENUM di MySQL
+            modelBuilder.Entity<User>()
+                .Property(u => u.role)
+                .HasConversion<string>() // Tetap perlu konversi ke string agar C# bisa memetakan nama enum-nya
+                .HasColumnType("enum('ADMIN', 'TENANT', 'CUSTOMER')");
+
+            // Mengatur Status menjadi tipe data ENUM di MySQL
+            modelBuilder.Entity<User>()
+                .Property(u => u.status)
+                .HasConversion<string>()
+                .HasColumnType("enum('ACTIVE', 'INACTIVE')");
+
             // Konfigurasi tambahan untuk tipe data Decimal (Uang)
             modelBuilder.Entity<EggCategory>().Property(e => e.price).HasPrecision(18, 2);
             modelBuilder.Entity<Transaction>().Property(t => t.payment_amount).HasPrecision(18, 2);
