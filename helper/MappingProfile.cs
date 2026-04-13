@@ -14,6 +14,7 @@ namespace sipetok_api
             CreateMap<OperationalDto, Operational>();
             CreateMap<EggDto, Egg>();
             CreateMap<EggCategoryDto, EggCategory>();
+            CreateMap<ChangePasswordDto, User>();
         }
     }
 }

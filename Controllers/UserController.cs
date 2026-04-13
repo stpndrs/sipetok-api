@@ -73,10 +73,34 @@ public class UserController : ControllerBase
         if (!string.IsNullOrEmpty(userDto.email))
             user.email = userDto.email;
 
-        if (userDto.status != null)
+        if (userDto.status != user.status)
             user.status = userDto.status;
 
         dbContext.SaveChanges();
         return Ok(user);
+    }
+
+    [HttpPut("changepassword/{userId:int}")]
+    public IActionResult ChangePassword(int userId, ChangePasswordDto changePasswordDto)
+    {
+        var user = dbContext.Users.Find(userId);
+
+        if (user is null)
+        {
+            return NotFound("User tidak ditemukan");
+        }
+        if (string.IsNullOrEmpty(changePasswordDto.password))
+        {
+            return BadRequest("Password wajib diisi");
+        }
+
+        if (BCrypt.Net.BCrypt.Verify(changePasswordDto.password_old, user.password))
+        {
+            return BadRequest("Password lama salah");
+        }
+        user.password = changePasswordDto.password;
+
+        dbContext.SaveChanges();
+        return Ok("Password berhasil diubah");
     }
 }

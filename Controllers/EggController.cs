@@ -53,6 +53,16 @@ public class EggController : ControllerBase
         return Ok(egg);
     }
 
+    [HttpGet("tenant/total/{tenantId:int}")]
+    public IActionResult GetTotalEggByTenantId(int tenantId)
+    {
+        var totalStock = dbContext.Eggs
+        .Where(e => e.tenant_id == tenantId)
+        .Sum(e => e.stock);
+
+        return Ok(new { total_stock = totalStock });
+    }
+
     [HttpPost]
     public IActionResult AddEgg(EggDto eggDto)
     {
@@ -62,13 +72,15 @@ public class EggController : ControllerBase
         {
             return BadRequest("Tenant tidak ditemukan");
         }
+        if (eggCategory == null)
+        {
+            return BadRequest("Categori telur tidak ditemukan");
+        }
 
         var egg = _mapper.Map<Egg>(eggDto);
-        // egg.tenant_id = tenant.id;
-        // egg.category_id = eggCategory.id;
 
-        // egg.tenant = tenant;
-        // egg.category = eggCategory;
+        egg.tenant = tenant;
+        egg.category = eggCategory;
 
         dbContext.Eggs.Add(egg);
         dbContext.SaveChanges();
