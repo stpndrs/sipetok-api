@@ -64,11 +64,11 @@ public class EggController : ControllerBase
         }
 
         var egg = _mapper.Map<Egg>(eggDto);
-        egg.tenant_id = tenant.id;
-        egg.category_id = eggCategory.id;
+        // egg.tenant_id = tenant.id;
+        // egg.category_id = eggCategory.id;
 
-        egg.tenant = tenant;
-        egg.category = eggCategory;
+        // egg.tenant = tenant;
+        // egg.category = eggCategory;
 
         dbContext.Eggs.Add(egg);
         dbContext.SaveChanges();

@@ -19,7 +19,11 @@ namespace sipetok_api.Models
 
         [MaxLength(100)]
         public string email { get; set; } = string.Empty;
+
+        [JsonConverter(typeof(JsonStringEnumConverter))]
         public Role role { get; set; }
+
+        [JsonConverter(typeof(JsonStringEnumConverter))]
         public Status status { get; set; }
     }
 }

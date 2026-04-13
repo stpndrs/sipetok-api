@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
+using sipetok_api.helper;
 using sipetok_api.Models;
 using sipetok_api.Data;
 using sipetok_api.dto;
@@ -43,7 +44,20 @@ public class CustomerController : ControllerBase
     [HttpPost]
     public IActionResult AddCustomer(CustomerDto customerDto)
     {
+        if (customerDto.user == null)
+        {
+            return BadRequest("User wajib diisi");
+        }
+
+        var user = _mapper.Map<User>(customerDto.user);
+
+        user.password = Bcrypt.BcryptPassword(user.password);
+        user.role = Role.CUSTOMER;
+        user.status = Status.ACTIVE;
+
         var customer = _mapper.Map<Customer>(customerDto);
+
+        customer.user = user;
 
         dbContext.Customers.Add(customer);
         dbContext.SaveChanges();
@@ -62,12 +76,16 @@ public class CustomerController : ControllerBase
             return NotFound();
         }
 
-        customer.user = dbContext.Users.Find(customer.user_id);
-        customer.name = customerDto.name;
-        customer.address = customerDto.address;
-        customer.phone_number = customerDto.phone_number;
-        customer.user_id = customerDto.user_id;
-        
+        if (!string.IsNullOrEmpty(customerDto.name))
+            customer.name = customerDto.name;
+
+        if (!string.IsNullOrEmpty(customerDto.address))
+            customer.address = customerDto.address;
+
+        if (!string.IsNullOrEmpty(customerDto.phone_number))
+            customer.phone_number = customerDto.phone_number;
+
+
         dbContext.SaveChanges();
         return Ok(customer);
     }

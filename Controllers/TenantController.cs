@@ -8,12 +8,12 @@ using AutoMapper;
 
 [Route("api/[controller]")]
 [ApiController]
-public class TenantController  : ControllerBase
+public class TenantController : ControllerBase
 {
     private readonly AppDbContext dbContext;
     private readonly IMapper _mapper;
 
-    public TenantController (AppDbContext context, IMapper mapper)
+    public TenantController(AppDbContext context, IMapper mapper)
     {
         dbContext = context;
         _mapper = mapper;
@@ -43,7 +43,20 @@ public class TenantController  : ControllerBase
     [HttpPost]
     public IActionResult AddTenant(TenantDto tenantDto)
     {
+        if (tenantDto.user == null)
+        {
+            return BadRequest("User wajib diisi");
+        }
+
+        var user = _mapper.Map<User>(tenantDto.user);
+
+        user.password = Bcrypt.BcryptPassword(user.password);
+        user.role = Role.TENANT;
+        user.status = Status.ACTIVE;
+
         var tenant = _mapper.Map<Tenant>(tenantDto);
+        
+        tenant.user = user;
 
         dbContext.Tenants.Add(tenant);
         dbContext.SaveChanges();
@@ -60,11 +73,15 @@ public class TenantController  : ControllerBase
         {
             return NotFound();
         }
-        tenant.user = dbContext.Users.Find(tenant.user_id);
-        tenant.name = tenantDto.name;
-        tenant.address = tenantDto.address;
-        tenant.phoneNumber = tenantDto.phoneNumber;
-        tenant.user_id = tenantDto.user_id;
+
+        if (!string.IsNullOrEmpty(tenantDto.name))
+            tenant.name = tenantDto.name;
+
+        if (!string.IsNullOrEmpty(tenantDto.address))
+            tenant.address = tenantDto.address;
+
+        if (!string.IsNullOrEmpty(tenantDto.phoneNumber))
+            tenant.phoneNumber = tenantDto.phoneNumber;
 
         dbContext.SaveChanges();
         return Ok(tenant);

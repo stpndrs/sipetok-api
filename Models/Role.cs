@@ -10,6 +10,6 @@ namespace sipetok_api.Models
     {
         ADMIN,
         TENANT,
-        COSTUMER
+        CUSTOMER
     }
 }

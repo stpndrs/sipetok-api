@@ -1,43 +1,76 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
+using sipetok_api.dto;
 using sipetok_api.Models;
 using sipetok_api.Data;
 using sipetok_api.helper;
+using AutoMapper;
 
 [Route("api/users")]
 [ApiController]
-public class UsersController : ControllerBase
+public class UserController : ControllerBase
 {
-    private readonly AppDbContext _context;
+    private readonly AppDbContext dbContext;
+    private readonly IMapper _mapper;
 
-    public UsersController(AppDbContext context)
+    public UserController(AppDbContext context, IMapper mapper)
     {
-        _context = context;
+        dbContext = context;
+        _mapper = mapper;
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<User>>> GetUsers()
+    public IActionResult GetAllUsers()
     {
-        return await _context.Users.ToListAsync();
+        var allUser = dbContext.Users.ToList();
+        return Ok(allUser);
+    }
+
+    [HttpGet]
+    [Route("{id:int}")]
+    public IActionResult GetUserById(int id)
+    {
+        var user = dbContext.Users.Find(id);
+
+        if (user is null)
+        {
+            return NotFound();
+        }
+
+        return Ok(user);
     }
 
     [HttpPost]
-    public async Task<ActionResult<User>> PostUser(User user)
+    public IActionResult AddUser(UserDto userDto)
     {
+        var user = _mapper.Map<User>(userDto);
         user.password = Bcrypt.BcryptPassword(user.password);
-        _context.Users.Add(user);
-        await _context.SaveChangesAsync();
-        return CreatedAtAction(nameof(GetUsers), new { id = user.id }, user);
+
+        dbContext.Users.Add(user);
+        dbContext.SaveChanges();
+
+        return Ok(user);
     }
 
-    [HttpPut("{id}")]
-    public async Task<IActionResult> PutUser(int id, User user)
+    [HttpPut]
+    [Route("{id:int}")]
+    public IActionResult UpdateUser(int id, UserDto userDto)
     {
-        if (id != user.id) return BadRequest();
+        var user = dbContext.Users.Find(id);
 
-        _context.Entry(user).State = EntityState.Modified;
-        await _context.SaveChangesAsync();
-        return CreatedAtAction(nameof(GetUsers), new { id = user.id }, user);
+        if (user is null)
+        {
+            return NotFound();
+        }
+
+        user.username = userDto.username;
+        user.password = userDto.password;
+        user.email = userDto.email;
+        user.role = userDto.role;
+        user.status = userDto.status;
+
+        dbContext.SaveChanges();
+        return Ok(user);
     }
 }
