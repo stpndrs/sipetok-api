@@ -98,7 +98,7 @@ public class UserController : ControllerBase
         {
             return BadRequest("Password lama salah");
         }
-        user.password = changePasswordDto.password;
+        user.password = Bcrypt.BcryptPassword(changePasswordDto.password);
 
         dbContext.SaveChanges();
         return Ok("Password berhasil diubah");
