@@ -64,11 +64,17 @@ public class UserController : ControllerBase
             return NotFound();
         }
 
-        user.username = userDto.username;
-        user.password = userDto.password;
-        user.email = userDto.email;
-        user.role = userDto.role;
-        user.status = userDto.status;
+        if (!string.IsNullOrEmpty(userDto.username))
+            user.username = userDto.username;
+
+        if (!string.IsNullOrEmpty(userDto.password))
+            user.password = userDto.password;
+
+        if (!string.IsNullOrEmpty(userDto.email))
+            user.email = userDto.email;
+
+        if (userDto.status != null)
+            user.status = userDto.status;
 
         dbContext.SaveChanges();
         return Ok(user);
