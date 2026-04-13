@@ -11,12 +11,12 @@ namespace sipetok_api.Services
 
             for (int i = 0; i < data.Count; i++)
             {
-                EggCategory eggcategory = data[i];
+                EggCategory item = data[i];
                 string[] baris = new string[4];
-                baris[0] = eggcategory.id.ToString();
-                baris[1] = eggcategory.name;
-                baris[2] = eggcategory.price.ToString();
-                baris[3] = eggcategory.description;
+                baris[0] = item.id.ToString();
+                baris[1] = item.name;
+                baris[2] = item.price.ToString();
+                baris[3] = item.description;
 
                 tabel.Add(baris);
             }

@@ -11,12 +11,12 @@ namespace sipetok_api.Services
 
             for (int i = 0; i < data.Count; i++)
             {
-                Tenant tenant = data[i];
+                Tenant item = data[i];
                 string[] baris = new string[4];
-                baris[0] = tenant.id.ToString();
-                baris[1] = tenant.name;
-                baris[2] = tenant.address;
-                baris[3] = tenant.phoneNumber;
+                baris[0] = item.id.ToString();
+                baris[1] = item.name;
+                baris[2] = item.address;
+                baris[3] = item.phoneNumber;
 
                 tabel.Add(baris);
             }
