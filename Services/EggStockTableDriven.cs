@@ -31,8 +31,4 @@ namespace sipetok_api.Services
         }
     }
 }
-//this.id = id;
-//this.production_date = production_date;
-//this.stock = stock;
-//this.tenant_id = tenant_id;
-//this.category_id = category_id;
+
