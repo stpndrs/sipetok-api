@@ -45,7 +45,7 @@ public class OperationalController : ControllerBase
     {
         var operational = dbContext.Operationals.Include(o => o.tenant).Where(o => o.tenant_id == tenantId).ToList();
 
-        if (operational is null)
+        if (operational.Count == 0)
         {
             return NotFound();
         }
@@ -56,8 +56,16 @@ public class OperationalController : ControllerBase
     [HttpPost]
     public IActionResult AddOperational(OperationalDto operationalDto)
     {
+        var tenant = dbContext.Tenants.Find(operationalDto.tenant_id);
+        if(tenant is null)
+        {
+            return BadRequest("Tenant tidak ditemukan");
+        }
+
         var operational = _mapper.Map<Operational>(operationalDto);
-        operational.tenant = dbContext.Tenants.Find(operational.tenant_id);
+        operational.tenant = tenant;
+        operational.tenant_id = tenant.id;
+        operational.operational_date = DateTime.Now;
 
         dbContext.Operationals.Add(operational);
         dbContext.SaveChanges();
