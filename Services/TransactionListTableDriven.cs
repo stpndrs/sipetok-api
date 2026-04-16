@@ -27,7 +27,7 @@ namespace sipetok_api.Services
 
         public string[] GetHeader()
         {
-            return [ "ID Transaksi", "Tanggal", "Pelanggan", "Total", "Dibayar" ];
+            return new string[] { "ID Transaksi", "Tanggal", "Pelanggan", "Total", "Dibayar" };
         }
     }
 }
