@@ -1,4 +1,5 @@
 ﻿using sipetok_api.Models;
+using sipetok_api.Utilis;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -28,7 +29,7 @@ namespace sipetok_api.Models
         public string phone_number { get; set; } = string.Empty;
 
         public Customer() { }
-
+        public sipetok_api.Utilis.CustomerStatus status { get; set; }
         public Customer(int id, string name, int user_id, string address, string phone_number)
         {
             this.id = id;

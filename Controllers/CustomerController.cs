@@ -1,11 +1,12 @@
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-
-using sipetok_api.helper;
-using sipetok_api.Models;
 using sipetok_api.Data;
 using sipetok_api.dto;
-using AutoMapper;
+using sipetok_api.helper;
+using sipetok_api.Models;
+using sipetok_api.Services;
+using sipetok_api.Utilis;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -13,7 +14,7 @@ public class CustomerController : ControllerBase
 {
     private readonly AppDbContext dbContext;
     private readonly IMapper _mapper;
-
+   
     public CustomerController(AppDbContext context, IMapper mapper)
     {
         dbContext = context;
@@ -88,5 +89,27 @@ public class CustomerController : ControllerBase
 
         dbContext.SaveChanges();
         return Ok(customer);
+    }
+    [HttpDelete("{id:int}")]
+    public IActionResult DeleteCustomer(int id)
+    {
+        var customer = dbContext.Customers.Find(id);
+        if (customer == null) return NotFound();
+
+        
+        bool isValid = (customer.status, CustomerStatus.Inactive) switch
+        {
+            (CustomerStatus.Active, CustomerStatus.Inactive) => true,
+            _ => false
+        };
+
+        if (isValid)
+        {
+            customer.status = CustomerStatus.Inactive;
+            dbContext.SaveChanges();
+            return Ok("Berhasil");
+        }
+
+        return BadRequest("Transisi status dilarang");
     }
 }
