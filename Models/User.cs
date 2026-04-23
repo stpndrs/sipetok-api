@@ -1,4 +1,4 @@
-﻿using sipetok_api.Models;
+﻿using sipetok_api.Utilis;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
