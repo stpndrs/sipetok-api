@@ -1,4 +1,3 @@
-using sipetok_api.Models;
 using sipetok_api.Utilis;
 
 namespace sipetok_api.dto
