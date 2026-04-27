@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace sipetok_api.Utilis
+namespace sipetok_api.Utils
 {
     public enum Status
     {
