@@ -65,7 +65,6 @@ public class OperationalController : ControllerBase
         var operational = _mapper.Map<Operational>(operationalDto);
         operational.tenant = tenant;
         operational.tenant_id = tenant.id;
-        operational.operational_date = DateTime.Now;
 
         dbContext.Operationals.Add(operational);
         dbContext.SaveChanges();
@@ -86,7 +85,6 @@ public class OperationalController : ControllerBase
 
         operational.name = operationalDto.name;
         operational.operational_cost = operationalDto.operational_cost;
-        // operational.tenant = operationalDto.tenant;
         operational.operational_date = operationalDto.operational_date;
         
         dbContext.SaveChanges();

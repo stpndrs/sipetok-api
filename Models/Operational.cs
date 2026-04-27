@@ -16,7 +16,7 @@ namespace sipetok_api.Models
         public string name { get; set; } = string.Empty;
 
         [MaxLength(50)]
-        public string operational_cost { get; set; } = string.Empty; // Atau ubah ke decimal jika ini angka
+        public string operational_cost { get; set; } = string.Empty;
 
         public int tenant_id { get; set; }
 

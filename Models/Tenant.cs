@@ -22,6 +22,8 @@ namespace sipetok_api.Models
         [MaxLength(20)]
         public string phoneNumber { get; set; } = string.Empty;
 
+        public bool isTenant {get; set;} = false;
+
         public int user_id { get; set; }
 
         [ForeignKey("user_id")]

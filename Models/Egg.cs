@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace sipetok_api.Models
 {
-    public class Egg // Ubah dari internal ke public
+    public class Egg
     {
         public int id { get; set; }
         public DateTime production_date { get; set; }

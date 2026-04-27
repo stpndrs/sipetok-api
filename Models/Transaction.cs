@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Text.Json.Serialization;
 
 namespace sipetok_api.Models
 {
@@ -13,6 +14,8 @@ namespace sipetok_api.Models
         public DateTime date { get; set; }
         public decimal payment_amount { get; set; } // Ubah ke decimal
         public decimal total_price { get; set; }    // Ubah ke decimal
+        [JsonIgnore]
+        public TransactionStatus transactionStatus {get; set;}
         public int tenant_id { get; set; }
         public int customer_id { get; set; }
 
