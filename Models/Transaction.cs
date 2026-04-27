@@ -1,4 +1,5 @@
-﻿using System;
+﻿using sipetok_api.Utilis;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
@@ -15,6 +16,7 @@ namespace sipetok_api.Models
         public decimal total_price { get; set; }    // Ubah ke decimal
         public int tenant_id { get; set; }
         public int customer_id { get; set; }
+        public PaymentState Status { get; set; } = PaymentState.Pending;
 
         [ForeignKey("tenant_id")]
         public virtual Tenant? tenant { get; set; }
@@ -34,6 +36,8 @@ namespace sipetok_api.Models
             this.total_price = total_price;
             this.tenant_id = tenant_id;
             this.customer_id = customer_id;
+
+
         }
     }
 }
