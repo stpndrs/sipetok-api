@@ -22,10 +22,9 @@ namespace sipetok_api.Models
         [MaxLength(20)]
         public string phoneNumber { get; set; } = string.Empty;
 
+        [ForeignKey("user_id")]
         public int user_id { get; set; }
 
-        [ForeignKey("user_id")]
-        public virtual User? user { get; set; }
 
         public Tenant() { } // Constructor Kosong
 
