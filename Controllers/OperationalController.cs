@@ -1,10 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-using sipetok_api.dto;
+using sipetok_api.dto.Request;
 using sipetok_api.Models;
 using sipetok_api.Data;
 using AutoMapper;
+using sipetok_api.dto.Respon;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -22,72 +23,182 @@ public class OperationalController : ControllerBase
     [HttpGet]
     public IActionResult GetAllOperationals()
     {
-        var allOperational = dbContext.Operationals.Include(c => c.tenant).ToList();
-        return Ok(allOperational);
+        try
+        {
+            var allOperational = _mapper.Map<List<OperationalRespon>>(dbContext.Operationals.Include(c => c.tenant).ToList());
+
+            var respon = new ResponData<List<OperationalRespon>>
+            {
+                status = true,
+                data = allOperational,
+                message = new List<string> { "Berhasil mengambil semua data Operational" }
+            };
+
+            return Ok(respon);
+        }
+        catch (Exception ex)
+        {
+            var respon = new ResponData<List<OperationalRespon>>
+            {
+                status = false,
+                message = new List<string> { ex.Message }
+            };
+
+            return StatusCode(500, respon);
+        }
     }
 
     [HttpGet]
     [Route("{id:int}")]
     public IActionResult GetOperationalById(int id)
     {
-        var operational = dbContext.Operationals.Include(c => c.tenant).FirstOrDefault(c => c.id == id);
-
-        if (operational is null)
+        try
         {
-            return NotFound();
-        }
+            var operational = _mapper.Map<OperationalRespon>(dbContext.Operationals.Include(c => c.tenant).FirstOrDefault(c => c.id == id));
 
-        return Ok(operational);
+            if (operational == null)
+            {
+                return NotFound(new ResponData<OperationalRespon>
+                {
+                    status = false,
+                    message = new List<string> { $"Data operational dengan id {id} tidak ditemukan" }
+                });
+            }
+
+            var respon = new ResponData<OperationalRespon>
+            {
+                status = true,
+                data = operational,
+                message = new List<string> { $"Berhasil mengambil data operational pada id {id}" }
+            };
+
+            return Ok(respon);
+        }
+        catch (Exception ex)
+        {
+            var respon = new ResponData<OperationalRespon>
+            {
+                status = false,
+                message = new List<string> { ex.Message }
+            };
+
+            return StatusCode(500, respon);
+        }
     }
 
     [HttpGet("tenant/{tenantId:int}")]
     public IActionResult GetOperationalByTenantId(int tenantId)
     {
-        var operational = dbContext.Operationals.Include(o => o.tenant).Where(o => o.tenant_id == tenantId).ToList();
-
-        if (operational.Count == 0)
+        try
         {
-            return NotFound();
-        }
+            var operational = _mapper.Map<List<OperationalRespon>>(dbContext.Operationals.Include(o => o.tenant).Where(o => o.tenant_id == tenantId).ToList());
 
-        return Ok(operational);
+            if (operational == null)
+            {
+                return NotFound(new ResponData<OperationalRespon>
+                {
+                    status = false,
+                    message = new List<string> { $"Data operational dengan id tenant {tenantId} tidak ditemukan" }
+                });
+            }
+
+            var respon = new ResponData<List<OperationalRespon>>
+            {
+                status = true,
+                data = operational,
+                message = new List<string> { $"Berhasil mengambil data operational pada id tenant {tenantId}" }
+            };
+
+            return Ok(respon);
+        }
+        catch (Exception ex)
+        {
+            var respon = new ResponData<OperationalRespon>
+            {
+                status = false,
+                message = new List<string> { ex.Message }
+            };
+
+            return StatusCode(500, respon);
+        }
     }
 
     [HttpPost]
     public IActionResult AddOperational(OperationalDto operationalDto)
     {
-        var tenant = dbContext.Tenants.Find(operationalDto.tenant_id);
-        if(tenant is null)
+        try
         {
-            return BadRequest("Tenant tidak ditemukan");
+            var tenant = dbContext.Tenants.Find(operationalDto.tenant_id);
+            if (tenant is null)
+            {
+                return BadRequest("Tenant tidak ditemukan");
+            }
+
+            var operational = _mapper.Map<Operational>(operationalDto);
+            operational.tenant = tenant;
+            operational.tenant_id = tenant.id;
+
+            dbContext.Operationals.Add(operational);
+            dbContext.SaveChanges();
+
+            var respon = new ResponData<OperationalRespon>
+            {
+                status = true,
+                data = _mapper.Map<OperationalRespon>(operational),
+                message = new List<string> { "Berhasil menambahkan data operational" }
+            };
+
+            return Ok(respon);
         }
+        catch (Exception ex)
+        {
+            var respon = new ResponData<OperationalRespon>
+            {
+                status = false,
+                message = new List<string> { ex.Message }
+            };
 
-        var operational = _mapper.Map<Operational>(operationalDto);
-        operational.tenant = tenant;
-        operational.tenant_id = tenant.id;
-
-        dbContext.Operationals.Add(operational);
-        dbContext.SaveChanges();
-
-        return Ok(operational);
+            return Ok(respon);
+        }
     }
 
     [HttpPut]
     [Route("{id:int}")]
     public IActionResult UpdateOperational(int id, OperationalDto operationalDto)
     {
-        var operational = dbContext.Operationals.Find(id);
-
-        if (operational is null)
+        try
         {
-            return NotFound();
-        }
+            var operational = dbContext.Operationals.Find(id);
 
-        operational.name = operationalDto.name;
-        operational.operational_cost = operationalDto.operational_cost;
-        operational.operational_date = operationalDto.operational_date;
-        
-        dbContext.SaveChanges();
-        return Ok(operational);
+            if (operational is null)
+            {
+                return NotFound();
+            }
+
+            operational.name = operationalDto.name;
+            operational.operational_cost = operationalDto.operational_cost;
+            operational.operational_date = operationalDto.operational_date;
+
+            dbContext.SaveChanges();
+
+            var respon = new ResponData<OperationalRespon>
+            {
+                status = true,
+                data = _mapper.Map<OperationalRespon>(operational),
+                message = new List<string>{"Berhasil memperbarui data"}
+            };
+
+            return Ok(respon);
+        }
+        catch (Exception ex)
+        {
+            var respon = new ResponData<OperationalRespon>
+            {
+                status = false,
+                message = new List<string>{ex.Message}
+            };
+
+            return Ok(respon);
+        }
     }
 }

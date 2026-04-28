@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 namespace sipetok_api.Utilis
 {
-    public enum PaymentState
+    public enum PaymentStatus
     {
         Pending,    // Transaksi dibuat & menunggu aksi
         Processing, // Sedang divalidasi atau diproses sistem

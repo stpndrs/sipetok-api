@@ -23,9 +23,9 @@ namespace sipetok_api.service
             if (transaksi == null) return false;
 
             // Update field Status 
-            if (transaksi.Status == PaymentState.Pending)
+            if (transaksi.Status == PaymentStatus.Pending)
             {
-                transaksi.Status = PaymentState.Success;
+                transaksi.Status = PaymentStatus.Success;
 
                 try
                 {
