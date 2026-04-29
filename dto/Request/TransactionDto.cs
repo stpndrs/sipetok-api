@@ -1,4 +1,4 @@
-using sipetok_api.Utilis;
+using sipetok_api.Utils;
 
 namespace sipetok_api.dto.Request
 {
@@ -9,11 +9,9 @@ namespace sipetok_api.dto.Request
         public decimal total_price { get; set; }
         public int tenant_id { get; set; }
         public int customer_id { get; set; }
-        public PaymentStatus Status { get; set; } = PaymentStatus.Pending;
+        public PaymentState Status { get; set; } = PaymentState.Pending;
         public virtual CustomerDto? customer { get; set; }
-
         public virtual ICollection<TransactionDetailDto> details { get; set; } = new List<TransactionDetailDto>();
-
         public TransactionDto() { }
 
         public TransactionDto(decimal payment_amount, decimal total_price, int tenant_id, int customer_id)

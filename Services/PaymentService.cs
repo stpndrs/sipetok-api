@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using sipetok_api.Data;
-using sipetok_api.Utilis;
+using sipetok_api.Utils;
 using sipetok_api.Models;
 using System;
 using System.Threading.Tasks;
@@ -23,9 +23,9 @@ namespace sipetok_api.service
             if (transaksi == null) return false;
 
             // Update field Status 
-            if (transaksi.Status == PaymentStatus.Pending)
+            if (transaksi.Status == PaymentState.Pending)
             {
-                transaksi.Status = PaymentStatus.Success;
+                transaksi.Status = PaymentState.Success;
 
                 try
                 {
