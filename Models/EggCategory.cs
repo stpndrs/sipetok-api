@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -19,6 +20,11 @@ namespace sipetok_api.Models
 
         [Required, MaxLength(50)]
         public string name { get; set; } = string.Empty;
+
+        public int tenant_id { get; set; }
+
+        [ForeignKey("tenant_id")]
+        public virtual Tenant? tenant { get; set; }
 
         public EggCategory() { }
 
