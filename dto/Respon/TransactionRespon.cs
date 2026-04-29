@@ -1,4 +1,5 @@
 using sipetok_api.Utilis;
+using sipetok_api.Utils;
 
 namespace sipetok_api.dto.Respon
 {
@@ -10,7 +11,7 @@ namespace sipetok_api.dto.Respon
         public decimal total_price { get; set; }
         public int tenant_id { get; set; }
         public int customer_id { get; set; }
-        public PaymentStatus Status { get; set; } = PaymentStatus.Pending;
+        public PaymentState Status { get; set; } = PaymentState.Pending;
         public virtual ICollection<TransactionDetailRespon> details { get; set; } = new List<TransactionDetailRespon>();
 
         public TransactionRespon() { }
