@@ -4,7 +4,7 @@ using sipetok_api.Models;
 using sipetok_api.dto.Request;
 using sipetok_api.Data;
 using AutoMapper;
-using sipetok_api.Utilis;
+using sipetok_api.Utils;
 using sipetok_api.dto.Respon;
 
 [Route("api/[controller]")]

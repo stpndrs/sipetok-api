@@ -10,8 +10,7 @@ namespace sipetok_api.Controllers
     public class TransactionController : ControllerBase
     {
         private readonly PaymentService _paymentService;
-
-        
+     
         public TransactionController(PaymentService paymentService)
         {
             _paymentService = paymentService;
@@ -20,22 +19,24 @@ namespace sipetok_api.Controllers
         [HttpPost("pay/{id}")]
         public async Task<IActionResult> Pay(int id)
         {
-            
-            var success = await _paymentService.UpdateStatus(id);
+            var success = await _paymentService.UpdateStatus(id, "NEXT");
+            if (success) 
+                return Ok(new {
+                message = "Status berhasil diperbarui." });
 
-            if (success)
-            {
-                return Ok(new
-                {
-                    message = "Pembayaran Berhasil!",
-                    status = "Lunas"
-                });
-            }
+            return BadRequest(new { message = "Gagal memproses." });
+        }
 
-            return BadRequest(new
-            {
-                message = "Gagal memproses pembayaran. Cek apakah transaksi ada atau sudah lunas."
-            });
+        [HttpPost("cancel/{id}")]
+        public async Task<IActionResult> Cancel(int id)
+        {
+            var success = await _paymentService.UpdateStatus(id, "CANCEL");
+            if (success) 
+                return Ok(new {
+                message = "Transaksi telah dibatalkan." });
+
+            return BadRequest(new { message = "Transaksi tidak bisa dibatalkan." });
         }
     }
+    
 }
