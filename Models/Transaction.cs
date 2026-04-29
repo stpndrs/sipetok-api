@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Text.Json.Serialization;
 
 namespace sipetok_api.Models
 {
@@ -12,11 +13,11 @@ namespace sipetok_api.Models
     {
         public int id { get; set; }
         public DateTime date { get; set; }
-        public decimal payment_amount { get; set; } // Ubah ke decimal
-        public decimal total_price { get; set; }    // Ubah ke decimal
+        public decimal payment_amount { get; set; }
+        public decimal total_price { get; set; }
         public int tenant_id { get; set; }
         public int customer_id { get; set; }
-        public PaymentState Status { get; set; } = PaymentState.Pending;
+        public PaymentStatus Status { get; set; } = PaymentStatus.Pending;
 
         [ForeignKey("tenant_id")]
         public virtual Tenant? tenant { get; set; }
