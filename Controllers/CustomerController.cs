@@ -6,7 +6,7 @@ using sipetok_api.dto;
 using sipetok_api.helper;
 using sipetok_api.Models;
 using sipetok_api.Services;
-using sipetok_api.Utilis;
+using sipetok_api.Utils;
 
 [Route("api/[controller]")]
 [ApiController]
