@@ -1,6 +1,5 @@
 ﻿using sipetok_api.Utils;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
 namespace sipetok_api.Models
@@ -19,11 +18,7 @@ namespace sipetok_api.Models
 
         [MaxLength(100)]
         public string email { get; set; } = string.Empty;
-
-        [JsonConverter(typeof(JsonStringEnumConverter))]
         public Role role { get; set; }
-
-        [JsonConverter(typeof(JsonStringEnumConverter))]
         public Status status { get; set; }
     }
 }
