@@ -1,4 +1,4 @@
-﻿using sipetok_api.Utilis;
+﻿using sipetok_api.Utils;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -17,7 +17,7 @@ namespace sipetok_api.Models
         public decimal total_price { get; set; }
         public int tenant_id { get; set; }
         public int customer_id { get; set; }
-        public PaymentStatus Status { get; set; } = PaymentStatus.Pending;
+        public PaymentState Status { get; set; } = PaymentState.Pending;
 
         [ForeignKey("tenant_id")]
         public virtual Tenant? tenant { get; set; }
@@ -37,8 +37,6 @@ namespace sipetok_api.Models
             this.total_price = total_price;
             this.tenant_id = tenant_id;
             this.customer_id = customer_id;
-
-
         }
     }
 }

@@ -1,4 +1,4 @@
-using sipetok_api.Utilis;
+using sipetok_api.Utils;
 
 namespace sipetok_api.dto.Request
 {
