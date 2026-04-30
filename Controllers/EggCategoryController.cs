@@ -7,7 +7,7 @@ using sipetok_api.Data;
 using AutoMapper;
 using sipetok_api.dto.Respon;
 
-[Route("api/[controller]")]
+[Route("api/egg/categories")]
 [ApiController]
 public class EggCategoryController : ControllerBase
 {

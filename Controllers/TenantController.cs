@@ -8,7 +8,7 @@ using AutoMapper;
 using sipetok_api.Utils;
 using sipetok_api.dto.Respon;
 
-[Route("api/[controller]")]
+[Route("api/tenants")]
 [ApiController]
 public class TenantController : ControllerBase
 {

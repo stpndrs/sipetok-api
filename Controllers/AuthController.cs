@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Org.BouncyCastle.Ocsp;
 using sipetok_api.Data;
 using sipetok_api.dto.Request;
 using sipetok_api.dto.Respon;
@@ -33,78 +34,115 @@ namespace sipetok_api.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register(RegisterDto req)
         {
-            string passwordHash = Bcrypt.BcryptPassword(req.Password);
-            var user = new User
+            try
             {
-                username = req.Username,
-                email = req.Email,
-                password = passwordHash,
-                role = 3,
-                status = 1
-            };
+                string passwordHash = Bcrypt.BcryptPassword(req.Password);
+                var user = new User
+                {
+                    username = req.Username,
+                    email = req.Email,
+                    password = passwordHash,
+                    role = 3,
+                    status = 1
+                };
 
-            dbContext.Users.Add(user);
-            await dbContext.SaveChangesAsync();
-            string token = CreateToken(user);
+                dbContext.Users.Add(user);
+                await dbContext.SaveChangesAsync();
+                string token = CreateToken(user);
 
-            var respon = new ResponData<AuthRespon>
+                var respon = new ResponData<AuthRespon>
+                {
+                    success = true,
+                    data = new AuthRespon(token != "false" ? token : null),
+                    message = $"Register berhasil"
+                };
+
+                return Ok(respon);
+            }
+            catch (Exception ex)
             {
-                success = true,
-                data = new AuthRespon(token),
-                message = $"Register berhasil"
-            };
+                var respon = new ResponData<object>
+                {
+                    success = false,
+                    message = ex.Message
+                };
 
-            return Ok(respon);
+                return StatusCode(500, respon);
+            }
         }
 
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginDto req)
         {
-            var user = await dbContext.Users.FirstOrDefaultAsync(u => u.username == req.Username);
-
-            if (user == null || !Bcrypt.VerifyPassword(req.Password, user.password))
+            try
             {
-                return BadRequest("Username atau password salah!");
+                var user = await dbContext.Users.FirstOrDefaultAsync(u => u.username == req.Username);
+
+                if (user == null || !Bcrypt.VerifyPassword(req.Password, user.password))
+                {
+                    return BadRequest(new ResponData<object>
+                    {
+                        success = false,
+                        message = "Username atau password salah!"
+                    });
+                }
+
+                string token = CreateToken(user);
+
+                var respon = new ResponData<AuthRespon>
+                {
+                    success = true,
+                    data = new AuthRespon(token != "false" ? token : null),
+                    message = $"Login berhasil" 
+                };
+
+                return Ok(respon);
             }
-
-            string token = CreateToken(user);
-
-            var respon = new ResponData<AuthRespon>
+            catch (Exception ex)
             {
-                success = true,
-                data = new AuthRespon(token),
-                message = $"Login berhasil" 
-            };
+                var respon = new ResponData<object>
+                {
+                    success = false,
+                    message = ex.Message
+                };
 
-            return Ok(respon);
+                return StatusCode(500, respon);
+            }
         }
 
         private string CreateToken(User user)
         {
-            var claims = new List<Claim>
+            try
             {
-                new Claim(ClaimTypes.Name, user.username),
-                new Claim(ClaimTypes.Role, user.role.ToString())
-            };
+                var claims = new List<Claim>
+                {
+                    new Claim(ClaimTypes.Name, user.username),
+                    new Claim(ClaimTypes.Role, user.role.ToString())
+                };
 
-            var jwtSection = appConfig.GetSection("configProperties:JWT");
-            var issuer = jwtSection["JWT_ISSUER"];
-            var audience = jwtSection["JWT_AUDIENCE"];
-            var keyString = jwtSection["JWT_KEY"];
+                var jwtSection = appConfig.GetSection("configProperties:JWT");
+                var issuer = jwtSection["JWT_ISSUER"];
+                var audience = jwtSection["JWT_AUDIENCE"];
+                var keyString = jwtSection["JWT_KEY"];
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(keyString));
+                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(keyString));
 
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+                var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-            var token = new JwtSecurityToken(
-                issuer: issuer,
-                audience: audience,
-                claims: claims,
-                expires: DateTime.Now.AddDays(1),
-                signingCredentials: creds
-            );
+                var token = new JwtSecurityToken(
+                    issuer: issuer,
+                    audience: audience,
+                    claims: claims,
+                    expires: DateTime.Now.AddDays(1),
+                    signingCredentials: creds
+                );
 
-            return new JwtSecurityTokenHandler().WriteToken(token);
+                return new JwtSecurityTokenHandler().WriteToken(token);
+            }
+            catch (Exception ex)
+            {
+                return "false";
+            }
         }
     }
 }

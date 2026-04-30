@@ -9,7 +9,7 @@ using sipetok_api.dto.Respon;
 using sipetok_api.Respon;
 using System.Net.Http.Headers;
 
-[Route("api/[controller]")]
+[Route("api/eggs")]
 [ApiController]
 public class EggController : ControllerBase
 {
