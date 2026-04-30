@@ -40,9 +40,6 @@ namespace sipetok_api.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("varchar(20)");
 
-                    b.Property<int>("status")
-                        .HasColumnType("int");
-
                     b.Property<int>("user_id")
                         .HasColumnType("int");
 
@@ -100,7 +97,12 @@ namespace sipetok_api.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<int>("tenant_id")
+                        .HasColumnType("int");
+
                     b.HasKey("id");
+
+                    b.HasIndex("tenant_id");
 
                     b.ToTable("EggCategories");
                 });
@@ -194,9 +196,6 @@ namespace sipetok_api.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int>("transactionStatus")
-                        .HasColumnType("int");
-
                     b.HasKey("id");
 
                     b.HasIndex("customer_id");
@@ -250,13 +249,11 @@ namespace sipetok_api.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("varchar(255)");
 
-                    b.Property<string>("role")
-                        .IsRequired()
-                        .HasColumnType("enum('ADMIN', 'TENANT', 'CUSTOMER')");
+                    b.Property<int>("role")
+                        .HasColumnType("int");
 
-                    b.Property<string>("status")
-                        .IsRequired()
-                        .HasColumnType("enum('ACTIVE', 'INACTIVE')");
+                    b.Property<int>("status")
+                        .HasColumnType("int");
 
                     b.Property<string>("username")
                         .IsRequired()
@@ -294,6 +291,17 @@ namespace sipetok_api.Migrations
                         .IsRequired();
 
                     b.Navigation("category");
+
+                    b.Navigation("tenant");
+                });
+
+            modelBuilder.Entity("sipetok_api.Models.EggCategory", b =>
+                {
+                    b.HasOne("sipetok_api.Models.Tenant", "tenant")
+                        .WithMany()
+                        .HasForeignKey("tenant_id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("tenant");
                 });

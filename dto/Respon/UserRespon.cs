@@ -7,11 +7,11 @@ namespace sipetok_api.dto
         public int id {get; set;}
         public string username { get; set; } = string.Empty;
         public string email { get; set; } = string.Empty;
-        public Role role { get; set; }
-        public Status status { get; set; }
+        public int role { get; set; }
+        public int status { get; set; }
         public UserRespon() {}
 
-        public UserRespon(int id, string username, string email, Role role, Status status)
+        public UserRespon(int id, string username, string email, int role, int status)
         {
             this.id = id;
             this.username = username;

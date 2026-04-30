@@ -103,8 +103,8 @@ public class CustomerController : ControllerBase
             var user = _mapper.Map<User>(customerDto.user);
 
             user.password = Bcrypt.BcryptPassword(user.password);
-            user.role = Role.CUSTOMER;
-            user.status = Status.ACTIVE;
+            user.role = 3;
+            user.status = 1;
             customer.user = user;
 
             dbContext.Customers.Add(customer);

@@ -18,7 +18,7 @@ namespace sipetok_api.Models
 
         [MaxLength(100)]
         public string email { get; set; } = string.Empty;
-        public Role role { get; set; }
-        public Status status { get; set; }
+        public int role { get; set; }
+        public int status { get; set; }
     }
 }

@@ -7,11 +7,11 @@ namespace sipetok_api.dto.Request
         public string username { get; set; } = string.Empty;
         public string password { get; set; } = string.Empty;
         public string email { get; set; } = string.Empty;
-        public Role role { get; set; }
-        public Status status { get; set; }
+        public int role { get; set; }
+        public int status { get; set; }
         public UserDto() {}
 
-        public UserDto(string username, string password, string email, Role role, Status status)
+        public UserDto(string username, string password, string email, int role, int status)
         {
             this.username = username;
             this.password = password;
