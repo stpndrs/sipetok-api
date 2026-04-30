@@ -15,16 +15,15 @@ namespace sipetok_api.Models
         public DateTime date { get; set; }
         public decimal payment_amount { get; set; }
         public decimal total_price { get; set; }
-        public int tenant_id { get; set; }
-        public int customer_id { get; set; }
         public PaymentState Status { get; set; } = PaymentState.Pending;
 
-        [ForeignKey("tenant_id")]
         public int tenant_id { get; set; }
+
+        [ForeignKey("tenant_id")]
+        public virtual Tenant? tenant { get; set; }
 
         [ForeignKey("customer_id")]
         public int customer_id { get; set; }
-        public PaymentState Status { get; set; } = PaymentState.Pending;
 
         public virtual ICollection<TransactionDetail> details { get; set; } = new List<TransactionDetail>();
 

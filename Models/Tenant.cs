@@ -26,6 +26,8 @@ namespace sipetok_api.Models
 
         public int user_id { get; set; }
 
+        [ForeignKey("user_id")]
+        public virtual User? user { get; set; }
 
         public Tenant() { } // Constructor Kosong
 

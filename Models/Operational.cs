@@ -18,9 +18,10 @@ namespace sipetok_api.Models
         [MaxLength(50)]
         public string operational_cost { get; set; } = string.Empty;
 
-        [ForeignKey("tenant_id")]
         public int tenant_id { get; set; }
 
+        [ForeignKey("tenant_id")]
+        public virtual Tenant? tenant { get; set; }
         public DateTime operational_date { get; set; }
 
         public Operational() { }
