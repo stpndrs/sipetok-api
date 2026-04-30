@@ -21,6 +21,9 @@ namespace sipetok_api.Models
         [Required, MaxLength(50)]
         public string name { get; set; } = string.Empty;
 
+        [ForeignKey("tenant_id")]
+        public int tenant_id { get; set; }
+
         public int tenant_id { get; set; }
 
         [ForeignKey("tenant_id")]

@@ -20,10 +20,11 @@ namespace sipetok_api.Models
         public PaymentState Status { get; set; } = PaymentState.Pending;
 
         [ForeignKey("tenant_id")]
-        public virtual Tenant? tenant { get; set; }
+        public int tenant_id { get; set; }
 
         [ForeignKey("customer_id")]
-        public virtual Customer? customer { get; set; }
+        public int customer_id { get; set; }
+        public PaymentState Status { get; set; } = PaymentState.Pending;
 
         public virtual ICollection<TransactionDetail> details { get; set; } = new List<TransactionDetail>();
 

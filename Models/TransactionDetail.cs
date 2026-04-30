@@ -11,10 +11,9 @@ namespace sipetok_api.Models
     public class TransactionDetail
     {
         public int id { get; set; }
-        public int transaction_id { get; set; }
 
         [ForeignKey("transaction_id")]
-        public virtual Transaction? transaction { get; set; }
+        public int transaction_id { get; set; }
 
         [MaxLength(50)]
         public string category_name { get; set; } = string.Empty;

@@ -1,5 +1,5 @@
 ﻿using sipetok_api.Models;
-using sipetok_api.Utils;
+using sipetok_api.Utilis;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
