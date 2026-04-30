@@ -24,6 +24,8 @@ namespace sipetok_api.Models
 
         [ForeignKey("customer_id")]
         public int customer_id { get; set; }
+        [ForeignKey("customer_id")]
+        public virtual Customer? customer { get; set; }
 
         public virtual ICollection<TransactionDetail> details { get; set; } = new List<TransactionDetail>();
 

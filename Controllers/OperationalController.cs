@@ -31,7 +31,7 @@ public class OperationalController : ControllerBase
             {
                 status = true,
                 data = allOperational,
-                message = new List<string> { "Berhasil mengambil semua data Operational" }
+                message = "Berhasil mengambil semua data Operational"
             };
 
             return Ok(respon);
@@ -41,7 +41,7 @@ public class OperationalController : ControllerBase
             var respon = new ResponData<List<OperationalRespon>>
             {
                 status = false,
-                message = new List<string> { ex.Message }
+                message = ex.Message
             };
 
             return StatusCode(500, respon);
@@ -61,7 +61,7 @@ public class OperationalController : ControllerBase
                 return NotFound(new ResponData<OperationalRespon>
                 {
                     status = false,
-                    message = new List<string> { $"Data operational dengan id {id} tidak ditemukan" }
+                    message = $"Data operational dengan id {id} tidak ditemukan"
                 });
             }
 
@@ -69,7 +69,7 @@ public class OperationalController : ControllerBase
             {
                 status = true,
                 data = operational,
-                message = new List<string> { $"Berhasil mengambil data operational pada id {id}" }
+                message = $"Berhasil mengambil data operational pada id {id}"
             };
 
             return Ok(respon);
@@ -79,7 +79,7 @@ public class OperationalController : ControllerBase
             var respon = new ResponData<OperationalRespon>
             {
                 status = false,
-                message = new List<string> { ex.Message }
+                message = ex.Message
             };
 
             return StatusCode(500, respon);
@@ -98,7 +98,7 @@ public class OperationalController : ControllerBase
                 return NotFound(new ResponData<OperationalRespon>
                 {
                     status = false,
-                    message = new List<string> { $"Data operational dengan id tenant {tenantId} tidak ditemukan" }
+                    message = $"Data operational dengan id tenant {tenantId} tidak ditemukan"
                 });
             }
 
@@ -106,7 +106,7 @@ public class OperationalController : ControllerBase
             {
                 status = true,
                 data = operational,
-                message = new List<string> { $"Berhasil mengambil data operational pada id tenant {tenantId}" }
+                message = $"Berhasil mengambil data operational pada id tenant {tenantId}"
             };
 
             return Ok(respon);
@@ -116,7 +116,7 @@ public class OperationalController : ControllerBase
             var respon = new ResponData<OperationalRespon>
             {
                 status = false,
-                message = new List<string> { ex.Message }
+                message = ex.Message
             };
 
             return StatusCode(500, respon);
@@ -145,7 +145,7 @@ public class OperationalController : ControllerBase
             {
                 status = true,
                 data = _mapper.Map<OperationalRespon>(operational),
-                message = new List<string> { "Berhasil menambahkan data operational" }
+                message = "Berhasil menambahkan data operational"
             };
 
             return Ok(respon);
@@ -155,7 +155,7 @@ public class OperationalController : ControllerBase
             var respon = new ResponData<OperationalRespon>
             {
                 status = false,
-                message = new List<string> { ex.Message }
+                message = ex.Message
             };
 
             return Ok(respon);
@@ -185,7 +185,7 @@ public class OperationalController : ControllerBase
             {
                 status = true,
                 data = _mapper.Map<OperationalRespon>(operational),
-                message = new List<string>{"Berhasil memperbarui data"}
+                message = "Berhasil memperbarui data"
             };
 
             return Ok(respon);
@@ -195,7 +195,7 @@ public class OperationalController : ControllerBase
             var respon = new ResponData<OperationalRespon>
             {
                 status = false,
-                message = new List<string>{ex.Message}
+                message = ex.Message
             };
 
             return Ok(respon);

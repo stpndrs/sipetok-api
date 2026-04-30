@@ -31,7 +31,7 @@ public class EggCategoryController : ControllerBase
             {
                 status = true,
                 data = allEggCategory,
-                message = new List<string> {"Berhasil mengambil semua data egg category"}
+                message = "Berhasil mengambil semua data egg category"
             };
             return Ok(respon);
         }
@@ -40,7 +40,7 @@ public class EggCategoryController : ControllerBase
             var respon = new ResponData<EggCategoryRespon>
             {
                 status = false,
-                message = new List<string> { ex.Message }
+                message = ex.Message
             };
             
             return StatusCode(500, respon);
@@ -60,7 +60,7 @@ public class EggCategoryController : ControllerBase
                 return NotFound(new ResponData<EggCategoryRespon>
                 {
                     status = false,
-                    message = new List<string> { $"Data customer dengan id {id} tidak ditemukan" }
+                    message = $"Data customer dengan id {id} tidak ditemukan"
                 });
             }
 
@@ -68,7 +68,7 @@ public class EggCategoryController : ControllerBase
             {
                 status = true,
                 data = eggCategory,
-                message = new List<string> { $"Berhasil mengambil data egg category pada id {id}" }
+                message = $"Berhasil mengambil data egg category pada id {id}"
             };
 
             return Ok(respon);
@@ -78,7 +78,7 @@ public class EggCategoryController : ControllerBase
             var respon = new ResponData<EggCategoryRespon>
             {
                 status = true,
-                message = new List<string> { ex.Message }
+                message = ex.Message
             };
 
             return StatusCode(500, respon);
@@ -99,7 +99,7 @@ public class EggCategoryController : ControllerBase
             {
                 status = true,
                 data = _mapper.Map<EggCategoryRespon>(eggCategory),
-                message = new List<string> { "Berhasil menambahkan data egg category" }
+                message = "Berhasil menambahkan data egg category"
             };
 
             return Ok(respon);
@@ -109,7 +109,7 @@ public class EggCategoryController : ControllerBase
             var respon = new ResponData<EggCategoryRespon>
             {
                 status = true,
-                message = new List<string> { ex.Message }
+                message = ex.Message
             };
 
             return BadRequest(respon);
@@ -138,7 +138,7 @@ public class EggCategoryController : ControllerBase
             {
                 status = true,
                 data = _mapper.Map<EggCategoryRespon>(eggCategory),
-                message = new List<string>{"Berhasil memperbarui data"}
+                message = "Berhasil memperbarui data"
             };
 
             return Ok(respon);
@@ -148,7 +148,7 @@ public class EggCategoryController : ControllerBase
             var respon = new ResponData<EggCategoryRespon>
             {
                 status = true,
-                message = new List<string>{ex.Message}
+                message = ex.Message
             };
 
             return BadRequest(respon);

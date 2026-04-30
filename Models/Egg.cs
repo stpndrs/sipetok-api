@@ -13,11 +13,14 @@ namespace sipetok_api.Models
         public DateTime production_date { get; set; }
         public int stock { get; set; }
 
-        [ForeignKey("tenant_id")]
         public int tenant_id { get; set; }
 
-        [ForeignKey("category_id")]
+        [ForeignKey("tenant_id")]
+        public virtual Tenant? tenant { get; set; }
         public int category_id { get; set; }
+
+        [ForeignKey("category_id")]
+        public virtual EggCategory? category { get; set; }
 
         public Egg() { }
 
