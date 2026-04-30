@@ -30,7 +30,7 @@ public class UserController : ControllerBase
             var allUser = _mapper.Map<UserRespon>(dbContext.Users.ToList());
             var respon = new ResponData<UserRespon>
             {
-                status = true,
+                success = true,
                 data = allUser,
                 message = "Beehasil mengambil semua data user"
             };
@@ -40,7 +40,7 @@ public class UserController : ControllerBase
         {
             var respon = new ResponData<UserRespon>
             {
-                status = true,
+                success = true,
                 message = ex.Message
             };
             return StatusCode(500, respon);
@@ -59,14 +59,14 @@ public class UserController : ControllerBase
             {
                 return NotFound(new ResponData<UserRespon>
                 {
-                    status = false,
+                    success = false,
                     message = $"Data user dengan id {id} tidak ditemukan"
                 });
             }
 
             var respon = new ResponData<UserRespon>
             {
-                status = true,
+                success = true,
                 data = user,
                 message = $"Berhasil mengambil data user pada id {id}"
             };
@@ -77,7 +77,7 @@ public class UserController : ControllerBase
         {
             var respon = new ResponData<UserRespon>
             {
-                status = false,
+                success = false,
                 message = ex.Message
             };
             return StatusCode(500, respon);
@@ -97,7 +97,7 @@ public class UserController : ControllerBase
 
             var respon = new ResponData<UserRespon>
             {
-                status = true,
+                success = true,
                 data = _mapper.Map<UserRespon>(user),
                 message = $"Berhasil menambahkan data customer"
             };
@@ -108,7 +108,7 @@ public class UserController : ControllerBase
         {
             var respon = new ResponData<UserRespon>
             {
-                status = false,
+                success = false,
                 message = ex.Message
             };
             return BadRequest(respon);
@@ -127,7 +127,7 @@ public class UserController : ControllerBase
             {
                 return NotFound(new ResponData<UserRespon>
                 {
-                    status = true,
+                    success = true,
                     message = $"Data user dengan id {id} tidak ditemukan"
                 });
             }
@@ -148,7 +148,7 @@ public class UserController : ControllerBase
 
             var respon = new ResponData<UserRespon>
             {
-                status = true,
+                success = true,
                 data = _mapper.Map<UserRespon>(user),
                 message = "Berhasil memperbarui data"
             };
@@ -158,7 +158,7 @@ public class UserController : ControllerBase
         {
             var respon = new ResponData<UserRespon>
             {
-                status = true,
+                success = true,
                 message = ex.Message
             };
             return Ok(respon);
@@ -173,7 +173,7 @@ public class UserController : ControllerBase
             var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
             return BadRequest(new ResponData<UserRespon>
             {
-                status = false,
+                success = false,
                 //message = errors -> harus bikin respon validasi sendiri, jangan dijadikan satu dengan respon error
             });
         }
@@ -186,7 +186,7 @@ public class UserController : ControllerBase
             {
                 return NotFound(new ResponData<UserRespon>
                 {
-                    status = false,
+                    success = false,
                     message = $"Data user dengan id {userId} tidak ditemukan"
                 });
             }
@@ -195,7 +195,7 @@ public class UserController : ControllerBase
             {
                 return NotFound(new ResponData<UserRespon>
                 {
-                    status = false,
+                    success = false,
                     message = "Password lama salah"
                 });
             }

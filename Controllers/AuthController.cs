@@ -49,7 +49,7 @@ namespace sipetok_api.Controllers
 
             var respon = new ResponData<AuthRespon>
             {
-                status = true,
+                success = true,
                 data = new AuthRespon(token),
                 message = $"Register berhasil"
             };
@@ -71,7 +71,7 @@ namespace sipetok_api.Controllers
 
             var respon = new ResponData<AuthRespon>
             {
-                status = true,
+                success = true,
                 data = new AuthRespon(token),
                 message = $"Login berhasil" 
             };

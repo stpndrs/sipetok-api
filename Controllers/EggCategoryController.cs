@@ -29,7 +29,7 @@ public class EggCategoryController : ControllerBase
 
             var respon = new ResponData<EggCategoryRespon>
             {
-                status = true,
+                success = true,
                 data = allEggCategory,
                 message = "Berhasil mengambil semua data egg category"
             };
@@ -39,7 +39,7 @@ public class EggCategoryController : ControllerBase
         {
             var respon = new ResponData<EggCategoryRespon>
             {
-                status = false,
+                success = false,
                 message = ex.Message
             };
             
@@ -59,14 +59,14 @@ public class EggCategoryController : ControllerBase
             {
                 return NotFound(new ResponData<EggCategoryRespon>
                 {
-                    status = false,
+                    success = false,
                     message = $"Data customer dengan id {id} tidak ditemukan"
                 });
             }
 
             var respon = new ResponData<EggCategoryRespon>
             {
-                status = true,
+                success = true,
                 data = eggCategory,
                 message = $"Berhasil mengambil data egg category pada id {id}"
             };
@@ -77,7 +77,7 @@ public class EggCategoryController : ControllerBase
         {
             var respon = new ResponData<EggCategoryRespon>
             {
-                status = true,
+                success = true,
                 message = ex.Message
             };
 
@@ -97,7 +97,7 @@ public class EggCategoryController : ControllerBase
 
             var respon = new ResponData<EggCategoryRespon>
             {
-                status = true,
+                success = true,
                 data = _mapper.Map<EggCategoryRespon>(eggCategory),
                 message = "Berhasil menambahkan data egg category"
             };
@@ -108,7 +108,7 @@ public class EggCategoryController : ControllerBase
         {
             var respon = new ResponData<EggCategoryRespon>
             {
-                status = true,
+                success = true,
                 message = ex.Message
             };
 
@@ -136,7 +136,7 @@ public class EggCategoryController : ControllerBase
 
             var respon = new ResponData<EggCategoryRespon>
             {
-                status = true,
+                success = true,
                 data = _mapper.Map<EggCategoryRespon>(eggCategory),
                 message = "Berhasil memperbarui data"
             };
@@ -147,7 +147,7 @@ public class EggCategoryController : ControllerBase
         {
             var respon = new ResponData<EggCategoryRespon>
             {
-                status = true,
+                success = true,
                 message = ex.Message
             };
 
