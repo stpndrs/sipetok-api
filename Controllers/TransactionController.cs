@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 namespace sipetok_api.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/transactions")]
     public class TransactionController : ControllerBase
     {
         private readonly PaymentService _paymentService;

@@ -7,7 +7,7 @@ using sipetok_api.Data;
 using AutoMapper;
 using sipetok_api.dto.Respon;
 
-[Route("api/[controller]")]
+[Route("api/operationals")]
 [ApiController]
 public class OperationalController : ControllerBase
 {
