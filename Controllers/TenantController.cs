@@ -103,8 +103,8 @@ public class TenantController : ControllerBase
             var user = _mapper.Map<User>(tenantDto.user);
 
             user.password = Bcrypt.BcryptPassword(user.password);
-            user.role = Role.TENANT;
-            user.status = Status.ACTIVE;
+            user.role = 2;
+            user.status = 1;
 
             var tenant = _mapper.Map<Tenant>(tenantDto);
             
