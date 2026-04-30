@@ -29,7 +29,7 @@ public class TenantController : ControllerBase
             var allCustomer = _mapper.Map<List<TenantRespon>>(dbContext.Tenants.Include(c => c.user).ToList());
             var respon = new ResponData<List<TenantRespon>>
             {
-                status = true,
+                success = true,
                 data = allCustomer,
                 message = "Berhasil mengambil semua data tenant"
             };
@@ -40,7 +40,7 @@ public class TenantController : ControllerBase
         {
             var respon = new ResponData<List<TenantRespon>>
             {
-                status = true,
+                success = true,
                 message = ex.Message
             };
 
@@ -60,14 +60,14 @@ public class TenantController : ControllerBase
             {
                 return NotFound(new ResponData<TenantRespon>
                 {
-                    status = false,
+                    success = false,
                     message = $"Data tenant dengan id {id} tidak ditemukan"
                 });
             }
 
             var respon = new ResponData<TenantRespon>
             {
-                status = true,
+                success = true,
                 data = tenant,
                 message = "Berhasil mengambil data customer pada id {id}"
             };
@@ -78,7 +78,7 @@ public class TenantController : ControllerBase
         {
             var respon = new ResponData<TenantRespon>
             {
-                status = true,
+                success = true,
             };
             respon.message = ex.Message;
 
@@ -95,7 +95,7 @@ public class TenantController : ControllerBase
             {
                 return BadRequest(new ResponData<TenantRespon>
                 {
-                    status = false,
+                    success = false,
                     message = "User wajib diisi"
                 });
             }
@@ -115,7 +115,7 @@ public class TenantController : ControllerBase
 
             var respon = new ResponData<TenantRespon>
             {
-                status = true,
+                success = true,
                 data = _mapper.Map<TenantRespon>(tenant)
             };
             respon.message = $"Berhasil menambahkan data tenant";
@@ -126,7 +126,7 @@ public class TenantController : ControllerBase
         {
             var respon = new ResponData<TenantRespon>
             {
-                status = false,
+                success = false,
                 message = ex.Message
             };
             
@@ -146,7 +146,7 @@ public class TenantController : ControllerBase
             {
                 return NotFound(new ResponData<TenantRespon>
                 {
-                    status = false,
+                    success = false,
                     message = $"Data tenant dengan id {id} tidak ditemukan"
                 });
             }
@@ -164,7 +164,7 @@ public class TenantController : ControllerBase
 
             var respon = new ResponData<TenantRespon>
             {
-                status = true,
+                success = true,
                 data = _mapper.Map<TenantRespon>(tenant),
                 message = "Berhasil memperbarui data"
             };
@@ -175,7 +175,7 @@ public class TenantController : ControllerBase
         {
             var respon = new ResponData<TenantRespon>
             {
-                status = false,
+                success = false,
                 message = ex.Message
             };
             

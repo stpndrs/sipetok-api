@@ -29,7 +29,7 @@ public class OperationalController : ControllerBase
 
             var respon = new ResponData<List<OperationalRespon>>
             {
-                status = true,
+                success = true,
                 data = allOperational,
                 message = "Berhasil mengambil semua data Operational"
             };
@@ -40,7 +40,7 @@ public class OperationalController : ControllerBase
         {
             var respon = new ResponData<List<OperationalRespon>>
             {
-                status = false,
+                success = false,
                 message = ex.Message
             };
 
@@ -60,14 +60,14 @@ public class OperationalController : ControllerBase
             {
                 return NotFound(new ResponData<OperationalRespon>
                 {
-                    status = false,
+                    success = false,
                     message = $"Data operational dengan id {id} tidak ditemukan"
                 });
             }
 
             var respon = new ResponData<OperationalRespon>
             {
-                status = true,
+                success = true,
                 data = operational,
                 message = $"Berhasil mengambil data operational pada id {id}"
             };
@@ -78,7 +78,7 @@ public class OperationalController : ControllerBase
         {
             var respon = new ResponData<OperationalRespon>
             {
-                status = false,
+                success = false,
                 message = ex.Message
             };
 
@@ -97,14 +97,14 @@ public class OperationalController : ControllerBase
             {
                 return NotFound(new ResponData<OperationalRespon>
                 {
-                    status = false,
+                    success = false,
                     message = $"Data operational dengan id tenant {tenantId} tidak ditemukan"
                 });
             }
 
             var respon = new ResponData<List<OperationalRespon>>
             {
-                status = true,
+                success = true,
                 data = operational,
                 message = $"Berhasil mengambil data operational pada id tenant {tenantId}"
             };
@@ -115,7 +115,7 @@ public class OperationalController : ControllerBase
         {
             var respon = new ResponData<OperationalRespon>
             {
-                status = false,
+                success = false,
                 message = ex.Message
             };
 
@@ -143,7 +143,7 @@ public class OperationalController : ControllerBase
 
             var respon = new ResponData<OperationalRespon>
             {
-                status = true,
+                success = true,
                 data = _mapper.Map<OperationalRespon>(operational),
                 message = "Berhasil menambahkan data operational"
             };
@@ -154,7 +154,7 @@ public class OperationalController : ControllerBase
         {
             var respon = new ResponData<OperationalRespon>
             {
-                status = false,
+                success = false,
                 message = ex.Message
             };
 
@@ -183,7 +183,7 @@ public class OperationalController : ControllerBase
 
             var respon = new ResponData<OperationalRespon>
             {
-                status = true,
+                success = true,
                 data = _mapper.Map<OperationalRespon>(operational),
                 message = "Berhasil memperbarui data"
             };
@@ -194,7 +194,7 @@ public class OperationalController : ControllerBase
         {
             var respon = new ResponData<OperationalRespon>
             {
-                status = false,
+                success = false,
                 message = ex.Message
             };
 

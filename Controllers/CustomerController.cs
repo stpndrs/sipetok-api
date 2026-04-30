@@ -28,7 +28,7 @@ public class CustomerController : ControllerBase
             var allCustomer = _mapper.Map<List<CustomerRespon>>(dbContext.Customers.Include(c => c.user).ToList());
             var respon = new ResponData<List<CustomerRespon>>
             {
-                status = true,
+                success = true,
                 data = allCustomer,
                 message = "Berhasil mengambil semua data customer"
             };
@@ -39,7 +39,7 @@ public class CustomerController : ControllerBase
         {
             var respon = new ResponData<List<CustomerRespon>>
             {
-                status = false,
+                success = false,
                 message = ex.Message
             };
 
@@ -59,14 +59,14 @@ public class CustomerController : ControllerBase
             {
                 return NotFound(new ResponData<CustomerRespon>
                 {
-                    status = false,
+                    success = false,
                     message = $"Data customer dengan id {id} tidak ditemukan"
                 });
             }
 
             var respon = new ResponData<CustomerRespon>
             {
-                status = true,
+                success = true,
                 data = customer,
                 message = $"Berhasil mengambil data customer pada id {id}"
             };
@@ -77,7 +77,7 @@ public class CustomerController : ControllerBase
         {
             var respon = new ResponData<CustomerRespon>
             {
-                status = false,
+                success = false,
                 message = ex.Message
             };
 
@@ -94,7 +94,7 @@ public class CustomerController : ControllerBase
             {
                 return BadRequest(new ResponData<TenantRespon>
                 {
-                    status = false,
+                    success = false,
                     message = "User wajib diisi"
                 });
             }
@@ -112,7 +112,7 @@ public class CustomerController : ControllerBase
 
             var respon = new ResponData<CustomerRespon>
             {
-                status = true,
+                success = true,
                 data = _mapper.Map<CustomerRespon>(customer),
                 message = $"Berhasil menambahkan data customer"
             };
@@ -123,7 +123,7 @@ public class CustomerController : ControllerBase
         {
             var respon = new ResponData<CustomerRespon>
             {
-                status = false,
+                success = false,
                 message = ex.Message
             };
             
@@ -143,7 +143,7 @@ public class CustomerController : ControllerBase
             {
                 return BadRequest(new ResponData<CustomerRespon>
                 {
-                    status = false,
+                    success = false,
                     message = $"Data customer dengan id {id} tidak ditemukan"
                 });
             }
@@ -161,7 +161,7 @@ public class CustomerController : ControllerBase
 
             var respon = new ResponData<CustomerRespon>
             {
-                status = true,
+                success = true,
                 data = _mapper.Map<CustomerRespon>(customer),
                 message = "Berhasil memperbarui data"
             };
@@ -172,7 +172,7 @@ public class CustomerController : ControllerBase
         {
             var respon = new ResponData<CustomerRespon>
             {
-                status = true,
+                success = true,
                 message = ex.Message
             };
 
