@@ -3,7 +3,7 @@ namespace sipetok_api.dto.Respon
     class ResponData<T>
     {
         public bool status {get; set;}
-        public List<String> message {get; set;} = new List<string>();
+        public string message {get; set;}
         public T? data {get; set;}
     }
 }

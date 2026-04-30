@@ -31,7 +31,7 @@ public class TenantController : ControllerBase
             {
                 status = true,
                 data = allCustomer,
-                message = new List<string>{"Berhasil mengambil semua data tenant"}
+                message = "Berhasil mengambil semua data tenant"
             };
 
             return Ok(respon);
@@ -41,7 +41,7 @@ public class TenantController : ControllerBase
             var respon = new ResponData<List<TenantRespon>>
             {
                 status = true,
-                message = new List<string>{ex.Message}
+                message = ex.Message
             };
 
             return StatusCode(500, respon);
@@ -61,7 +61,7 @@ public class TenantController : ControllerBase
                 return NotFound(new ResponData<TenantRespon>
                 {
                     status = false,
-                    message = new List<string> {$"Data tenant dengan id {id} tidak ditemukan"}
+                    message = $"Data tenant dengan id {id} tidak ditemukan"
                 });
             }
 
@@ -69,7 +69,7 @@ public class TenantController : ControllerBase
             {
                 status = true,
                 data = tenant,
-                message = new List<string>{"Berhasil mengambil data customer pada id {id}"}
+                message = "Berhasil mengambil data customer pada id {id}"
             };
 
             return Ok(respon);
@@ -80,7 +80,7 @@ public class TenantController : ControllerBase
             {
                 status = true,
             };
-            respon.message.Add(ex.Message);
+            respon.message = ex.Message;
 
             return StatusCode(500, respon);
         }
@@ -96,7 +96,7 @@ public class TenantController : ControllerBase
                 return BadRequest(new ResponData<TenantRespon>
                 {
                     status = false,
-                    message = new List<string>{"User wajib diisi"}
+                    message = "User wajib diisi"
                 });
             }
 
@@ -118,7 +118,7 @@ public class TenantController : ControllerBase
                 status = true,
                 data = _mapper.Map<TenantRespon>(tenant)
             };
-            respon.message.Add($"Berhasil menambahkan data tenant");
+            respon.message = $"Berhasil menambahkan data tenant";
             
             return Ok(respon);
         }
@@ -127,7 +127,7 @@ public class TenantController : ControllerBase
             var respon = new ResponData<TenantRespon>
             {
                 status = false,
-                message = new List<string>{ex.Message}
+                message = ex.Message
             };
             
             return BadRequest(respon);
@@ -147,7 +147,7 @@ public class TenantController : ControllerBase
                 return NotFound(new ResponData<TenantRespon>
                 {
                     status = false,
-                    message = new List<string> {$"Data tenant dengan id {id} tidak ditemukan"}
+                    message = $"Data tenant dengan id {id} tidak ditemukan"
                 });
             }
         
@@ -166,7 +166,7 @@ public class TenantController : ControllerBase
             {
                 status = true,
                 data = _mapper.Map<TenantRespon>(tenant),
-                message = new List<string>{"Berhasil memperbarui data"}
+                message = "Berhasil memperbarui data"
             };
             
             return Ok(respon);
@@ -176,7 +176,7 @@ public class TenantController : ControllerBase
             var respon = new ResponData<TenantRespon>
             {
                 status = false,
-                message = new List<string>{ex.Message}
+                message = ex.Message
             };
             
             return BadRequest(respon);

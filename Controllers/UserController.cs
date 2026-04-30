@@ -32,7 +32,7 @@ public class UserController : ControllerBase
             {
                 status = true,
                 data = allUser,
-                message = new List<string> { "Beehasil mengambil semua data user" }
+                message = "Beehasil mengambil semua data user"
             };
             return Ok(respon);
         }
@@ -41,7 +41,7 @@ public class UserController : ControllerBase
             var respon = new ResponData<UserRespon>
             {
                 status = true,
-                message = new List<string> { ex.Message }
+                message = ex.Message
             };
             return StatusCode(500, respon);
         }
@@ -60,7 +60,7 @@ public class UserController : ControllerBase
                 return NotFound(new ResponData<UserRespon>
                 {
                     status = false,
-                    message = new List<string> { $"Data user dengan id {id} tidak ditemukan" }
+                    message = $"Data user dengan id {id} tidak ditemukan"
                 });
             }
 
@@ -68,7 +68,7 @@ public class UserController : ControllerBase
             {
                 status = true,
                 data = user,
-                message = new List<string> { $"Berhasil mengambil data user pada id {id}" }
+                message = $"Berhasil mengambil data user pada id {id}"
             };
 
             return Ok(Response);
@@ -78,7 +78,7 @@ public class UserController : ControllerBase
             var respon = new ResponData<UserRespon>
             {
                 status = false,
-                message = new List<string> { ex.Message }
+                message = ex.Message
             };
             return StatusCode(500, respon);
         }
@@ -99,7 +99,7 @@ public class UserController : ControllerBase
             {
                 status = true,
                 data = _mapper.Map<UserRespon>(user),
-                message = new List<string> { $"Berhasil menambahkan data customer" }
+                message = $"Berhasil menambahkan data customer"
             };
 
             return Ok(respon);
@@ -109,7 +109,7 @@ public class UserController : ControllerBase
             var respon = new ResponData<UserRespon>
             {
                 status = false,
-                message = new List<string> { ex.Message }
+                message = ex.Message
             };
             return BadRequest(respon);
         }
@@ -128,7 +128,7 @@ public class UserController : ControllerBase
                 return NotFound(new ResponData<UserRespon>
                 {
                     status = true,
-                    message = new List<string> { $"Data user dengan id {id} tidak ditemukan" }
+                    message = $"Data user dengan id {id} tidak ditemukan"
                 });
             }
 
@@ -150,7 +150,7 @@ public class UserController : ControllerBase
             {
                 status = true,
                 data = _mapper.Map<UserRespon>(user),
-                message = new List<string> { "Berhasil memperbarui data" }
+                message = "Berhasil memperbarui data"
             };
             return Ok(respon);
         }
@@ -159,7 +159,7 @@ public class UserController : ControllerBase
             var respon = new ResponData<UserRespon>
             {
                 status = true,
-                message = new List<string> { ex.Message }
+                message = ex.Message
             };
             return Ok(respon);
         }
@@ -174,7 +174,7 @@ public class UserController : ControllerBase
             return BadRequest(new ResponData<UserRespon>
             {
                 status = false,
-                message = errors
+                //message = errors -> harus bikin respon validasi sendiri, jangan dijadikan satu dengan respon error
             });
         }
 
@@ -187,7 +187,7 @@ public class UserController : ControllerBase
                 return NotFound(new ResponData<UserRespon>
                 {
                     status = false,
-                    message = new List<string> { $"Data user dengan id {userId} tidak ditemukan" }
+                    message = $"Data user dengan id {userId} tidak ditemukan"
                 });
             }
 
@@ -196,7 +196,7 @@ public class UserController : ControllerBase
                 return NotFound(new ResponData<UserRespon>
                 {
                     status = false,
-                    message = new List<string> { "Password lama salah" }
+                    message = "Password lama salah"
                 });
             }
             user.password = Bcrypt.BcryptPassword(changePasswordDto.password);

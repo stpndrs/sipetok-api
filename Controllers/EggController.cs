@@ -33,7 +33,7 @@ public class EggController : ControllerBase
             {
                 status = true,
                 data = allEgg,
-                message = new List<string> { "Berhasil mengambil semua data egg " }
+                message = "Berhasil mengambil semua data egg"
             };
 
             return Ok(respon);
@@ -43,7 +43,7 @@ public class EggController : ControllerBase
             var respon = new ResponData<List<EggRespon>>
             {
                 status = false,
-                message = new List<string> { ex.Message }
+                message = ex.Message
             };
 
             return StatusCode(500, respon);
@@ -63,7 +63,7 @@ public class EggController : ControllerBase
                 return NotFound(new ResponData<EggRespon>
                 {
                     status = false,
-                    message = new List<string> { $"Data egg dengan id {id} tidak ditemukan" }
+                    message = $"Data egg dengan id {id} tidak ditemukan"
                 });
             }
 
@@ -71,7 +71,7 @@ public class EggController : ControllerBase
             {
                 status = true,
                 data = egg,
-                message = new List<string> { $"Berhasil mengambil data egg pada id {id}" }
+                message = $"Berhasil mengambil data egg pada id {id}"
             };
             return Ok(respon);
         }
@@ -80,7 +80,7 @@ public class EggController : ControllerBase
             var respon = new ResponData<EggRespon>
             {
                 status = false,
-                message = new List<string> { ex.Message }
+                message = ex.Message
             };
             return StatusCode(500, respon);
         }
@@ -98,7 +98,7 @@ public class EggController : ControllerBase
                 return NotFound(new ResponData<List<EggRespon>>
                 {
                     status = false,
-                    message = new List<string> { $"Data egg dengan id tenant {tenantId} tidak ditemukan" }
+                    message = $"Data egg dengan id tenant {tenantId} tidak ditemukan"
                 });
             }
 
@@ -106,7 +106,7 @@ public class EggController : ControllerBase
             {
                 status = true,
                 data = egg,
-                message = new List<string> { $"Berhasil mengambil data customer pada id tenant {tenantId}" }
+                message = $"Berhasil mengambil data customer pada id tenant {tenantId}"
             };
 
             return Ok(respon);
@@ -116,7 +116,7 @@ public class EggController : ControllerBase
             var respon = new ResponData<List<EggRespon>>
             {
                 status = false,
-                message = new List<string> { ex.Message }
+                message = ex.Message
             };
 
             return StatusCode(500, respon);
@@ -136,7 +136,7 @@ public class EggController : ControllerBase
             {
                 status = true,
                 data = totalStock,
-                message = new List<string> { $"Berhasil mengambil total stok telur dari id tenant {tenantId}" }
+                message = $"Berhasil mengambil total stok telur dari id tenant {tenantId}"
             };
 
             return Ok(respon);
@@ -146,7 +146,7 @@ public class EggController : ControllerBase
             var respon = new ResponData<int>
             {
                 status = true,
-                message = new List<string> { ex.Message }
+                message = ex.Message
             };
 
             return StatusCode(500, respon);
@@ -166,7 +166,7 @@ public class EggController : ControllerBase
                 return BadRequest(new ResponData<EggRespon>
                 {
                     status = false,
-                    message = new List<string> { "Data tenant tidak ditemukan" }
+                    message = "Data tenant tidak ditemukan"
                 });
             }
             if (eggCategory == null)
@@ -174,7 +174,7 @@ public class EggController : ControllerBase
                 return BadRequest(new ResponData<EggRespon>
                 {
                     status = false,
-                    message = new List<string> { "Data category tidak ditemukan" }
+                    message = "Data category tidak ditemukan"
                 });
             }
 
@@ -190,7 +190,7 @@ public class EggController : ControllerBase
             {
                 status = true,
                 data = _mapper.Map<EggRespon>(egg),
-                message = new List<string> { "Berhasil menambahkan data egg" }
+                message = "Berhasil menambahkan data egg"
             };
 
             return Ok(respon);
@@ -200,7 +200,7 @@ public class EggController : ControllerBase
             var respon = new ResponData<EggRespon>
             {
                 status = false,
-                message = new List<string> { ex.Message }
+                message = ex.Message
             };
 
             return BadRequest(respon);
@@ -231,7 +231,7 @@ public class EggController : ControllerBase
             {
                 status = true,
                 data = _mapper.Map<EggRespon>(egg),
-                message = new List<string> { "Berhasil memperbarui data" }
+                message = "Berhasil memperbarui data"
             };
 
             return Ok(respon);
@@ -241,7 +241,7 @@ public class EggController : ControllerBase
             var respon = new ResponData<EggRespon>
             {
                 status = false,
-                message = new List<string> { ex.Message }
+                message = ex.Message
             };
 
             return BadRequest(respon);
@@ -264,7 +264,7 @@ public class EggController : ControllerBase
                 return BadRequest(new ResponData<string>
                 {
                     status = false,
-                    message = new List<string> { $"Stok tidak mencukupi. Total stok: {totalStokTersedia}, Permintaan: {jumlah}" }
+                    message = $"Stok tidak mencukupi. Total stok: {totalStokTersedia}, Permintaan: {jumlah}"
                 });
             }
 
@@ -291,7 +291,7 @@ public class EggController : ControllerBase
             return Ok(new ResponData<string>
             {
                 status = true,
-                message = new List<string> { $"Berhasil mengurangi {jumlah} telur dari tenant {idTenant}" }
+                message = $"Berhasil mengurangi {jumlah} telur dari tenant {idTenant}"
             });
         }
         catch (Exception ex)
@@ -299,7 +299,7 @@ public class EggController : ControllerBase
             return StatusCode(500, new ResponData<string>
             {
                 status = false,
-                message = new List<string> { ex.Message }
+                message = ex.Message
             });
         }
     }

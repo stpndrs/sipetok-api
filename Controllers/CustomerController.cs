@@ -30,7 +30,7 @@ public class CustomerController : ControllerBase
             {
                 status = true,
                 data = allCustomer,
-                message = new List<string>{"Berhasil mengambil semua data customer"}
+                message = "Berhasil mengambil semua data customer"
             };
 
             return Ok(respon);
@@ -40,7 +40,7 @@ public class CustomerController : ControllerBase
             var respon = new ResponData<List<CustomerRespon>>
             {
                 status = false,
-                message = new List<string>{ex.Message}
+                message = ex.Message
             };
 
             return StatusCode(500, respon);
@@ -60,7 +60,7 @@ public class CustomerController : ControllerBase
                 return NotFound(new ResponData<CustomerRespon>
                 {
                     status = false,
-                    message = new List<string> {$"Data customer dengan id {id} tidak ditemukan"}
+                    message = $"Data customer dengan id {id} tidak ditemukan"
                 });
             }
 
@@ -68,7 +68,7 @@ public class CustomerController : ControllerBase
             {
                 status = true,
                 data = customer,
-                message = new List<string>{$"Berhasil mengambil data customer pada id {id}"}
+                message = $"Berhasil mengambil data customer pada id {id}"
             };
 
             return Ok(respon);
@@ -78,7 +78,7 @@ public class CustomerController : ControllerBase
             var respon = new ResponData<CustomerRespon>
             {
                 status = false,
-                message = new List<string>{ex.Message}
+                message = ex.Message
             };
 
             return StatusCode(500, respon);
@@ -95,7 +95,7 @@ public class CustomerController : ControllerBase
                 return BadRequest(new ResponData<TenantRespon>
                 {
                     status = false,
-                    message = new List<string> { "User wajib diisi" }
+                    message = "User wajib diisi"
                 });
             }
 
@@ -114,7 +114,7 @@ public class CustomerController : ControllerBase
             {
                 status = true,
                 data = _mapper.Map<CustomerRespon>(customer),
-                message = new List<string>{$"Berhasil menambahkan data customer"}
+                message = $"Berhasil menambahkan data customer"
             };
             
             return Ok(respon);
@@ -124,7 +124,7 @@ public class CustomerController : ControllerBase
             var respon = new ResponData<CustomerRespon>
             {
                 status = false,
-                message = new List<string>{ex.Message}
+                message = ex.Message
             };
             
             return BadRequest(respon);
@@ -144,7 +144,7 @@ public class CustomerController : ControllerBase
                 return BadRequest(new ResponData<CustomerRespon>
                 {
                     status = false,
-                    message = new List<string> {$"Data customer dengan id {id} tidak ditemukan"}
+                    message = $"Data customer dengan id {id} tidak ditemukan"
                 });
             }
 
@@ -163,7 +163,7 @@ public class CustomerController : ControllerBase
             {
                 status = true,
                 data = _mapper.Map<CustomerRespon>(customer),
-                message = new List<string>{"Berhasil memperbarui data"}
+                message = "Berhasil memperbarui data"
             };
 
             return Ok(respon);
@@ -173,7 +173,7 @@ public class CustomerController : ControllerBase
             var respon = new ResponData<CustomerRespon>
             {
                 status = true,
-                message = new List<string>{ex.Message}
+                message = ex.Message
             };
 
             return BadRequest(respon);
