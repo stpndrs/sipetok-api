@@ -1,7 +1,9 @@
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MySql.EntityFrameworkCore.Extensions; 
 using sipetok_api;
 using sipetok_api.Data;
+using sipetok_api.dto.Respon;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,10 +12,28 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
-        // Memaksa Enum tampil sebagai Teks (String) di JSON
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-        // Tips: Abaikan siklus jika nanti ada relasi timbal balik (Optional)
         options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+    })
+    .ConfigureApiBehaviorOptions(options =>
+    {
+        options.InvalidModelStateResponseFactory = context =>
+        {
+            var validationErrors = context.ModelState
+                .Where(e => e.Value?.Errors.Count > 0)
+                .ToDictionary(
+                    kvp => kvp.Key,
+                    kvp => kvp.Value!.Errors.Select(e => e.ErrorMessage).ToArray()
+                );
+
+            var response = new ResponValidation
+            {
+                errors = validationErrors
+            };
+
+            return new BadRequestObjectResult(response);
+        };
     });
 
 // 2. OpenAPI / Swagger
