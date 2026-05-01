@@ -209,4 +209,44 @@ public class UserController : ControllerBase
             return BadRequest(ex.Message);
         }
     }
+
+    [HttpDelete]
+    [Route("{id:int}")]
+    public IActionResult DeleteUser(int id)
+    {
+        try
+        {
+            var user = dbContext.Users.Find(id);
+
+            if (user is null)
+            {
+                return NotFound(new ResponData<UserRespon>
+                {
+                    success = false,
+                    message = $"User data with id {id} not found"
+                });
+            }
+
+            user.deleted_at = DateTime.Now;
+            dbContext.SaveChanges();
+
+            var respon = new ResponData<UserRespon>
+            {
+                success = true,
+                message = "Successfully deleted user data"
+            };
+
+            return Ok(respon);
+        }
+        catch (Exception ex)
+        {
+            var respon = new ResponData<UserRespon>
+            {
+                success = false,
+                message = ex.Message
+            };
+
+            return BadRequest(respon);
+        }
+    }
 }

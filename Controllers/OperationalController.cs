@@ -202,4 +202,44 @@ public class OperationalController : ControllerBase
             return Ok(respon);
         }
     }
+
+    [HttpDelete]
+    [Route("{id:int}")]
+    public IActionResult DeleteOperational(int id)
+    {
+        try
+        {
+            var operational = dbContext.Operationals.Find(id);
+
+            if (operational is null)
+            {
+                return NotFound(new ResponData<OperationalRespon>
+                {
+                    success = false,
+                    message = $"Operational data with id {id} not found"
+                });
+            }
+
+            operational.deleted_at = DateTime.Now;
+            dbContext.SaveChanges();
+
+            var respon = new ResponData<OperationalRespon>
+            {
+                success = true,
+                message = "Successfully deleted operational data"
+            };
+
+            return Ok(respon);
+        }
+        catch (Exception ex)
+        {
+            var respon = new ResponData<OperationalRespon>
+            {
+                success = false,
+                message = ex.Message
+            };
+
+            return BadRequest(respon);
+        }
+    }
 }

@@ -191,4 +191,53 @@ public class CustomerController : ControllerBase
             return BadRequest(respon);
         }
     }
+
+    [HttpDelete]
+    [Route("{id:int}")]
+    public IActionResult DeleteCustomer(int id)
+    {
+        try
+        {
+            var customer = dbContext.Customers.Find(id);
+
+            if (customer is null)
+            {
+                return BadRequest(new ResponData<CustomerRespon>
+                {
+                    success = false,
+                    message = $"Customer data with id {id} not found"
+                });
+            }
+
+            if(customer.user_id != 0)
+            {
+                var user = dbContext.Users.Find(customer.user_id);
+                if (user != null)
+                {
+                    user.deleted_at = DateTime.Now;
+                }
+            }
+
+            customer.deleted_at = DateTime.Now;
+            dbContext.SaveChanges();
+
+            var respon = new ResponData<CustomerRespon>
+            {
+                success = true,
+                message = "Successfully deleted customer data"
+            };
+
+            return Ok(respon);
+        }
+        catch (Exception ex)
+        {
+            var respon = new ResponData<CustomerRespon>
+            {
+                success = false,
+                message = ex.Message
+            };
+
+            return BadRequest(respon);
+        }
+    }
 }

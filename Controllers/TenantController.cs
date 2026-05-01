@@ -227,7 +227,57 @@ public class TenantController : ControllerBase
             dbContext.SaveChanges();
             return Ok(respon);
 
-        }catch (Exception ex)
+        }
+        catch (Exception ex)
+        {
+            var respon = new ResponData<TenantRespon>
+            {
+                success = false,
+                message = ex.Message
+            };
+
+            return BadRequest(respon);
+        }
+    }
+
+    [HttpDelete]
+    [Route("{id:int}")]
+    public IActionResult DeleteTenant(int id)
+    {
+        try
+        {
+            var tenant = dbContext.Tenants.Find(id);
+
+            if (tenant is null)
+            {
+                return NotFound(new ResponData<TenantRespon>
+                {
+                    success = false,
+                    message = $"Tenant data with id {id} not found"
+                });
+            }
+
+            if (tenant.user_id != 0)
+            {
+                var user = dbContext.Users.Find(tenant.user_id);
+                if (user != null)
+                {
+                    user.deleted_at = DateTime.Now;
+                }
+            }
+
+            tenant.deleted_at = DateTime.Now;
+            dbContext.SaveChanges();
+
+            var respon = new ResponData<TenantRespon>
+            {
+                success = true,
+                message = "Successfully deleted tenant data"
+            };
+
+            return Ok(respon);
+        }
+        catch (Exception ex)
         {
             var respon = new ResponData<TenantRespon>
             {

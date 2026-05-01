@@ -306,4 +306,44 @@ public class EggController : ControllerBase
             });
         }
     }
+
+    [HttpDelete]
+    [Route("{id:int}")]
+    public IActionResult DeleteEgg(int id)
+    {
+        try
+        {
+            var egg = dbContext.Eggs.Find(id);
+
+            if (egg is null)
+            {
+                return NotFound(new ResponData<EggRespon>
+                {
+                    success = false,
+                    message = $"Egg data with id {id} not found"
+                });
+            }
+
+            egg.deleted_at = DateTime.Now;
+            dbContext.SaveChanges();
+
+            var respon = new ResponData<EggRespon>
+            {
+                success = true,
+                message = "Successfully deleted egg data"
+            };
+
+            return Ok(respon);
+        }
+        catch (Exception ex)
+        {
+            var respon = new ResponData<EggRespon>
+            {
+                success = false,
+                message = ex.Message
+            };
+
+            return BadRequest(respon);
+        }
+    }
 }

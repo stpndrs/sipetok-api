@@ -154,4 +154,44 @@ public class EggCategoryController : ControllerBase
             return BadRequest(respon);
         }
     }
+
+    [HttpDelete]
+    [Route("{id:int}")]
+    public IActionResult DeleteEggCategory(int id)
+    {
+        try
+        {
+            var eggCategory = dbContext.EggCategories.Find(id);
+
+            if (eggCategory is null)
+            {
+                return NotFound(new ResponData<EggCategoryRespon>
+                {
+                    success = false,
+                    message = $"Egg category data with id {id} not found"
+                });
+            }
+
+            eggCategory.deleted_at = DateTime.Now;
+            dbContext.SaveChanges();
+
+            var respon = new ResponData<EggCategoryRespon>
+            {
+                success = true,
+                message = "Successfully deleted egg category data"
+            };
+
+            return Ok(respon);
+        }
+        catch (Exception ex)
+        {
+            var respon = new ResponData<EggCategoryRespon>
+            {
+                success = false,
+                message = ex.Message
+            };
+
+            return BadRequest(respon);
+        }
+    }
 }
