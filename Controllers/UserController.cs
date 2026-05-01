@@ -27,8 +27,8 @@ public class UserController : ControllerBase
     {
         try
         {
-            var allUser = _mapper.Map<UserRespon>(dbContext.Users.ToList());
-            var respon = new ResponData<UserRespon>
+            var allUser = _mapper.Map<List<UserRespon>>(dbContext.Users.ToList());
+            var respon = new ResponData<List<UserRespon>>
             {
                 success = true,
                 data = allUser,
@@ -136,7 +136,7 @@ public class UserController : ControllerBase
                 user.username = userDto.username;
 
             if (!string.IsNullOrEmpty(userDto.password))
-                user.password = userDto.password;
+                user.password = Bcrypt.BcryptPassword(userDto.password);
 
             if (!string.IsNullOrEmpty(userDto.email))
                 user.email = userDto.email;

@@ -25,9 +25,9 @@ public class EggCategoryController : ControllerBase
     {
         try
         {
-            var allEggCategory = _mapper.Map<EggCategoryRespon>(dbContext.EggCategories.ToList());
+            var allEggCategory = _mapper.Map<List<EggCategoryRespon>>(dbContext.EggCategories.ToList());
 
-            var respon = new ResponData<EggCategoryRespon>
+            var respon = new ResponData<List<EggCategoryRespon>>
             {
                 success = true,
                 data = allEggCategory,
