@@ -30,7 +30,7 @@ public class CustomerController : ControllerBase
             {
                 success = true,
                 data = allCustomer,
-                message = "Berhasil mengambil semua data customer"
+                message = "Successfully retrieved all customer data"
             };
 
             return Ok(respon);
@@ -55,12 +55,12 @@ public class CustomerController : ControllerBase
         {
             var customer = _mapper.Map<CustomerRespon>(dbContext.Customers.Include(c => c.user).FirstOrDefault(c => c.id == id));
 
-            if(customer == null)
+            if (customer == null)
             {
                 return NotFound(new ResponData<CustomerRespon>
                 {
                     success = false,
-                    message = $"Data customer dengan id {id} tidak ditemukan"
+                    message = $"Customer data with id {id} not found"
                 });
             }
 
@@ -68,7 +68,7 @@ public class CustomerController : ControllerBase
             {
                 success = true,
                 data = customer,
-                message = $"Berhasil mengambil data customer pada id {id}"
+                message = $"Successfully retrieved customer data with id {id}"
             };
 
             return Ok(respon);
@@ -86,26 +86,26 @@ public class CustomerController : ControllerBase
     }
 
     [HttpPost]
-    public IActionResult AddCustomer(CustomerDto customerDto)
+    public IActionResult AddCustomer([FromBody] CustomerDto customerDto)
     {
         try
         {
-            if (customerDto.user is null)
-            {
-                return BadRequest(new ResponData<TenantRespon>
-                {
-                    success = false,
-                    message = "User wajib diisi"
-                });
-            }
-
-            var customer = _mapper.Map<Customer>(customerDto);
             var user = _mapper.Map<User>(customerDto.user);
+            var customer = _mapper.Map<Customer>(customerDto);
 
-            user.password = Bcrypt.BcryptPassword(user.password);
-            user.role = 3;
-            user.status = 1;
-            customer.user = user;
+            if (customerDto.user != null)
+            {
+                if (string.IsNullOrWhiteSpace(customerDto.user.password))
+                {
+                    throw new Exception("Password is required");
+                }
+
+                user.username = customerDto.user.username;
+                user.password = Bcrypt.BcryptPassword(user.password);
+                user.role = 3;
+                user.status = 1;
+                customer.user = user;
+            }
 
             dbContext.Customers.Add(customer);
             dbContext.SaveChanges();
@@ -114,9 +114,9 @@ public class CustomerController : ControllerBase
             {
                 success = true,
                 data = _mapper.Map<CustomerRespon>(customer),
-                message = $"Berhasil menambahkan data customer"
+                message = $"Successfully added customer data"
             };
-            
+
             return Ok(respon);
         }
         catch (Exception ex)
@@ -126,14 +126,14 @@ public class CustomerController : ControllerBase
                 success = false,
                 message = ex.Message
             };
-            
+
             return BadRequest(respon);
         }
     }
 
     [HttpPut]
     [Route("{id:int}")]
-    public IActionResult UpdateCustomer(int id, CustomerDto customerDto)
+    public IActionResult UpdateCustomer(int id, [FromBody] CustomerDto customerDto)
     {
         try
         {
@@ -144,18 +144,30 @@ public class CustomerController : ControllerBase
                 return BadRequest(new ResponData<CustomerRespon>
                 {
                     success = false,
-                    message = $"Data customer dengan id {id} tidak ditemukan"
+                    message = $"Customer data with id {id} not found"
                 });
             }
 
-            if (!string.IsNullOrEmpty(customerDto.name))
-                customer.name = customerDto.name;
+            customer.name = customerDto.name;
+            customer.address = customerDto.address;
+            customer.phone_number = customerDto.phone_number;
 
-            if (!string.IsNullOrEmpty(customerDto.address))
-                customer.address = customerDto.address;
+            if (customerDto.user != null)
+            {
+                var user = dbContext.Users.Find(customer.user_id);
+                if (user != null)
+                {
+                    if(string.IsNullOrWhiteSpace(customerDto.user.password))
+                    {
+                        throw new Exception("Password is required");
+                    }
 
-            if (!string.IsNullOrEmpty(customerDto.phone_number))
-                customer.phone_number = customerDto.phone_number;
+                    user.username = customerDto.user.username;
+                    user.password = Bcrypt.BcryptPassword(customerDto.user.password);
+                    user.email = customerDto.user.email;
+                    user.status = customerDto.user.status;
+                }
+            }
 
             dbContext.SaveChanges();
 
@@ -163,7 +175,7 @@ public class CustomerController : ControllerBase
             {
                 success = true,
                 data = _mapper.Map<CustomerRespon>(customer),
-                message = "Berhasil memperbarui data"
+                message = "Successfully updated customer data"
             };
 
             return Ok(respon);
@@ -172,7 +184,7 @@ public class CustomerController : ControllerBase
         {
             var respon = new ResponData<CustomerRespon>
             {
-                success = true,
+                success = false,
                 message = ex.Message
             };
 

@@ -86,7 +86,8 @@ public class OperationalController : ControllerBase
         }
     }
 
-    [HttpGet("tenant/{tenantId:int}")]
+    [HttpGet]
+    [Route("tenant/{tenantId:int}")]
     public IActionResult GetOperationalByTenantId(int tenantId)
     {
         try
@@ -124,7 +125,7 @@ public class OperationalController : ControllerBase
     }
 
     [HttpPost]
-    public IActionResult AddOperational(OperationalDto operationalDto)
+    public IActionResult AddOperational([FromBody] OperationalDto operationalDto)
     {
         try
         {
@@ -164,7 +165,7 @@ public class OperationalController : ControllerBase
 
     [HttpPut]
     [Route("{id:int}")]
-    public IActionResult UpdateOperational(int id, OperationalDto operationalDto)
+    public IActionResult UpdateOperational(int id, [FromBody] OperationalDto operationalDto)
     {
         try
         {

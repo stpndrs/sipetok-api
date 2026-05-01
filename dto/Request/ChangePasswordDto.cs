@@ -4,10 +4,12 @@ namespace sipetok_api.dto.Request
 {
     public class ChangePasswordDto
     {
-        [Required(ErrorMessage = "Password lama wajib diisi")]
+        [Required(ErrorMessage = "Old password is required")]
         public string password_old { get; set; } = string.Empty;
-        [Required(ErrorMessage = "Password baru wajib diisi")]
+
+        [Required(ErrorMessage = "New password is required")]
         public string password { get; set; } = string.Empty;
+        
         public ChangePasswordDto() {}
     }
 }

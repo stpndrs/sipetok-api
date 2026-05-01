@@ -86,7 +86,7 @@ public class EggCategoryController : ControllerBase
     }
 
     [HttpPost]
-    public IActionResult AddEggCategory(EggCategoryDto eggCategoryDto)
+    public IActionResult AddEggCategory([FromBody] EggCategoryDto eggCategoryDto)
     {
         try
         {
@@ -118,7 +118,7 @@ public class EggCategoryController : ControllerBase
 
     [HttpPut]
     [Route("{id:int}")]
-    public IActionResult UpdateEggCategory(int id, EggCategoryDto eggCategoryDto)
+    public IActionResult UpdateEggCategory(int id, [FromBody] EggCategoryDto eggCategoryDto)
     {
         try
         {

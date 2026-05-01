@@ -86,7 +86,8 @@ public class EggController : ControllerBase
         }
     }
 
-    [HttpGet("tenant/{tenantId:int}")]
+    [HttpGet]
+    [Route("tenant/{id:int}")]
     public IActionResult GetEggByTenantId(int tenantId)
     {
         try
@@ -123,7 +124,8 @@ public class EggController : ControllerBase
         }
     }
 
-    [HttpGet("tenant/total/{tenantId:int}")]
+    [HttpGet]
+    [Route("tenant/total/{tenantId:int}")]
     public IActionResult GetTotalEggByTenantId(int tenantId)
     {
         try
@@ -154,7 +156,7 @@ public class EggController : ControllerBase
     }
 
     [HttpPost]
-    public IActionResult AddEgg(EggDto eggDto)
+    public IActionResult AddEgg([FromBody] EggDto eggDto)
     {
         try
         {
@@ -209,7 +211,7 @@ public class EggController : ControllerBase
 
     [HttpPut]
     [Route("{id:int}")]
-    public IActionResult UpdateEgg(int id, EggDto eggDto)
+    public IActionResult UpdateEgg(int id, [FromBody] EggDto eggDto)
     {
         try
         {
@@ -248,7 +250,8 @@ public class EggController : ControllerBase
         }
     }
 
-    [HttpPut("kurangi/{idTenant:int}")]
+    [HttpPut]
+    [Route("kurangi/{idTenant:int}")]
     public IActionResult KurangiEggByTenant(int idTenant, [FromQuery] int jumlah)
     {
         try
