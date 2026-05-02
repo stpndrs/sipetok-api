@@ -17,7 +17,7 @@ namespace sipetok_api.dto.Request
         // [Required(ErrorMessage = "Role is required!")]
         public int role { get; set; }
 
-        [Required(ErrorMessage = "Status is required!")]
+        // [Required(ErrorMessage = "Status is required!")]
         public int status { get; set; }
         public UserDto() {}
 

@@ -226,6 +226,7 @@ public class EggController : ControllerBase
             egg.category_id = eggDto.category_id;
             egg.stock = eggDto.stock;
             egg.tenant_id = eggDto.tenant_id;
+            egg.UpdateTimestamps();
 
             dbContext.SaveChanges();
 
@@ -324,7 +325,7 @@ public class EggController : ControllerBase
                 });
             }
 
-            egg.deleted_at = DateTime.Now;
+            egg.SoftDelete();
             dbContext.SaveChanges();
 
             var respon = new ResponData<EggRespon>

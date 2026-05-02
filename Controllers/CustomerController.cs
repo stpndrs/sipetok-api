@@ -151,6 +151,7 @@ public class CustomerController : ControllerBase
             customer.name = customerDto.name;
             customer.address = customerDto.address;
             customer.phone_number = customerDto.phone_number;
+            customer.UpdateTimestamps();
 
             if (customerDto.user != null)
             {
@@ -166,6 +167,7 @@ public class CustomerController : ControllerBase
                     user.password = Bcrypt.BcryptPassword(customerDto.user.password);
                     user.email = customerDto.user.email;
                     user.status = customerDto.user.status;
+                    user.UpdateTimestamps();
                 }
             }
 
@@ -214,11 +216,11 @@ public class CustomerController : ControllerBase
                 var user = dbContext.Users.Find(customer.user_id);
                 if (user != null)
                 {
-                    user.deleted_at = DateTime.Now;
+                    user.SoftDelete();
                 }
             }
 
-            customer.deleted_at = DateTime.Now;
+            customer.SoftDelete();
             dbContext.SaveChanges();
 
             var respon = new ResponData<CustomerRespon>

@@ -131,6 +131,7 @@ public class EggCategoryController : ControllerBase
             eggCategory.name = eggCategoryDto.name;
             eggCategory.price = eggCategoryDto.price;
             eggCategory.description = eggCategoryDto.description;
+            eggCategory.UpdateTimestamps();
 
             dbContext.SaveChanges();
 
@@ -172,7 +173,7 @@ public class EggCategoryController : ControllerBase
                 });
             }
 
-            eggCategory.deleted_at = DateTime.Now;
+            eggCategory.SoftDelete();
             dbContext.SaveChanges();
 
             var respon = new ResponData<EggCategoryRespon>

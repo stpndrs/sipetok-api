@@ -152,6 +152,7 @@ public class UserController : ControllerBase
             user.password = Bcrypt.BcryptPassword(userDto.password);
             user.email = userDto.email;
             user.status = userDto.status;
+            user.UpdateTimestamps();
 
             dbContext.SaveChanges();
 
@@ -200,6 +201,7 @@ public class UserController : ControllerBase
                 });
             }
             user.password = Bcrypt.BcryptPassword(changePasswordDto.password);
+            user.UpdateTimestamps();
 
             dbContext.SaveChanges();
             return Ok("Password berhasil diubah");
@@ -227,7 +229,7 @@ public class UserController : ControllerBase
                 });
             }
 
-            user.deleted_at = DateTime.Now;
+            user.SoftDelete();
             dbContext.SaveChanges();
 
             var respon = new ResponData<UserRespon>

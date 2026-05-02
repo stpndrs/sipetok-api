@@ -159,6 +159,7 @@ public class TenantController : ControllerBase
             tenant.name = tenantDto.name;
             tenant.address = tenantDto.address;
             tenant.phoneNumber = tenantDto.phoneNumber;
+            tenant.UpdateTimestamps();
 
             if (tenantDto.user != null)
             {
@@ -172,6 +173,7 @@ public class TenantController : ControllerBase
                     }
                     user.email = tenantDto.user.email;
                     user.status = tenantDto.user.status;
+                    user.UpdateTimestamps();
                 }
             }
 
@@ -262,11 +264,11 @@ public class TenantController : ControllerBase
                 var user = dbContext.Users.Find(tenant.user_id);
                 if (user != null)
                 {
-                    user.deleted_at = DateTime.Now;
+                    user.SoftDelete();
                 }
             }
 
-            tenant.deleted_at = DateTime.Now;
+            tenant.SoftDelete();
             dbContext.SaveChanges();
 
             var respon = new ResponData<TenantRespon>

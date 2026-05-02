@@ -179,6 +179,7 @@ public class OperationalController : ControllerBase
             operational.name = operationalDto.name;
             operational.operational_cost = operationalDto.operational_cost;
             operational.operational_date = operationalDto.operational_date;
+            operational.UpdateTimestamps();
 
             dbContext.SaveChanges();
 
@@ -220,7 +221,7 @@ public class OperationalController : ControllerBase
                 });
             }
 
-            operational.deleted_at = DateTime.Now;
+            operational.SoftDelete();
             dbContext.SaveChanges();
 
             var respon = new ResponData<OperationalRespon>
