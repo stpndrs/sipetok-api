@@ -1,17 +1,26 @@
 using sipetok_api.Utils;
+using System.ComponentModel.DataAnnotations;
 
 namespace sipetok_api.dto.Request
 {
     class TransactionDto
     {
         public DateTime date { get; set; }
+
         public decimal payment_amount { get; set; }
+
         public decimal total_price { get; set; }
+
         public int tenant_id { get; set; }
+
         public int customer_id { get; set; }
+
         public PaymentState Status { get; set; } = PaymentState.Pending;
+
         public virtual CustomerDto? customer { get; set; }
+
         public virtual ICollection<TransactionDetailDto> details { get; set; } = new List<TransactionDetailDto>();
+        
         public TransactionDto() { }
 
         public TransactionDto(decimal payment_amount, decimal total_price, int tenant_id, int customer_id)

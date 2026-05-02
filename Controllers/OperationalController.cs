@@ -86,7 +86,8 @@ public class OperationalController : ControllerBase
         }
     }
 
-    [HttpGet("tenant/{tenantId:int}")]
+    [HttpGet]
+    [Route("tenant/{tenantId:int}")]
     public IActionResult GetOperationalByTenantId(int tenantId)
     {
         try
@@ -124,7 +125,7 @@ public class OperationalController : ControllerBase
     }
 
     [HttpPost]
-    public IActionResult AddOperational(OperationalDto operationalDto)
+    public IActionResult AddOperational([FromBody] OperationalDto operationalDto)
     {
         try
         {
@@ -164,7 +165,7 @@ public class OperationalController : ControllerBase
 
     [HttpPut]
     [Route("{id:int}")]
-    public IActionResult UpdateOperational(int id, OperationalDto operationalDto)
+    public IActionResult UpdateOperational(int id, [FromBody] OperationalDto operationalDto)
     {
         try
         {
@@ -178,6 +179,7 @@ public class OperationalController : ControllerBase
             operational.name = operationalDto.name;
             operational.operational_cost = operationalDto.operational_cost;
             operational.operational_date = operationalDto.operational_date;
+            operational.UpdateTimestamps();
 
             dbContext.SaveChanges();
 
@@ -199,6 +201,46 @@ public class OperationalController : ControllerBase
             };
 
             return Ok(respon);
+        }
+    }
+
+    [HttpDelete]
+    [Route("{id:int}")]
+    public IActionResult DeleteOperational(int id)
+    {
+        try
+        {
+            var operational = dbContext.Operationals.Find(id);
+
+            if (operational is null)
+            {
+                return NotFound(new ResponData<OperationalRespon>
+                {
+                    success = false,
+                    message = $"Operational data with id {id} not found"
+                });
+            }
+
+            operational.SoftDelete();
+            dbContext.SaveChanges();
+
+            var respon = new ResponData<OperationalRespon>
+            {
+                success = true,
+                message = "Successfully deleted operational data"
+            };
+
+            return Ok(respon);
+        }
+        catch (Exception ex)
+        {
+            var respon = new ResponData<OperationalRespon>
+            {
+                success = false,
+                message = ex.Message
+            };
+
+            return BadRequest(respon);
         }
     }
 }

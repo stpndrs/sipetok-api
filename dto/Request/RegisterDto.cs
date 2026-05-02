@@ -6,18 +6,18 @@ namespace sipetok_api.dto.Request
 {
     public class RegisterDto
     {
-        [Required(ErrorMessage = "Username wajib diisi")]
+        [Required(ErrorMessage = "Username is required!")]
         [StringLength(50, ErrorMessage = "Panjang maksimal 50 karakter")]
-        public string Username { get; set; }
+        public string Username { get; set; } = string.Empty;
 
-        [Required]
+        [Required(ErrorMessage = "Password is required!")]
         //[StringLength(100, MinimumLength = 8, ErrorMessage = "Password minimal 8 karakter")]
         //[RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$",
         //ErrorMessage = "Password harus mengandung huruf besar, huruf kecil, dan angka")]
-        public string Password { get; set; }
+        public string Password { get; set; } = string.Empty;
 
-        [Required]
+        [Required(ErrorMessage = "Email is required!")]
         [EmailAddress(ErrorMessage = "Format email salah")]
-        public string Email { get; set; }
+        public string Email { get; set; } = string.Empty;
     }
 }

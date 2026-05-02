@@ -1,15 +1,9 @@
 ﻿using sipetok_api.Utils;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Text.Json.Serialization;
 
 namespace sipetok_api.Models
 {
-    public class Transaction
+    public class Transaction : BaseEntity
     {
         public int id { get; set; }
         public DateTime date { get; set; }
