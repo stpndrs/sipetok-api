@@ -6,8 +6,10 @@ using sipetok_api.Data;
 using sipetok_api.dto.Request;
 using sipetok_api.dto.Respon;
 using sipetok_api.Models;
-using sipetok_api.service; 
+using sipetok_api.service;
+using sipetok_api.Utils;
 using System.Threading.Tasks;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace sipetok_api.Controllers
 {
@@ -75,26 +77,77 @@ namespace sipetok_api.Controllers
             }
         }
 
-        [HttpPost("pay/{id}")]
+        [HttpPost("pay/{id:int}")]
         public async Task<IActionResult> Pay(int id)
         {
-            var success = await _paymentService.UpdateStatus(id, "NEXT");
-            if (success) 
-                return Ok(new {
-                message = "Status berhasil diperbarui." });
+            try
+            {
+                // 1. Panggil service dengan parameter "NEXT" (sesuai default atau logic bisnis Anda)
+                var success = await _paymentService.UpdateStatus(id, "NEXT");
 
-            return BadRequest(new { message = "Gagal memproses." });
+                if (!success)
+                {
+                    return BadRequest(new ResponData<string>
+                    {
+                        success = false,
+                        message = "Gagal memperbarui status pembayaran. Pastikan ID benar atau transisi status valid."
+                    });
+                }
+
+                // 2. Ambil data transaksi terbaru dari database untuk di-map
+                var transaction = await dbContext.Transactions
+                    .Include(t => t.details)
+                    .FirstOrDefaultAsync(t => t.id == id);
+
+                // 3. Mapping object Transaction ke TransactionRespon
+                var result = _mapper.Map<TransactionRespon>(transaction);
+
+                return Ok(new ResponData<TransactionRespon>
+                {
+                    success = true,
+                    data = result,
+                    message = "Status pembayaran berhasil diperbarui."
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new ResponData<string> { success = false, message = ex.Message });
+            }
         }
 
-        [HttpPost("cancel/{id}")]
+        [HttpPost("cancel/{id:int}")]
         public async Task<IActionResult> Cancel(int id)
         {
-            var success = await _paymentService.UpdateStatus(id, "CANCEL");
-            if (success) 
-                return Ok(new {
-                message = "Transaksi telah dibatalkan." });
+            try
+            {
+                // 1. Panggil service dengan action "CANCEL"
+                var success = await _paymentService.UpdateStatus(id, "CANCEL");
 
-            return BadRequest(new { message = "Transaksi tidak bisa dibatalkan." });
+                if (!success)
+                {
+                    return BadRequest(new ResponData<string>
+                    {
+                        success = false,
+                        message = "Transaksi tidak ditemukan atau tidak dapat dibatalkan pada status saat ini."
+                    });
+                }
+
+                // 2. Ambil data terbaru
+                var transaction = await dbContext.Transactions
+                    .Include(t => t.details)
+                    .FirstOrDefaultAsync(t => t.id == id);
+
+                return Ok(new ResponData<TransactionRespon>
+                {
+                    success = true,
+                    data = _mapper.Map<TransactionRespon>(transaction),
+                    message = "Transaksi telah berhasil dibatalkan."
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new ResponData<string> { success = false, message = ex.Message });
+            }
         }
     }
     
