@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using sipetok_api.Data;
 
@@ -10,9 +11,11 @@ using sipetok_api.Data;
 namespace sipetok_api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260501110120_RenameIsTenantToIsValid")]
+    partial class RenameIsTenantToIsValid
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -30,12 +33,6 @@ namespace sipetok_api.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("varchar(255)");
 
-                    b.Property<DateTime>("created_at")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<DateTime?>("deleted_at")
-                        .HasColumnType("datetime(6)");
-
                     b.Property<string>("name")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -45,9 +42,6 @@ namespace sipetok_api.Migrations
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("varchar(20)");
-
-                    b.Property<DateTime?>("updated_at")
-                        .HasColumnType("datetime(6)");
 
                     b.Property<int>("user_id")
                         .HasColumnType("int");
@@ -68,12 +62,6 @@ namespace sipetok_api.Migrations
                     b.Property<int>("category_id")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("created_at")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<DateTime?>("deleted_at")
-                        .HasColumnType("datetime(6)");
-
                     b.Property<DateTime>("production_date")
                         .HasColumnType("datetime(6)");
 
@@ -82,9 +70,6 @@ namespace sipetok_api.Migrations
 
                     b.Property<int>("tenant_id")
                         .HasColumnType("int");
-
-                    b.Property<DateTime?>("updated_at")
-                        .HasColumnType("datetime(6)");
 
                     b.HasKey("id");
 
@@ -100,12 +85,6 @@ namespace sipetok_api.Migrations
                     b.Property<int>("id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
-
-                    b.Property<DateTime>("created_at")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<DateTime?>("deleted_at")
-                        .HasColumnType("datetime(6)");
 
                     b.Property<string>("description")
                         .IsRequired()
@@ -124,9 +103,6 @@ namespace sipetok_api.Migrations
                     b.Property<int>("tenant_id")
                         .HasColumnType("int");
 
-                    b.Property<DateTime?>("updated_at")
-                        .HasColumnType("datetime(6)");
-
                     b.HasKey("id");
 
                     b.HasIndex("tenant_id");
@@ -139,12 +115,6 @@ namespace sipetok_api.Migrations
                     b.Property<int>("id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
-
-                    b.Property<DateTime>("created_at")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<DateTime?>("deleted_at")
-                        .HasColumnType("datetime(6)");
 
                     b.Property<string>("name")
                         .IsRequired()
@@ -161,9 +131,6 @@ namespace sipetok_api.Migrations
 
                     b.Property<int>("tenant_id")
                         .HasColumnType("int");
-
-                    b.Property<DateTime?>("updated_at")
-                        .HasColumnType("datetime(6)");
 
                     b.HasKey("id");
 
@@ -183,12 +150,6 @@ namespace sipetok_api.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("varchar(255)");
 
-                    b.Property<DateTime>("created_at")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<DateTime?>("deleted_at")
-                        .HasColumnType("datetime(6)");
-
                     b.Property<bool>("isValid")
                         .HasColumnType("tinyint(1)");
 
@@ -201,9 +162,6 @@ namespace sipetok_api.Migrations
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("varchar(20)");
-
-                    b.Property<DateTime?>("updated_at")
-                        .HasColumnType("datetime(6)");
 
                     b.Property<int>("user_id")
                         .HasColumnType("int");
@@ -224,23 +182,10 @@ namespace sipetok_api.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("created_at")
-                        .HasColumnType("datetime(6)");
-
                     b.Property<int>("customer_id")
                         .HasColumnType("int");
-                    b.Property<string>("customer_name")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("customer_phone_number")
-                        .IsRequired()
-                        .HasColumnType("longtext");
 
                     b.Property<DateTime>("date")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<DateTime?>("deleted_at")
                         .HasColumnType("datetime(6)");
 
                     b.Property<decimal>("payment_amount")
@@ -254,10 +199,9 @@ namespace sipetok_api.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<DateTime?>("updated_at")
-                        .HasColumnType("datetime(6)");
-
                     b.HasKey("id");
+
+                    b.HasIndex("customer_id");
 
                     b.HasIndex("tenant_id");
 
@@ -275,15 +219,6 @@ namespace sipetok_api.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("varchar(50)");
 
-                    b.Property<DateTime>("created_at")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<DateTime?>("deleted_at")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<double>("price")
-                        .HasColumnType("double");
-
                     b.Property<double>("quantity")
                         .HasColumnType("double");
 
@@ -293,9 +228,6 @@ namespace sipetok_api.Migrations
 
                     b.Property<int>("transaction_id")
                         .HasColumnType("int");
-
-                    b.Property<DateTime?>("updated_at")
-                        .HasColumnType("datetime(6)");
 
                     b.HasKey("id");
 
@@ -309,12 +241,6 @@ namespace sipetok_api.Migrations
                     b.Property<int>("id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
-
-                    b.Property<DateTime>("created_at")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<DateTime?>("deleted_at")
-                        .HasColumnType("datetime(6)");
 
                     b.Property<string>("email")
                         .IsRequired()
@@ -331,9 +257,6 @@ namespace sipetok_api.Migrations
 
                     b.Property<int>("status")
                         .HasColumnType("int");
-
-                    b.Property<DateTime?>("updated_at")
-                        .HasColumnType("datetime(6)");
 
                     b.Property<string>("username")
                         .IsRequired()
@@ -410,11 +333,19 @@ namespace sipetok_api.Migrations
 
             modelBuilder.Entity("sipetok_api.Models.Transaction", b =>
                 {
+                    b.HasOne("sipetok_api.Models.Customer", "customer")
+                        .WithMany()
+                        .HasForeignKey("customer_id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("sipetok_api.Models.Tenant", "tenant")
                         .WithMany()
                         .HasForeignKey("tenant_id")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("customer");
 
                     b.Navigation("tenant");
                 });

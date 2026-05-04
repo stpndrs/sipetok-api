@@ -86,7 +86,8 @@ public class EggController : ControllerBase
         }
     }
 
-    [HttpGet("tenant/{tenantId:int}")]
+    [HttpGet]
+    [Route("tenant/{id:int}")]
     public IActionResult GetEggByTenantId(int tenantId)
     {
         try
@@ -123,7 +124,8 @@ public class EggController : ControllerBase
         }
     }
 
-    [HttpGet("tenant/total/{tenantId:int}")]
+    [HttpGet]
+    [Route("tenant/total/{tenantId:int}")]
     public IActionResult GetTotalEggByTenantId(int tenantId)
     {
         try
@@ -154,7 +156,7 @@ public class EggController : ControllerBase
     }
 
     [HttpPost]
-    public IActionResult AddEgg(EggDto eggDto)
+    public IActionResult AddEgg([FromBody] EggDto eggDto)
     {
         try
         {
@@ -209,7 +211,7 @@ public class EggController : ControllerBase
 
     [HttpPut]
     [Route("{id:int}")]
-    public IActionResult UpdateEgg(int id, EggDto eggDto)
+    public IActionResult UpdateEgg(int id, [FromBody] EggDto eggDto)
     {
         try
         {
@@ -224,6 +226,7 @@ public class EggController : ControllerBase
             egg.category_id = eggDto.category_id;
             egg.stock = eggDto.stock;
             egg.tenant_id = eggDto.tenant_id;
+            egg.UpdateTimestamps();
 
             dbContext.SaveChanges();
 
@@ -248,7 +251,8 @@ public class EggController : ControllerBase
         }
     }
 
-    [HttpPut("kurangi/{idTenant:int}")]
+    [HttpPut]
+    [Route("kurangi/{idTenant:int}")]
     public IActionResult KurangiEggByTenant(int idTenant, [FromQuery] int jumlah)
     {
         try
@@ -301,6 +305,46 @@ public class EggController : ControllerBase
                 success = false,
                 message = ex.Message
             });
+        }
+    }
+
+    [HttpDelete]
+    [Route("{id:int}")]
+    public IActionResult DeleteEgg(int id)
+    {
+        try
+        {
+            var egg = dbContext.Eggs.Find(id);
+
+            if (egg is null)
+            {
+                return NotFound(new ResponData<EggRespon>
+                {
+                    success = false,
+                    message = $"Egg data with id {id} not found"
+                });
+            }
+
+            egg.SoftDelete();
+            dbContext.SaveChanges();
+
+            var respon = new ResponData<EggRespon>
+            {
+                success = true,
+                message = "Successfully deleted egg data"
+            };
+
+            return Ok(respon);
+        }
+        catch (Exception ex)
+        {
+            var respon = new ResponData<EggRespon>
+            {
+                success = false,
+                message = ex.Message
+            };
+
+            return BadRequest(respon);
         }
     }
 }

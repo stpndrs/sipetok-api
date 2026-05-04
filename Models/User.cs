@@ -1,10 +1,9 @@
-﻿using sipetok_api.Utils;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
 namespace sipetok_api.Models
 {
-    public class User
+    public class User : BaseEntity
     {
         [Key]
         public int id { get; set; }

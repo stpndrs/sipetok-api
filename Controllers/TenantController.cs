@@ -5,7 +5,6 @@ using sipetok_api.Models;
 using sipetok_api.dto.Request;
 using sipetok_api.Data;
 using AutoMapper;
-using sipetok_api.Utils;
 using sipetok_api.dto.Respon;
 
 [Route("api/tenants")]
@@ -61,7 +60,7 @@ public class TenantController : ControllerBase
                 return NotFound(new ResponData<TenantRespon>
                 {
                     success = false,
-                    message = $"Data tenant dengan id {id} tidak ditemukan"
+                    message = $"Tenant data with id {id} not found"
                 });
             }
 
@@ -69,7 +68,7 @@ public class TenantController : ControllerBase
             {
                 success = true,
                 data = tenant,
-                message = "Berhasil mengambil data customer pada id {id}"
+                message = $"Successfully retrieved tenant data with id {id}"
             };
 
             return Ok(respon);
@@ -87,7 +86,7 @@ public class TenantController : ControllerBase
     }
 
     [HttpPost]
-    public IActionResult AddTenant(TenantDto tenantDto)
+    public IActionResult AddTenant([FromBody] TenantDto tenantDto)
     {
         try
         {
@@ -96,18 +95,24 @@ public class TenantController : ControllerBase
                 return BadRequest(new ResponData<TenantRespon>
                 {
                     success = false,
-                    message = "User wajib diisi"
+                    message = "User is required"
+                });
+            }
+            if (string.IsNullOrWhiteSpace(tenantDto.user.password))
+            {
+                return BadRequest(new ResponData<TenantRespon>
+                {
+                    success = false,
+                    message = "Password is required"
                 });
             }
 
             var user = _mapper.Map<User>(tenantDto.user);
-
             user.password = Bcrypt.BcryptPassword(user.password);
             user.role = 2;
             user.status = 1;
 
             var tenant = _mapper.Map<Tenant>(tenantDto);
-            
             tenant.user = user;
 
             dbContext.Tenants.Add(tenant);
@@ -118,8 +123,8 @@ public class TenantController : ControllerBase
                 success = true,
                 data = _mapper.Map<TenantRespon>(tenant)
             };
-            respon.message = $"Berhasil menambahkan data tenant";
-            
+            respon.message = $"Successfully added tenant data";
+
             return Ok(respon);
         }
         catch (Exception ex)
@@ -129,14 +134,14 @@ public class TenantController : ControllerBase
                 success = false,
                 message = ex.Message
             };
-            
+
             return BadRequest(respon);
         }
     }
 
     [HttpPut]
     [Route("{id:int}")]
-    public IActionResult UpdateTenant(int id, TenantDto tenantDto)
+    public IActionResult UpdateTenant(int id, [FromBody] TenantDto tenantDto)
     {
         try
         {
@@ -147,18 +152,30 @@ public class TenantController : ControllerBase
                 return NotFound(new ResponData<TenantRespon>
                 {
                     success = false,
-                    message = $"Data tenant dengan id {id} tidak ditemukan"
+                    message = $"Tenant data with id {id} not found"
                 });
             }
-        
-            if (!string.IsNullOrEmpty(tenantDto.name))
-                tenant.name = tenantDto.name;
 
-            if (!string.IsNullOrEmpty(tenantDto.address))
-                tenant.address = tenantDto.address;
+            tenant.name = tenantDto.name;
+            tenant.address = tenantDto.address;
+            tenant.phoneNumber = tenantDto.phoneNumber;
+            tenant.UpdateTimestamps();
 
-            if (!string.IsNullOrEmpty(tenantDto.phoneNumber))
-                tenant.phoneNumber = tenantDto.phoneNumber;
+            if (tenantDto.user != null)
+            {
+                var user = dbContext.Users.Find(tenant.user_id);
+                if (user != null)
+                {
+                    user.username = tenantDto.user.username;
+                    if (!string.IsNullOrWhiteSpace(tenantDto.user.password))
+                    {
+                        user.password = Bcrypt.BcryptPassword(tenantDto.user.password);
+                    }
+                    user.email = tenantDto.user.email;
+                    user.status = tenantDto.user.status;
+                    user.UpdateTimestamps();
+                }
+            }
 
             dbContext.SaveChanges();
 
@@ -166,9 +183,9 @@ public class TenantController : ControllerBase
             {
                 success = true,
                 data = _mapper.Map<TenantRespon>(tenant),
-                message = "Berhasil memperbarui data"
+                message = $"Successfully updated tenant data with id {id}"
             };
-            
+
             return Ok(respon);
         }
         catch (Exception ex)
@@ -178,7 +195,98 @@ public class TenantController : ControllerBase
                 success = false,
                 message = ex.Message
             };
-            
+
+            return BadRequest(respon);
+        }
+    }
+
+    [HttpPost]
+    [Route("validate/{id:int}")]
+    public IActionResult Validation(int id)
+    {
+        try
+        {
+            var tenant = dbContext.Tenants.Find(id);
+
+            if (tenant is null)
+            {
+                return NotFound(new ResponData<TenantRespon>
+                {
+                    success = false,
+                    message = $"Tenant data with id {id} not found"
+                });
+            }
+
+            tenant.isValid = true;
+
+            var respon = new ResponData<TenantRespon>
+            {
+                success = true,
+                data = _mapper.Map<TenantRespon>(tenant),
+                message = $"Successfully validated tenant data with id {id}"
+            };
+
+            dbContext.SaveChanges();
+            return Ok(respon);
+
+        }
+        catch (Exception ex)
+        {
+            var respon = new ResponData<TenantRespon>
+            {
+                success = false,
+                message = ex.Message
+            };
+
+            return BadRequest(respon);
+        }
+    }
+
+    [HttpDelete]
+    [Route("{id:int}")]
+    public IActionResult DeleteTenant(int id)
+    {
+        try
+        {
+            var tenant = dbContext.Tenants.Find(id);
+
+            if (tenant is null)
+            {
+                return NotFound(new ResponData<TenantRespon>
+                {
+                    success = false,
+                    message = $"Tenant data with id {id} not found"
+                });
+            }
+
+            if (tenant.user_id != 0)
+            {
+                var user = dbContext.Users.Find(tenant.user_id);
+                if (user != null)
+                {
+                    user.SoftDelete();
+                }
+            }
+
+            tenant.SoftDelete();
+            dbContext.SaveChanges();
+
+            var respon = new ResponData<TenantRespon>
+            {
+                success = true,
+                message = "Successfully deleted tenant data"
+            };
+
+            return Ok(respon);
+        }
+        catch (Exception ex)
+        {
+            var respon = new ResponData<TenantRespon>
+            {
+                success = false,
+                message = ex.Message
+            };
+
             return BadRequest(respon);
         }
     }

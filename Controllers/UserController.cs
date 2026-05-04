@@ -27,8 +27,8 @@ public class UserController : ControllerBase
     {
         try
         {
-            var allUser = _mapper.Map<UserRespon>(dbContext.Users.ToList());
-            var respon = new ResponData<UserRespon>
+            var allUser = _mapper.Map<List<UserRespon>>(dbContext.Users.ToList());
+            var respon = new ResponData<List<UserRespon>>
             {
                 success = true,
                 data = allUser,
@@ -85,11 +85,19 @@ public class UserController : ControllerBase
     }
 
     [HttpPost]
-    public IActionResult AddUser(UserDto userDto)
+    public IActionResult AddUser([FromBody] UserDto userDto)
     {
         try
         {
             var user = _mapper.Map<User>(userDto);
+            if (string.IsNullOrWhiteSpace(user.password))
+            {
+                return BadRequest(new ResponData<UserRespon>
+                {
+                    success = false,
+                    message = "Password is required"
+                });
+            }
             user.password = Bcrypt.BcryptPassword(user.password);
 
             dbContext.Users.Add(user);
@@ -117,7 +125,7 @@ public class UserController : ControllerBase
 
     [HttpPut]
     [Route("{id:int}")]
-    public IActionResult UpdateUser(int id, UserDto userDto)
+    public IActionResult UpdateUser(int id, [FromBody] UserDto userDto)
     {
         try
         {
@@ -132,17 +140,19 @@ public class UserController : ControllerBase
                 });
             }
 
-            if (!string.IsNullOrEmpty(userDto.username))
-                user.username = userDto.username;
-
-            if (!string.IsNullOrEmpty(userDto.password))
-                user.password = userDto.password;
-
-            if (!string.IsNullOrEmpty(userDto.email))
-                user.email = userDto.email;
-
-            if (userDto.status != user.status)
-                user.status = userDto.status;
+            if (string.IsNullOrWhiteSpace(userDto.password))
+            {
+                return BadRequest(new ResponData<UserRespon>
+                {
+                    success = false,
+                    message = "Password is required"
+                });
+            }
+            user.username = userDto.username;
+            user.password = Bcrypt.BcryptPassword(userDto.password);
+            user.email = userDto.email;
+            user.status = userDto.status;
+            user.UpdateTimestamps();
 
             dbContext.SaveChanges();
 
@@ -165,19 +175,10 @@ public class UserController : ControllerBase
         }
     }
 
-    [HttpPut("changepassword/{userId:int}")]
-    public IActionResult ChangePassword(int userId, ChangePasswordDto changePasswordDto)
+    [HttpPut]
+    [Route("changepassword/{userId:int}")]
+    public IActionResult ChangePassword(int userId, [FromBody] ChangePasswordDto changePasswordDto)
     {
-        if (!ModelState.IsValid)
-        {
-            var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
-            return BadRequest(new ResponData<UserRespon>
-            {
-                success = false,
-                //message = errors -> harus bikin respon validasi sendiri, jangan dijadikan satu dengan respon error
-            });
-        }
-
         try
         {
             var user = dbContext.Users.Find(userId);
@@ -200,6 +201,7 @@ public class UserController : ControllerBase
                 });
             }
             user.password = Bcrypt.BcryptPassword(changePasswordDto.password);
+            user.UpdateTimestamps();
 
             dbContext.SaveChanges();
             return Ok("Password berhasil diubah");
@@ -207,6 +209,46 @@ public class UserController : ControllerBase
         catch (Exception ex)
         {
             return BadRequest(ex.Message);
+        }
+    }
+
+    [HttpDelete]
+    [Route("{id:int}")]
+    public IActionResult DeleteUser(int id)
+    {
+        try
+        {
+            var user = dbContext.Users.Find(id);
+
+            if (user is null)
+            {
+                return NotFound(new ResponData<UserRespon>
+                {
+                    success = false,
+                    message = $"User data with id {id} not found"
+                });
+            }
+
+            user.SoftDelete();
+            dbContext.SaveChanges();
+
+            var respon = new ResponData<UserRespon>
+            {
+                success = true,
+                message = "Successfully deleted user data"
+            };
+
+            return Ok(respon);
+        }
+        catch (Exception ex)
+        {
+            var respon = new ResponData<UserRespon>
+            {
+                success = false,
+                message = ex.Message
+            };
+
+            return BadRequest(respon);
         }
     }
 }

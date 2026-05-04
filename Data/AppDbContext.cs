@@ -84,6 +84,47 @@ namespace sipetok_api.Data
             modelBuilder.Entity<Transaction>().Property(t => t.payment_amount).HasPrecision(18, 2);
             modelBuilder.Entity<Transaction>().Property(t => t.total_price).HasPrecision(18, 2);
             modelBuilder.Entity<TransactionDetail>().Property(td => td.subtotal).HasPrecision(18, 2);
+
+            modelBuilder.Entity<User>().HasQueryFilter(u => u.deleted_at == null);
+            modelBuilder.Entity<Tenant>().HasQueryFilter(t => t.deleted_at == null);
+            modelBuilder.Entity<Customer>().HasQueryFilter(c => c.deleted_at == null);
+            modelBuilder.Entity<Egg>().HasQueryFilter(e => e.deleted_at == null);
+            modelBuilder.Entity<EggCategory>().HasQueryFilter(ec => ec.deleted_at == null);
+            modelBuilder.Entity<Transaction>().HasQueryFilter(t => t.deleted_at == null);
+            modelBuilder.Entity<TransactionDetail>().HasQueryFilter(td => td.deleted_at == null);
+            modelBuilder.Entity<Operational>().HasQueryFilter(o => o.deleted_at == null);
         }
+        // public override int SaveChanges()
+        // {
+        //     var entries = ChangeTracker.Entries()
+        //         .Where(e => e.Entity is BaseEntity && (e.State == EntityState.Added || e.State == EntityState.Modified));
+
+        //     foreach (var entityEntry in entries)
+        //     {
+        //         ((BaseEntity)entityEntry.Entity).updated_at = DateTime.Now;
+
+        //         if (entityEntry.State == EntityState.Added)
+        //         {
+        //             ((BaseEntity)entityEntry.Entity).created_at = DateTime.Now;
+        //         }
+        //     }
+        //     return base.SaveChanges();
+        // }
+        // public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        // {
+        //     var entries = ChangeTracker.Entries()
+        //         .Where(e => e.Entity is BaseEntity && (e.State == EntityState.Added || e.State == EntityState.Modified));
+
+        //     foreach (var entityEntry in entries)
+        //     {
+        //         ((BaseEntity)entityEntry.Entity).updated_at = DateTime.Now;
+
+        //         if (entityEntry.State == EntityState.Added)
+        //         {
+        //             ((BaseEntity)entityEntry.Entity).created_at = DateTime.Now;
+        //         }
+        //     }
+        //     return base.SaveChangesAsync(cancellationToken);
+        // }
     }
 }

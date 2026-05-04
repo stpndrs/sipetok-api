@@ -25,9 +25,9 @@ public class EggCategoryController : ControllerBase
     {
         try
         {
-            var allEggCategory = _mapper.Map<EggCategoryRespon>(dbContext.EggCategories.ToList());
+            var allEggCategory = _mapper.Map<List<EggCategoryRespon>>(dbContext.EggCategories.ToList());
 
-            var respon = new ResponData<EggCategoryRespon>
+            var respon = new ResponData<List<EggCategoryRespon>>
             {
                 success = true,
                 data = allEggCategory,
@@ -86,7 +86,7 @@ public class EggCategoryController : ControllerBase
     }
 
     [HttpPost]
-    public IActionResult AddEggCategory(EggCategoryDto eggCategoryDto)
+    public IActionResult AddEggCategory([FromBody] EggCategoryDto eggCategoryDto)
     {
         try
         {
@@ -118,7 +118,7 @@ public class EggCategoryController : ControllerBase
 
     [HttpPut]
     [Route("{id:int}")]
-    public IActionResult UpdateEggCategory(int id, EggCategoryDto eggCategoryDto)
+    public IActionResult UpdateEggCategory(int id, [FromBody] EggCategoryDto eggCategoryDto)
     {
         try
         {
@@ -131,6 +131,7 @@ public class EggCategoryController : ControllerBase
             eggCategory.name = eggCategoryDto.name;
             eggCategory.price = eggCategoryDto.price;
             eggCategory.description = eggCategoryDto.description;
+            eggCategory.UpdateTimestamps();
 
             dbContext.SaveChanges();
 
@@ -148,6 +149,46 @@ public class EggCategoryController : ControllerBase
             var respon = new ResponData<EggCategoryRespon>
             {
                 success = true,
+                message = ex.Message
+            };
+
+            return BadRequest(respon);
+        }
+    }
+
+    [HttpDelete]
+    [Route("{id:int}")]
+    public IActionResult DeleteEggCategory(int id)
+    {
+        try
+        {
+            var eggCategory = dbContext.EggCategories.Find(id);
+
+            if (eggCategory is null)
+            {
+                return NotFound(new ResponData<EggCategoryRespon>
+                {
+                    success = false,
+                    message = $"Egg category data with id {id} not found"
+                });
+            }
+
+            eggCategory.SoftDelete();
+            dbContext.SaveChanges();
+
+            var respon = new ResponData<EggCategoryRespon>
+            {
+                success = true,
+                message = "Successfully deleted egg category data"
+            };
+
+            return Ok(respon);
+        }
+        catch (Exception ex)
+        {
+            var respon = new ResponData<EggCategoryRespon>
+            {
+                success = false,
                 message = ex.Message
             };
 

@@ -1,15 +1,9 @@
-﻿using sipetok_api.Models;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace sipetok_api.Models
 {
-    public class Tenant
+    public class Tenant : BaseEntity
     {
         public int id { get; set; }
 
@@ -22,7 +16,7 @@ namespace sipetok_api.Models
         [MaxLength(20)]
         public string phoneNumber { get; set; } = string.Empty;
 
-        public bool isTenant {get; set;} = false;
+        public bool isValid {get; set;} = false;
 
         public int user_id { get; set; }
 
