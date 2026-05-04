@@ -4,7 +4,9 @@ using MySql.EntityFrameworkCore.Extensions;
 using sipetok_api;
 using sipetok_api.Data;
 using sipetok_api.dto.Respon;
+using sipetok_api.service;
 using System.Text.Json.Serialization;
+using sipetok_api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,6 +37,9 @@ builder.Services.AddControllers()
             return new BadRequestObjectResult(response);
         };
     });
+
+// untuk panggil config service
+builder.Services.AddApplicationServices();
 
 // 2. OpenAPI / Swagger
 builder.Services.AddOpenApi();
