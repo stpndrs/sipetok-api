@@ -11,8 +11,8 @@ using sipetok_api.Data;
 namespace sipetok_api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260430000818_InitialDb")]
-    partial class InitialDb
+    [Migration("20260504052536_InitialDB")]
+    partial class InitialDB
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -182,8 +182,13 @@ namespace sipetok_api.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
-                    b.Property<int>("customer_id")
-                        .HasColumnType("int");
+                    b.Property<string>("customer_name")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("customer_phone_number")
+                        .IsRequired()
+                        .HasColumnType("longtext");
 
                     b.Property<DateTime>("date")
                         .HasColumnType("datetime(6)");
@@ -201,8 +206,6 @@ namespace sipetok_api.Migrations
 
                     b.HasKey("id");
 
-                    b.HasIndex("customer_id");
-
                     b.HasIndex("tenant_id");
 
                     b.ToTable("Transactions");
@@ -218,6 +221,9 @@ namespace sipetok_api.Migrations
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("varchar(50)");
+
+                    b.Property<double>("price")
+                        .HasColumnType("double");
 
                     b.Property<double>("quantity")
                         .HasColumnType("double");
@@ -333,19 +339,11 @@ namespace sipetok_api.Migrations
 
             modelBuilder.Entity("sipetok_api.Models.Transaction", b =>
                 {
-                    b.HasOne("sipetok_api.Models.Customer", "customer")
-                        .WithMany()
-                        .HasForeignKey("customer_id")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("sipetok_api.Models.Tenant", "tenant")
                         .WithMany()
                         .HasForeignKey("tenant_id")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-
-                    b.Navigation("customer");
 
                     b.Navigation("tenant");
                 });
