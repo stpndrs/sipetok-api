@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 
 using sipetok_api.Models;
 using sipetok_api.dto.Request;
@@ -7,8 +8,8 @@ using sipetok_api.Data;
 using AutoMapper;
 using sipetok_api.dto.Respon;
 using sipetok_api.Respon;
-using System.Net.Http.Headers;
 
+[Authorize]
 [Route("api/eggs")]
 [ApiController]
 public class EggController : ControllerBase
@@ -23,6 +24,7 @@ public class EggController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize(Roles = "1")]
     public IActionResult GetAllEggs()
     {
         try
@@ -33,7 +35,7 @@ public class EggController : ControllerBase
             {
                 success = true,
                 data = allEgg,
-                message = "Berhasil mengambil semua data egg"
+                message = "Successfully retrieved all egg data"
             };
 
             return Ok(respon);
@@ -63,7 +65,7 @@ public class EggController : ControllerBase
                 return NotFound(new ResponData<EggRespon>
                 {
                     success = false,
-                    message = $"Data egg dengan id {id} tidak ditemukan"
+                    message = $"Egg data with id {id} not found"
                 });
             }
 
@@ -71,7 +73,7 @@ public class EggController : ControllerBase
             {
                 success = true,
                 data = egg,
-                message = $"Berhasil mengambil data egg pada id {id}"
+                message = $"Successfully retrieved egg data with id {id}"
             };
             return Ok(respon);
         }
@@ -99,7 +101,7 @@ public class EggController : ControllerBase
                 return NotFound(new ResponData<List<EggRespon>>
                 {
                     success = false,
-                    message = $"Data egg dengan id tenant {tenantId} tidak ditemukan"
+                    message = $"Egg data with tenant id {tenantId} not found"
                 });
             }
 
@@ -107,7 +109,7 @@ public class EggController : ControllerBase
             {
                 success = true,
                 data = egg,
-                message = $"Berhasil mengambil data customer pada id tenant {tenantId}"
+                message = $"Successfully retrieved egg data with tenant id {tenantId}"
             };
 
             return Ok(respon);
@@ -138,7 +140,7 @@ public class EggController : ControllerBase
             {
                 success = true,
                 data = totalStock,
-                message = $"Berhasil mengambil total stok telur dari id tenant {tenantId}"
+                message = $"Successfully retrieved total egg stock for tenant {tenantId}"
             };
 
             return Ok(respon);
@@ -156,27 +158,29 @@ public class EggController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = "2")]
     public IActionResult AddEgg([FromBody] EggDto eggDto)
     {
         try
         {
-            var tenant = dbContext.Tenants.Find(eggDto.tenant_id);
+            int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
+            var tenant = dbContext.Tenants.Include(c => c.user).FirstOrDefault(c => c.user_id == userId);
             var eggCategory = dbContext.EggCategories.Find(eggDto.category_id);
 
-            if (tenant == null)
+            if (tenant is null)
             {
                 return BadRequest(new ResponData<EggRespon>
                 {
                     success = false,
-                    message = "Data tenant tidak ditemukan"
+                    message = "Data tenant not found"
                 });
             }
-            if (eggCategory == null)
+            if (eggCategory is null)
             {
                 return BadRequest(new ResponData<EggRespon>
                 {
                     success = false,
-                    message = "Data category tidak ditemukan"
+                    message = "Data category not found"
                 });
             }
 
@@ -192,7 +196,7 @@ public class EggController : ControllerBase
             {
                 success = true,
                 data = _mapper.Map<EggRespon>(egg),
-                message = "Berhasil menambahkan data egg"
+                message = "Successfully added egg data"
             };
 
             return Ok(respon);
@@ -234,7 +238,7 @@ public class EggController : ControllerBase
             {
                 success = true,
                 data = _mapper.Map<EggRespon>(egg),
-                message = "Berhasil memperbarui data"
+                message = "Successfully updated egg data"
             };
 
             return Ok(respon);
@@ -268,7 +272,7 @@ public class EggController : ControllerBase
                 return BadRequest(new ResponData<string>
                 {
                     success = false,
-                    message = $"Stok tidak mencukupi. Total stok: {totalStokTersedia}, Permintaan: {jumlah}"
+                    message = $"Stock insufficient. Total stock: {totalStokTersedia}, Request: {jumlah}"
                 });
             }
 
@@ -295,7 +299,7 @@ public class EggController : ControllerBase
             return Ok(new ResponData<string>
             {
                 success = true,
-                message = $"Berhasil mengurangi {jumlah} telur dari tenant {idTenant}"
+                message = $"Successfully reduced {jumlah} eggs from tenant {idTenant}"
             });
         }
         catch (Exception ex)

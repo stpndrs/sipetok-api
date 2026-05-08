@@ -1,12 +1,14 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
+using AutoMapper;
+
 using sipetok_api.Models;
 using sipetok_api.dto.Request;
 using sipetok_api.Data;
-using AutoMapper;
-using sipetok_api.Utils;
 using sipetok_api.dto.Respon;
 
+[Authorize]
 [Route("api/customers")]
 [ApiController]
 public class CustomerController : ControllerBase
@@ -21,6 +23,7 @@ public class CustomerController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize(Roles = "1")]
     public IActionResult GetAllCustomers()
     {
         try
@@ -49,6 +52,7 @@ public class CustomerController : ControllerBase
 
     [HttpGet]
     [Route("{id:int}")]
+    [Authorize(Roles = "1")]
     public IActionResult GetCustomerById(int id)
     {
         try
@@ -85,7 +89,48 @@ public class CustomerController : ControllerBase
         }
     }
 
+    [HttpGet]
+    [Route("myprofile")]
+    [Authorize(Roles = "3")]
+    public IActionResult GetMyProfile()
+    {
+        try
+        {
+            int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
+            var customer = _mapper.Map<CustomerRespon>(dbContext.Customers.FirstOrDefault(c => c.user_id == userId));
+
+            if (customer == null)
+            {
+                return NotFound(new ResponData<CustomerRespon>
+                {
+                    success = false,
+                    message = $"Customer data with id {userId} not found"
+                });
+            }
+
+            var respon = new ResponData<CustomerRespon>
+            {
+                success = true,
+                data = customer,
+                message = $"Successfully retrieved customer data with id {userId}"
+            };
+
+            return Ok(respon);
+        }
+        catch (Exception ex)
+        {
+            var respon = new ResponData<CustomerRespon>
+            {
+                success = false,
+                message = ex.Message
+            };
+
+            return StatusCode(500, respon);
+        }
+    }
+
     [HttpPost]
+    [Authorize(Roles = "1")]
     public IActionResult AddCustomer([FromBody] CustomerDto customerDto)
     {
         try
@@ -133,6 +178,7 @@ public class CustomerController : ControllerBase
 
     [HttpPut]
     [Route("{id:int}")]
+    [Authorize(Roles = "1")]
     public IActionResult UpdateCustomer(int id, [FromBody] CustomerDto customerDto)
     {
         try
@@ -158,13 +204,74 @@ public class CustomerController : ControllerBase
                 var user = dbContext.Users.Find(customer.user_id);
                 if (user != null)
                 {
-                    if(string.IsNullOrWhiteSpace(customerDto.user.password))
+                    if (!string.IsNullOrWhiteSpace(customerDto.user.password))
                     {
-                        throw new Exception("Password is required");
+                        user.password = Bcrypt.BcryptPassword(customerDto.user.password);
                     }
 
                     user.username = customerDto.user.username;
-                    user.password = Bcrypt.BcryptPassword(customerDto.user.password);
+                    user.email = customerDto.user.email;
+                    user.status = customerDto.user.status;
+                    user.UpdateTimestamps();
+                }
+            }
+            dbContext.SaveChanges();
+
+            var respon = new ResponData<CustomerRespon>
+            {
+                success = true,
+                data = _mapper.Map<CustomerRespon>(customer),
+                message = "Successfully updated customer data"
+            };
+            return Ok(respon);
+        }
+        catch (Exception ex)
+        {
+            var respon = new ResponData<CustomerRespon>
+            {
+                success = false,
+                message = ex.Message
+            };
+
+            return BadRequest(respon);
+        }
+    }
+
+    [HttpPut]
+    [Route("updatemyprofile")]
+    [Authorize(Roles = "3")]
+    public IActionResult UpdateMyProfile([FromBody] CustomerDto customerDto)
+    {
+        try
+        {
+            int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
+            var customer = dbContext.Customers.FirstOrDefault(c => c.user_id == userId);
+
+            if (customer is null)
+            {
+                return BadRequest(new ResponData<CustomerRespon>
+                {
+                    success = false,
+                    message = $"Customer data with id {userId} not found"
+                });
+            }
+
+            customer.name = customerDto.name;
+            customer.address = customerDto.address;
+            customer.phone_number = customerDto.phone_number;
+            customer.UpdateTimestamps();
+
+            if (customerDto.user != null)
+            {
+                var user = dbContext.Users.Find(customer.user_id);
+                if (user != null)
+                {
+                    if (!string.IsNullOrWhiteSpace(customerDto.user.password))
+                    {
+                        user.password = Bcrypt.BcryptPassword(customerDto.user.password);
+                    }
+
+                    user.username = customerDto.user.username;
                     user.email = customerDto.user.email;
                     user.status = customerDto.user.status;
                     user.UpdateTimestamps();
@@ -196,6 +303,7 @@ public class CustomerController : ControllerBase
 
     [HttpDelete]
     [Route("{id:int}")]
+    [Authorize(Roles = "1")]
     public IActionResult DeleteCustomer(int id)
     {
         try
@@ -211,7 +319,7 @@ public class CustomerController : ControllerBase
                 });
             }
 
-            if(customer.user_id != 0)
+            if (customer.user_id != 0)
             {
                 var user = dbContext.Users.Find(customer.user_id);
                 if (user != null)

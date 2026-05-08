@@ -1,18 +1,15 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Org.BouncyCastle.Ocsp;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+
 using sipetok_api.Data;
 using sipetok_api.dto.Request;
 using sipetok_api.dto.Respon;
 using sipetok_api.Models;
-using sipetok_api.Respon;
-using sipetok_api.Utils;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 
 namespace sipetok_api.Controllers
 {
@@ -83,7 +80,16 @@ namespace sipetok_api.Controllers
                     return BadRequest(new ResponData<object>
                     {
                         success = false,
-                        message = "Username atau password salah!"
+                        message = "Wrong username or password!"
+                    });
+                }
+
+                if (user.status == 0)
+                {
+                    return BadRequest(new ResponData<object>
+                    {
+                        success = false,
+                        message = "Your account has been deactivated"
                     });
                 }
 
@@ -117,7 +123,8 @@ namespace sipetok_api.Controllers
                 var claims = new List<Claim>
                 {
                     new Claim(ClaimTypes.Name, user.username),
-                    new Claim(ClaimTypes.Role, user.role.ToString())
+                    new Claim(ClaimTypes.Role, user.role.ToString()),
+                    new Claim("userId", user.id.ToString()),
                 };
 
                 var jwtSection = appConfig.GetSection("configProperties:JWT");
