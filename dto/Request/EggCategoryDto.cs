@@ -13,7 +13,7 @@ namespace sipetok_api.dto.Request
         [Required(ErrorMessage = "Name is required!")]
         public string name { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Tenant ID is required!")]
+        // [Required(ErrorMessage = "Tenant ID is required!")]
         public int tenant_id { get; set; }
         
         public EggCategoryDto() { }

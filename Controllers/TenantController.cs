@@ -155,6 +155,7 @@ public class TenantController : ControllerBase
             user.password = Bcrypt.BcryptPassword(user.password);
             user.role = 2;
             user.status = 1;
+            tenantDto.isValid = false;
 
             var tenant = _mapper.Map<Tenant>(tenantDto);
             tenant.user = user;
@@ -204,6 +205,7 @@ public class TenantController : ControllerBase
             tenant.name = tenantDto.name;
             tenant.address = tenantDto.address;
             tenant.phoneNumber = tenantDto.phoneNumber;
+            tenant.isValid = tenantDto.isValid;
             tenant.UpdateTimestamps();
 
             if (tenantDto.user != null)

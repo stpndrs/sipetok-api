@@ -16,14 +16,14 @@ namespace sipetok_api.Models
         [MaxLength(20)]
         public string phoneNumber { get; set; } = string.Empty;
 
-        public bool isValid {get; set;} = false;
+        public bool isValid {get; set;}
 
         public int user_id { get; set; }
 
         [ForeignKey("user_id")]
         public virtual User? user { get; set; }
 
-        public Tenant() { } // Constructor Kosong
+        public Tenant() { }
 
         public Tenant(int id, string name, string address, string phoneNumber, int user_id)
         {

@@ -10,6 +10,8 @@ namespace sipetok_api.dto.Request
         public string address { get; set; } = string.Empty;
         [Required(ErrorMessage = "Phone number is required!")]
         public string phoneNumber { get; set; } = string.Empty;
+        public bool isValid {get; set;}
+
         public virtual UserDto? user { get; set; }
         public TenantDto() { } 
 
