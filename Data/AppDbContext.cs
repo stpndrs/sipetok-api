@@ -53,13 +53,6 @@ namespace sipetok_api.Data
                 .HasForeignKey(t => t.tenant_id)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // 6. Relasi Customer -> Transaction
-            modelBuilder.Entity<Transaction>()
-                .HasOne(t => t.customer)
-                .WithMany()
-                .HasForeignKey(t => t.customer_id)
-                .OnDelete(DeleteBehavior.Restrict);
-
             // 7. Relasi Transaction -> TransactionDetail (Master-Detail)
             modelBuilder.Entity<TransactionDetail>()
                 .HasOne(td => td.transaction)

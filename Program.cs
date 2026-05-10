@@ -4,6 +4,7 @@ using MySql.EntityFrameworkCore.Extensions;
 using sipetok_api;
 using sipetok_api.Data;
 using sipetok_api.dto.Respon;
+using sipetok_api.service;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -47,7 +48,10 @@ builder.Services.AddControllers()
         };
     });
 
-// --- 2. OPENAPI / SWAGGER ---
+// untuk panggil config service
+builder.Services.AddApplicationServices();
+
+// 2. OpenAPI / Swagger
 builder.Services.AddOpenApi();
 
 // --- 3. DATABASE CONNECTION ---
