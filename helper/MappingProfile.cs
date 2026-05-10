@@ -18,8 +18,8 @@ namespace sipetok_api
             CreateMap<EggDto, Egg>();
             CreateMap<EggCategoryDto, EggCategory>();
             CreateMap<ChangePasswordDto, User>();
-            CreateMap<Transaction, TransactionDto>();
-            CreateMap<TransactionDetail, TransactionDetailDto>();
+            CreateMap<TransactionDto, Transaction>();
+            CreateMap<TransactionDetailDto, TransactionDetail>();
 
             CreateMap<User, UserRespon>();
             CreateMap<Customer, CustomerRespon>();

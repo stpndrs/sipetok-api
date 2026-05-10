@@ -202,10 +202,7 @@ public class TenantController : ControllerBase
                 });
             }
 
-            tenant.name = tenantDto.name;
-            tenant.address = tenantDto.address;
-            tenant.phoneNumber = tenantDto.phoneNumber;
-            tenant.isValid = tenantDto.isValid;
+            _mapper.Map(tenantDto, tenant);
             tenant.UpdateTimestamps();
 
             if (tenantDto.user != null)
@@ -213,13 +210,12 @@ public class TenantController : ControllerBase
                 var user = dbContext.Users.Find(tenant.user_id);
                 if (user != null)
                 {
-                    user.username = tenantDto.user.username;
+                    _mapper.Map(tenantDto.user, user);
                     if (!string.IsNullOrWhiteSpace(tenantDto.user.password))
                     {
                         user.password = Bcrypt.BcryptPassword(tenantDto.user.password);
                     }
-                    user.email = tenantDto.user.email;
-                    user.status = tenantDto.user.status;
+
                     user.UpdateTimestamps();
                 }
             }
@@ -266,9 +262,7 @@ public class TenantController : ControllerBase
                 });
             }
 
-            tenant.name = tenantDto.name;
-            tenant.address = tenantDto.address;
-            tenant.phoneNumber = tenantDto.phoneNumber;
+            _mapper.Map(tenantDto, tenant);
             tenant.UpdateTimestamps();
 
             if (tenantDto.user != null)
@@ -276,13 +270,13 @@ public class TenantController : ControllerBase
                 var user = dbContext.Users.Find(tenant.user_id);
                 if (user != null)
                 {
-                    user.username = tenantDto.user.username;
                     if (!string.IsNullOrWhiteSpace(tenantDto.user.password))
                     {
                         user.password = Bcrypt.BcryptPassword(tenantDto.user.password);
                     }
-                    user.email = tenantDto.user.email;
-                    user.status = tenantDto.user.status;
+                    _mapper.Map(tenantDto.user, user);
+                    user.role = 2;
+                    user.status = 1;
                     user.UpdateTimestamps();
                 }
             }

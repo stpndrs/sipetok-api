@@ -2,10 +2,10 @@ using System.ComponentModel.DataAnnotations;
 
 namespace sipetok_api.dto.Request
 {
-    class TransactionDetailDto
+    public class TransactionDetailDto
     {
-        [Required(ErrorMessage = "Transaction ID is required!")]
-        public int transaction_id { get; set; }
+        // [Required(ErrorMessage = "Transaction ID is required!")]
+        // public int transaction_id { get; set; }
 
         [Required(ErrorMessage = "Category name is required!")]
         public string category_name { get; set; } = string.Empty;
@@ -18,9 +18,9 @@ namespace sipetok_api.dto.Request
 
         public TransactionDetailDto() { }
 
-        public TransactionDetailDto(int transaction_id, string category_name, double quantity, decimal subtotal)
+        public TransactionDetailDto(string category_name, double quantity, decimal subtotal)
         {
-            this.transaction_id = transaction_id;
+            // this.transaction_id = transaction_id;
             this.category_name = category_name;
             this.quantity = quantity;
             this.subtotal = subtotal;

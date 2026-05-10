@@ -138,12 +138,14 @@ public class OperationalController : ControllerBase
     {
         try
         {
-            int userId = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "tenant_id")?.Value ?? "0");
-            var operational = _mapper.Map<List<OperationalRespon>>(
+            int userId = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value ?? "0");
+            var operational = _mapper.Map<List<OperationalRespon>>
+            (
                 (from o in dbContext.Operationals
                  join t in dbContext.Tenants on o.tenant_id equals t.id
                  where t.user_id == userId
-                 select o).ToList()
+                 select o
+                 ).ToList()
             );
 
             if (operational == null)
@@ -177,8 +179,9 @@ public class OperationalController : ControllerBase
     }
 
     [HttpPost]
+    [Route("addmyoperational")]
     [Authorize(Roles = "2")]
-    public IActionResult AddOperational([FromBody] OperationalDto operationalDto)
+    public IActionResult AddMyOperational([FromBody] OperationalDto operationalDto)
     {
         try
         {
@@ -186,7 +189,13 @@ public class OperationalController : ControllerBase
             var tenant = _mapper.Map<TenantRespon>(dbContext.Tenants.Include(c => c.user).FirstOrDefault(c => c.user_id == userId)); 
             if (tenant is null)
             {
-                return BadRequest("Tenant not found");
+                return BadRequest(
+                    new ResponData<OperationalRespon>
+                    {
+                        success = false,
+                        message = "Tenant not found"
+                    }
+                );
             }
 
             var operational = _mapper.Map<Operational>(operationalDto);
@@ -224,15 +233,41 @@ public class OperationalController : ControllerBase
         try
         {
             var operational = dbContext.Operationals.Find(id);
+            int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
+            var tenant = _mapper.Map<TenantRespon>(dbContext.Tenants.Include(c => c.user).FirstOrDefault(c => c.user_id == userId)); 
 
+            if (tenant is null)
+            {
+                return BadRequest(
+                    new ResponData<OperationalRespon>
+                    {
+                        success = false,
+                        message = "Tenant not found"
+                    }
+                );
+            }
             if (operational is null)
             {
-                return NotFound();
+                return NotFound(
+                    new ResponData<OperationalRespon>
+                    {
+                        success = false,
+                        message = $"Operational data with id {id} not found"
+                    }
+                );
+            }
+            if(operational.tenant_id != tenant.id)
+            {
+                return BadRequest(
+                    new ResponData<OperationalRespon>
+                    {
+                        success = false,
+                        message = "You are not authorized to update this operational data"
+                    }
+                );
             }
 
-            operational.name = operationalDto.name;
-            operational.operational_cost = operationalDto.operational_cost;
-            operational.operational_date = operationalDto.operational_date;
+            _mapper.Map(operationalDto, operational);
             operational.UpdateTimestamps();
 
             dbContext.SaveChanges();
@@ -265,14 +300,38 @@ public class OperationalController : ControllerBase
         try
         {
             var operational = dbContext.Operationals.Find(id);
+            int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
+            var tenant = _mapper.Map<TenantRespon>(dbContext.Tenants.Include(c => c.user).FirstOrDefault(c => c.user_id == userId)); 
 
+            if (tenant is null)
+            {
+                return BadRequest(
+                    new ResponData<OperationalRespon>
+                    {
+                        success = false,
+                        message = "Tenant not found"
+                    }
+                );
+            }
             if (operational is null)
             {
-                return NotFound(new ResponData<OperationalRespon>
-                {
-                    success = false,
-                    message = $"Operational data with id {id} not found"
-                });
+                return NotFound(
+                    new ResponData<OperationalRespon>
+                    {
+                        success = false,
+                        message = $"Operational data with id {id} not found"
+                    }
+                );
+            }
+            if(operational.tenant_id != tenant.id)
+            {
+                return BadRequest(
+                    new ResponData<OperationalRespon>
+                    {
+                        success = false,
+                        message = "You are not authorized to update this operational data"
+                    }
+                );
             }
 
             operational.SoftDelete();

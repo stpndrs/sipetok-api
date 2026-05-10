@@ -121,15 +121,6 @@ public class EggController : ControllerBase
             })
             .ToList();
 
-            // if (availableEggs == null || !availableEggs.Any())
-            // {
-            //     return NotFound(new ResponData<object>
-            //     {
-            //         success = false,
-            //         message = $"Egg data with tenant id {tenant.id} not found"
-            //     });
-            // }
-
             var respon = new ResponData<List<EggAvailableRespon>>
             {
                 success = true,
