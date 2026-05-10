@@ -1,11 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using MySql.EntityFrameworkCore.Extensions; 
+using MySql.EntityFrameworkCore.Extensions;
 using sipetok_api;
 using sipetok_api.Data;
 using sipetok_api.dto.Respon;
 using sipetok_api.service;
 using System.Text.Json.Serialization;
+using sipetok_api.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -43,7 +44,11 @@ builder.Services.AddControllers()
                     kvp => kvp.Value!.Errors.Select(e => e.ErrorMessage).ToArray()
                 );
 
-            var response = new ResponValidation { errors = validationErrors };
+            var response = new ResponValidation
+            {
+                errors = validationErrors
+            };
+
             return new BadRequestObjectResult(response);
         };
     });
@@ -54,14 +59,13 @@ builder.Services.AddApplicationServices();
 // 2. OpenAPI / Swagger
 builder.Services.AddOpenApi();
 
-// --- 3. DATABASE CONNECTION ---
+// 3. Database Connection
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseMySQL(connectionString)); 
+    options.UseMySQL(connectionString));
 
-// --- 4. AUTOMAPPER ---
+// 4. AutoMapper
 builder.Services.AddAutoMapper(typeof(MappingProfile));
-
 // --- 5. AUTHENTICATION & AUTHORIZATION ---
 builder.Services.AddAuthentication(options =>
 {
@@ -92,18 +96,14 @@ builder.Services.AddAuthorization(options =>
 // --- 6. BUILD APP ---
 var app = builder.Build();
 
-// --- 7. CONFIGURE PIPELINE ---
+// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
 
 app.UseHttpsRedirection();
-
-// PENTING: UseAuthentication HARUS sebelum UseAuthorization
-app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();
