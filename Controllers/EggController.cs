@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 
 using sipetok_api.Models;
 using sipetok_api.dto.Request;
@@ -7,8 +8,8 @@ using sipetok_api.Data;
 using AutoMapper;
 using sipetok_api.dto.Respon;
 using sipetok_api.Respon;
-using System.Net.Http.Headers;
 
+[Authorize]
 [Route("api/eggs")]
 [ApiController]
 public class EggController : ControllerBase
@@ -23,6 +24,7 @@ public class EggController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize(Roles = "1")]
     public IActionResult GetAllEggs()
     {
         try
@@ -33,7 +35,7 @@ public class EggController : ControllerBase
             {
                 success = true,
                 data = allEgg,
-                message = "Berhasil mengambil semua data egg"
+                message = "Successfully retrieved all egg data"
             };
 
             return Ok(respon);
@@ -52,6 +54,7 @@ public class EggController : ControllerBase
 
     [HttpGet]
     [Route("{id:int}")]
+    [Authorize(Roles = "1")]
     public IActionResult GetEggById(int id)
     {
         try
@@ -63,7 +66,7 @@ public class EggController : ControllerBase
                 return NotFound(new ResponData<EggRespon>
                 {
                     success = false,
-                    message = $"Data egg dengan id {id} tidak ditemukan"
+                    message = $"Egg data with id {id} not found"
                 });
             }
 
@@ -71,7 +74,7 @@ public class EggController : ControllerBase
             {
                 success = true,
                 data = egg,
-                message = $"Berhasil mengambil data egg pada id {id}"
+                message = $"Successfully retrieved egg data with id {id}"
             };
             return Ok(respon);
         }
@@ -87,34 +90,58 @@ public class EggController : ControllerBase
     }
 
     [HttpGet]
-    [Route("tenant/{id:int}")]
-    public IActionResult GetEggByTenantId(int tenantId)
+    [Route("myeggs")]
+    [Authorize(Roles = "2")]
+    public IActionResult GetMyEggs()
     {
         try
         {
-            var egg = _mapper.Map<List<EggRespon>>(dbContext.Eggs.Include(e => e.tenant).Include(e => e.category).Where(e => e.tenant_id == tenantId).ToList());
+            int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
+            var tenant = dbContext.Tenants.Include(c => c.user).FirstOrDefault(c => c.user_id == userId);
 
-            if (egg == null)
+            if (tenant is null)
             {
-                return NotFound(new ResponData<List<EggRespon>>
+                return BadRequest(new ResponData<List<EggAvailableRespon>>
                 {
                     success = false,
-                    message = $"Data egg dengan id tenant {tenantId} tidak ditemukan"
+                    message = "Data tenant not found"
                 });
             }
 
-            var respon = new ResponData<List<EggRespon>>
+            var availableEggs = dbContext.Eggs
+            .Include(e => e.category)
+            .Where(e => e.tenant_id == tenant.id)
+            .GroupBy(e => e.category_id)
+            .Select(group => new EggAvailableRespon
+            {
+                category_id = group.Key,
+                tenant_id = tenant.id,
+                stock = group.Sum(e => e.stock),
+                category = _mapper.Map<EggCategoryRespon>(group.First().category)
+            })
+            .ToList();
+
+            // if (availableEggs == null || !availableEggs.Any())
+            // {
+            //     return NotFound(new ResponData<object>
+            //     {
+            //         success = false,
+            //         message = $"Egg data with tenant id {tenant.id} not found"
+            //     });
+            // }
+
+            var respon = new ResponData<List<EggAvailableRespon>>
             {
                 success = true,
-                data = egg,
-                message = $"Berhasil mengambil data customer pada id tenant {tenantId}"
+                data = availableEggs,
+                message = $"Successfully retrieved egg data with tenant id {tenant.id}"
             };
 
             return Ok(respon);
         }
         catch (Exception ex)
         {
-            var respon = new ResponData<List<EggRespon>>
+            var respon = new ResponData<List<EggAvailableRespon>>
             {
                 success = false,
                 message = ex.Message
@@ -125,20 +152,33 @@ public class EggController : ControllerBase
     }
 
     [HttpGet]
-    [Route("tenant/total/{tenantId:int}")]
-    public IActionResult GetTotalEggByTenantId(int tenantId)
+    [Route("getmytotaleggs")]
+    [Authorize(Roles = "2")]
+    public IActionResult GetTotalEggByTenantId()
     {
         try
         {
+            int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
+            var tenant = dbContext.Tenants.Include(c => c.user).FirstOrDefault(c => c.user_id == userId);
+
+            if (tenant is null)
+            {
+                return BadRequest(new ResponData<int>
+                {
+                    success = false,
+                    message = "Data tenant not found"
+                });
+            }
+
             var totalStock = dbContext.Eggs
-        .Where(e => e.tenant_id == tenantId)
-        .Sum(e => e.stock);
+            .Where(e => e.tenant_id == tenant.id)
+            .Sum(e => e.stock);
 
             var respon = new ResponData<int>
             {
                 success = true,
                 data = totalStock,
-                message = $"Berhasil mengambil total stok telur dari id tenant {tenantId}"
+                message = $"Successfully retrieved total egg stock for tenant {tenant.id}"
             };
 
             return Ok(respon);
@@ -156,34 +196,36 @@ public class EggController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = "2")]
     public IActionResult AddEgg([FromBody] EggDto eggDto)
     {
         try
         {
-            var tenant = dbContext.Tenants.Find(eggDto.tenant_id);
+            int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
+            var tenant = dbContext.Tenants.Include(c => c.user).FirstOrDefault(c => c.user_id == userId);
             var eggCategory = dbContext.EggCategories.Find(eggDto.category_id);
 
-            if (tenant == null)
+            if (tenant is null)
             {
                 return BadRequest(new ResponData<EggRespon>
                 {
                     success = false,
-                    message = "Data tenant tidak ditemukan"
+                    message = "Data tenant not found"
                 });
             }
-            if (eggCategory == null)
+            if (eggCategory is null)
             {
                 return BadRequest(new ResponData<EggRespon>
                 {
                     success = false,
-                    message = "Data category tidak ditemukan"
+                    message = "Data category not found"
                 });
             }
 
             var egg = _mapper.Map<Egg>(eggDto);
 
-            egg.tenant = tenant;
-            egg.category = eggCategory;
+            egg.tenant_id = tenant.id;
+            egg.category_id = eggCategory.id;
 
             dbContext.Eggs.Add(egg);
             dbContext.SaveChanges();
@@ -192,7 +234,72 @@ public class EggController : ControllerBase
             {
                 success = true,
                 data = _mapper.Map<EggRespon>(egg),
-                message = "Berhasil menambahkan data egg"
+                message = "Successfully added egg data"
+            };
+
+            return Ok(respon);
+        }
+        catch (Exception ex)
+        {
+            var respon = new ResponData<EggRespon>
+            {
+                success = false,
+                message = ex.Message
+            };
+
+            return BadRequest(respon);
+        }
+    }
+
+    [HttpPost]
+    [Route("addmyeggs")]
+    [Authorize(Roles = "2")]
+    public IActionResult AddMyEgg([FromBody] EggDto eggDto)
+    {
+        try
+        {
+            int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
+            var tenant = dbContext.Tenants.Include(c => c.user).FirstOrDefault(c => c.user_id == userId);
+            var eggCategory = dbContext.EggCategories.Find(eggDto.category_id);
+
+            if (tenant is null)
+            {
+                return BadRequest(new ResponData<EggRespon>
+                {
+                    success = false,
+                    message = "Data tenant not found"
+                });
+            }
+            if (eggCategory is null)
+            {
+                return BadRequest(new ResponData<EggRespon>
+                {
+                    success = false,
+                    message = "Data category not found"
+                });
+            }
+            if (eggCategory.tenant_id != tenant.id)
+            {
+                return BadRequest(new ResponData<EggRespon>
+                {
+                    success = false,
+                    message = "Category does not belong to your tenant"
+                });
+            }
+
+            var egg = _mapper.Map<Egg>(eggDto);
+
+            egg.tenant_id = tenant.id;
+            egg.category_id = eggCategory.id;
+
+            dbContext.Eggs.Add(egg);
+            dbContext.SaveChanges();
+
+            var respon = new ResponData<EggRespon>
+            {
+                success = true,
+                data = _mapper.Map<EggRespon>(egg),
+                message = "Successfully added egg data"
             };
 
             return Ok(respon);
@@ -210,7 +317,7 @@ public class EggController : ControllerBase
     }
 
     [HttpPut]
-    [Route("{id:int}")]
+    [Authorize(Roles = "1")]
     public IActionResult UpdateEgg(int id, [FromBody] EggDto eggDto)
     {
         try
@@ -225,7 +332,6 @@ public class EggController : ControllerBase
             egg.production_date = eggDto.production_date;
             egg.category_id = eggDto.category_id;
             egg.stock = eggDto.stock;
-            egg.tenant_id = eggDto.tenant_id;
             egg.UpdateTimestamps();
 
             dbContext.SaveChanges();
@@ -234,7 +340,7 @@ public class EggController : ControllerBase
             {
                 success = true,
                 data = _mapper.Map<EggRespon>(egg),
-                message = "Berhasil memperbarui data"
+                message = "Successfully updated egg data"
             };
 
             return Ok(respon);
@@ -252,69 +358,70 @@ public class EggController : ControllerBase
     }
 
     [HttpPut]
-    [Route("kurangi/{idTenant:int}")]
-    public IActionResult KurangiEggByTenant(int idTenant, [FromQuery] int jumlah)
+    [Authorize(Roles = "2")]
+    public IActionResult UpdateMyEgg(int id, [FromBody] EggDto eggDto)
     {
         try
         {
-            var listEgg = dbContext.Eggs
-                .Where(e => e.tenant_id == idTenant && e.stock > 0)
-                .OrderBy(e => e.production_date)
-                .ToList();
+            int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
 
-            int totalStokTersedia = listEgg.Sum(e => e.stock);
-            if (totalStokTersedia < jumlah)
+            var egg = dbContext.Eggs
+                .Include(e => e.tenant)
+                .FirstOrDefault(e => e.id == id);
+
+            if (egg == null)
             {
-                return BadRequest(new ResponData<string>
+                return NotFound(new { success = false, message = "Data egg not found" });
+            }
+
+            if (egg.tenant == null || egg.tenant.user_id != userId)
+            {
+
+                return BadRequest(new ResponData<EggRespon>
                 {
                     success = false,
-                    message = $"Stok tidak mencukupi. Total stok: {totalStokTersedia}, Permintaan: {jumlah}"
+                    message = "Egg data does not have tenant information"
                 });
             }
-
-            int sisaYangHarusDikurangi = jumlah;
-
-            foreach (var egg in listEgg)
-            {
-                if (sisaYangHarusDikurangi <= 0) break;
-
-                if (egg.stock >= sisaYangHarusDikurangi)
-                {
-                    egg.stock -= sisaYangHarusDikurangi;
-                    sisaYangHarusDikurangi = 0;
-                }
-                else
-                {
-                    sisaYangHarusDikurangi -= egg.stock;
-                    egg.stock = 0;
-                }
-            }
+            egg.production_date = eggDto.production_date;
+            egg.category_id = eggDto.category_id;
+            egg.stock = eggDto.stock;
+            egg.UpdateTimestamps();
 
             dbContext.SaveChanges();
 
-            return Ok(new ResponData<string>
+            var respon = new ResponData<EggRespon>
             {
                 success = true,
-                message = $"Berhasil mengurangi {jumlah} telur dari tenant {idTenant}"
-            });
+                data = _mapper.Map<EggRespon>(egg),
+                message = "Successfully updated egg data"
+            };
+
+            return Ok(respon);
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new ResponData<string>
+            var respon = new ResponData<EggRespon>
             {
                 success = false,
                 message = ex.Message
-            });
+            };
+
+            return BadRequest(respon);
         }
     }
 
     [HttpDelete]
     [Route("{id:int}")]
+    [Authorize(Roles = "2")]
     public IActionResult DeleteEgg(int id)
     {
         try
         {
-            var egg = dbContext.Eggs.Find(id);
+            var userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
+            var egg = dbContext.Eggs
+                .Include(e => e.tenant)
+                .FirstOrDefault(e => e.id == id);
 
             if (egg is null)
             {
@@ -322,6 +429,14 @@ public class EggController : ControllerBase
                 {
                     success = false,
                     message = $"Egg data with id {id} not found"
+                });
+            }
+            if (egg.tenant == null || egg.tenant.user_id != userId)
+            {
+                return BadRequest(new ResponData<EggRespon>
+                {
+                    success = false,
+                    message = "Egg data does not have tenant information"
                 });
             }
 

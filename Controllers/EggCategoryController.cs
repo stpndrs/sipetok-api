@@ -1,12 +1,14 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 
 using sipetok_api.Models;
 using sipetok_api.dto.Request;
 using sipetok_api.Data;
 using AutoMapper;
 using sipetok_api.dto.Respon;
+using Microsoft.EntityFrameworkCore;
 
+[Authorize]
 [Route("api/egg/categories")]
 [ApiController]
 public class EggCategoryController : ControllerBase
@@ -21,6 +23,7 @@ public class EggCategoryController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize(Roles = "1")]
     public IActionResult GetAllEggCategory()
     {
         try
@@ -31,7 +34,45 @@ public class EggCategoryController : ControllerBase
             {
                 success = true,
                 data = allEggCategory,
-                message = "Berhasil mengambil semua data egg category"
+                message = "Successfully retrieved all egg category data"
+            };
+            return Ok(respon);
+        }
+        catch (Exception ex)
+        {
+            var respon = new ResponData<EggCategoryRespon>
+            {
+                success = false,
+                message = ex.Message
+            };
+            
+            return StatusCode(500, respon);
+        }
+    }
+
+    [HttpGet]
+    [Route("myeggcategory")]
+    [Authorize(Roles = "2")]
+    public IActionResult GetMyEggCategories()
+    {
+        try
+        {
+            int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
+            var allEggCategory = _mapper.Map<List<EggCategoryRespon>>(
+                (
+                    from u in dbContext.Users
+                    join t in dbContext.Tenants on u.id equals t.user_id
+                    join ec in dbContext.EggCategories on t.id equals ec.tenant_id
+                    where u.id == userId
+                    select ec
+                ).ToList()
+            );
+
+            var respon = new ResponData<List<EggCategoryRespon>>
+            {
+                success = true,
+                data = allEggCategory,
+                message = "Successfully retrieved my egg category data"
             };
             return Ok(respon);
         }
@@ -49,6 +90,7 @@ public class EggCategoryController : ControllerBase
 
     [HttpGet]
     [Route("{id:int}")]
+    [Authorize(Roles = "1")]
     public IActionResult GetEggCategoryById(int id)
     {
         try
@@ -60,7 +102,7 @@ public class EggCategoryController : ControllerBase
                 return NotFound(new ResponData<EggCategoryRespon>
                 {
                     success = false,
-                    message = $"Data customer dengan id {id} tidak ditemukan"
+                    message = $"Egg category data with id {id} not found"
                 });
             }
 
@@ -68,7 +110,7 @@ public class EggCategoryController : ControllerBase
             {
                 success = true,
                 data = eggCategory,
-                message = $"Berhasil mengambil data egg category pada id {id}"
+                message = $"Successfully retrieved egg category data with id {id}"
             };
 
             return Ok(respon);
@@ -77,7 +119,7 @@ public class EggCategoryController : ControllerBase
         {
             var respon = new ResponData<EggCategoryRespon>
             {
-                success = true,
+                success = false,
                 message = ex.Message
             };
 
@@ -86,12 +128,23 @@ public class EggCategoryController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = "1")]
     public IActionResult AddEggCategory([FromBody] EggCategoryDto eggCategoryDto)
     {
         try
         {
-            var eggCategory = _mapper.Map<EggCategory>(eggCategoryDto);
+            var tenant = dbContext.Tenants.Find(eggCategoryDto.tenant_id);
+            if (tenant is null)
+            {
+                return BadRequest(new ResponData<EggCategoryRespon>
+                {
+                    success = false,
+                    message = "Tenant not found"
+                });
+            }
 
+            var eggCategory = _mapper.Map<EggCategory>(eggCategoryDto);
+            eggCategory.tenant_id = tenant.id;
             dbContext.EggCategories.Add(eggCategory);
             dbContext.SaveChanges();
 
@@ -99,7 +152,7 @@ public class EggCategoryController : ControllerBase
             {
                 success = true,
                 data = _mapper.Map<EggCategoryRespon>(eggCategory),
-                message = "Berhasil menambahkan data egg category"
+                message = "Successfully added egg category data"
             };
 
             return Ok(respon);
@@ -108,7 +161,51 @@ public class EggCategoryController : ControllerBase
         {
             var respon = new ResponData<EggCategoryRespon>
             {
+                success = false,
+                message = ex.Message
+            };
+
+            return BadRequest(respon);
+        }
+    }
+    
+    [HttpPost]
+    [Route("addmyeggcategory")]
+    [Authorize(Roles = "2")]
+    public IActionResult AddMyEggCategory([FromBody] EggCategoryDto eggCategoryDto)
+    {
+        try
+        {
+            int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
+            var tenant = dbContext.Tenants.Include(c => c.user).FirstOrDefault(c => c.user_id == userId);
+            if (tenant is null || tenant.user_id != userId)
+            {
+                return BadRequest(new ResponData<EggCategoryRespon>
+                {
+                    success = false,
+                    message = "Egg category data does not have tenant information"
+                });
+            }
+
+            var eggCategory = _mapper.Map<EggCategory>(eggCategoryDto);
+            eggCategory.tenant_id = tenant.id;
+            dbContext.EggCategories.Add(eggCategory);
+            dbContext.SaveChanges();
+
+            var respon = new ResponData<EggCategoryRespon>
+            {
                 success = true,
+                data = _mapper.Map<EggCategoryRespon>(eggCategory),
+                message = "Successfully added my egg category data"
+            };
+
+            return Ok(respon);
+        }
+        catch (Exception ex)
+        {
+            var respon = new ResponData<EggCategoryRespon>
+            {
+                success = false,
                 message = ex.Message
             };
 
@@ -118,6 +215,7 @@ public class EggCategoryController : ControllerBase
 
     [HttpPut]
     [Route("{id:int}")]
+    [Authorize(Roles = "1")]
     public IActionResult UpdateEggCategory(int id, [FromBody] EggCategoryDto eggCategoryDto)
     {
         try
@@ -139,7 +237,7 @@ public class EggCategoryController : ControllerBase
             {
                 success = true,
                 data = _mapper.Map<EggCategoryRespon>(eggCategory),
-                message = "Berhasil memperbarui data"
+                message = "Successfully updated egg category data"
             };
 
             return Ok(respon);
@@ -148,7 +246,73 @@ public class EggCategoryController : ControllerBase
         {
             var respon = new ResponData<EggCategoryRespon>
             {
+                success = false,
+                message = ex.Message
+            };
+
+            return BadRequest(respon);
+        }
+    }
+    
+    [HttpPut]
+    [Route("myeggcategory/{id:int}")]
+    [Authorize(Roles = "2")]
+    public IActionResult UpdateMyEggCategory(int id, [FromBody] EggCategoryDto eggCategoryDto)
+    {
+        try
+        {
+            int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
+            var tenant = dbContext.Tenants.Include(c => c.user).FirstOrDefault(c => c.user_id == userId);
+            var eggCategory = dbContext.EggCategories.Find(id);
+
+            if (eggCategory is null)
+            {
+                return NotFound(
+                    new ResponData<EggCategoryRespon>
+                    {
+                        success = false,
+                        message = $"Egg category data with id {id} not found"
+                    }
+                );
+            }
+            if(tenant is null)
+            {
+                return BadRequest(new ResponData<EggCategoryRespon>
+                {
+                    success = false,
+                    message = "Tenant not found"
+                });
+            }
+            if(eggCategory.tenant_id != tenant.id)
+            {
+                return BadRequest(new ResponData<EggCategoryRespon>
+                {
+                    success = false,
+                    message = "You are not authorized to update this egg category data"
+                });
+            }
+
+            eggCategory.name = eggCategoryDto.name;
+            eggCategory.price = eggCategoryDto.price;
+            eggCategory.description = eggCategoryDto.description;
+            eggCategory.UpdateTimestamps();
+
+            dbContext.SaveChanges();
+
+            var respon = new ResponData<EggCategoryRespon>
+            {
                 success = true,
+                data = _mapper.Map<EggCategoryRespon>(eggCategory),
+                message = "Successfully updated egg category data"
+            };
+
+            return Ok(respon);
+        }
+        catch (Exception ex)
+        {
+            var respon = new ResponData<EggCategoryRespon>
+            {
+                success = false,
                 message = ex.Message
             };
 
@@ -158,10 +322,13 @@ public class EggCategoryController : ControllerBase
 
     [HttpDelete]
     [Route("{id:int}")]
+    [Authorize(Roles = "2")]
     public IActionResult DeleteEggCategory(int id)
     {
         try
         {
+            int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
+            var tenant = dbContext.Tenants.Include(c => c.user).FirstOrDefault(c => c.user_id == userId);
             var eggCategory = dbContext.EggCategories.Find(id);
 
             if (eggCategory is null)
@@ -170,6 +337,22 @@ public class EggCategoryController : ControllerBase
                 {
                     success = false,
                     message = $"Egg category data with id {id} not found"
+                });
+            }
+            if(tenant is null)
+            {
+                return BadRequest(new ResponData<EggCategoryRespon>
+                {
+                    success = false,
+                    message = "Tenant not found"
+                });
+            }
+            if(eggCategory.tenant_id != tenant.id)
+            {
+                return BadRequest(new ResponData<EggCategoryRespon>
+                {
+                    success = false,
+                    message = "You are not authorized to delete this egg category data"
                 });
             }
 

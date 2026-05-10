@@ -6,11 +6,25 @@ using sipetok_api.Data;
 using sipetok_api.dto.Respon;
 using sipetok_api.service;
 using System.Text.Json.Serialization;
-using sipetok_api.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Gabungkan semua konfigurasi Controller di sini
+// --- 0. LOAD JWT CONFIGURATION ---
+var jwtSection = builder.Configuration.GetSection("configProperties:JWT");
+var keyString = jwtSection["JWT_KEY"];
+
+if (string.IsNullOrEmpty(keyString))
+{
+    // Mencegah aplikasi jalan tanpa kunci rahasia
+    throw new Exception("JWT Key is missing in appsettings.json! Check configProperties:JWT:JWT_KEY");
+}
+
+var key = Encoding.UTF8.GetBytes(keyString);
+
+// --- 1. CONTROLLER & JSON CONFIGURATION ---
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -29,11 +43,7 @@ builder.Services.AddControllers()
                     kvp => kvp.Value!.Errors.Select(e => e.ErrorMessage).ToArray()
                 );
 
-            var response = new ResponValidation
-            {
-                errors = validationErrors
-            };
-
+            var response = new ResponValidation { errors = validationErrors };
             return new BadRequestObjectResult(response);
         };
     });
@@ -44,24 +54,56 @@ builder.Services.AddApplicationServices();
 // 2. OpenAPI / Swagger
 builder.Services.AddOpenApi();
 
-// 3. Database Connection
+// --- 3. DATABASE CONNECTION ---
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseMySQL(connectionString)); 
 
-// 4. AutoMapper
+// --- 4. AUTOMAPPER ---
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 
+// --- 5. AUTHENTICATION & AUTHORIZATION ---
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = jwtSection["JWT_ISSUER"],
+        ValidAudience = jwtSection["JWT_AUDIENCE"],
+        IssuerSigningKey = new SymmetricSecurityKey(key)
+    };
+});
+
+builder.Services.AddAuthorization(options =>
+{
+    // Policy untuk mengecek apakah user aktif
+    options.AddPolicy("ActiveUser", policy => 
+        policy.RequireClaim("status", "active"));
+});
+
+// --- 6. BUILD APP ---
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// --- 7. CONFIGURE PIPELINE ---
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
 
 app.UseHttpsRedirection();
+
+// PENTING: UseAuthentication HARUS sebelum UseAuthorization
+app.UseAuthentication();
 app.UseAuthorization();
+
 app.MapControllers();
 
 app.Run();

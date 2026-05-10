@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 
 using sipetok_api.dto.Request;
 using sipetok_api.Models;
@@ -7,6 +8,7 @@ using sipetok_api.Data;
 using AutoMapper;
 using sipetok_api.dto.Respon;
 
+[Authorize]
 [Route("api/operationals")]
 [ApiController]
 public class OperationalController : ControllerBase
@@ -21,6 +23,7 @@ public class OperationalController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize(Roles = "1")]
     public IActionResult GetAllOperationals()
     {
         try
@@ -31,7 +34,7 @@ public class OperationalController : ControllerBase
             {
                 success = true,
                 data = allOperational,
-                message = "Berhasil mengambil semua data Operational"
+                message = "Successfully retrieved all Operational data"
             };
 
             return Ok(respon);
@@ -50,6 +53,7 @@ public class OperationalController : ControllerBase
 
     [HttpGet]
     [Route("{id:int}")]
+    [Authorize(Roles = "1, 2")]
     public IActionResult GetOperationalById(int id)
     {
         try
@@ -61,7 +65,7 @@ public class OperationalController : ControllerBase
                 return NotFound(new ResponData<OperationalRespon>
                 {
                     success = false,
-                    message = $"Data operational dengan id {id} tidak ditemukan"
+                    message = $"Operational data with id {id} not found"
                 });
             }
 
@@ -69,7 +73,7 @@ public class OperationalController : ControllerBase
             {
                 success = true,
                 data = operational,
-                message = $"Berhasil mengambil data operational pada id {id}"
+                message = $"Successfully retrieved operational data with id {id}"
             };
 
             return Ok(respon);
@@ -88,18 +92,21 @@ public class OperationalController : ControllerBase
 
     [HttpGet]
     [Route("tenant/{tenantId:int}")]
+    [Authorize(Roles = "1, 2")]
     public IActionResult GetOperationalByTenantId(int tenantId)
     {
         try
         {
-            var operational = _mapper.Map<List<OperationalRespon>>(dbContext.Operationals.Include(o => o.tenant).Where(o => o.tenant_id == tenantId).ToList());
+            var operational = _mapper.Map<List<OperationalRespon>>(
+                dbContext.Operationals.Include(o => o.tenant).Where(o => o.tenant_id == tenantId).ToList()
+            );
 
             if (operational == null)
             {
                 return NotFound(new ResponData<OperationalRespon>
                 {
                     success = false,
-                    message = $"Data operational dengan id tenant {tenantId} tidak ditemukan"
+                    message = $"Operational data with tenant id {tenantId} not found"
                 });
             }
 
@@ -107,7 +114,52 @@ public class OperationalController : ControllerBase
             {
                 success = true,
                 data = operational,
-                message = $"Berhasil mengambil data operational pada id tenant {tenantId}"
+                message = $"Successfully retrieved operational data with tenant id {tenantId}"
+            };
+
+            return Ok(respon);
+        }
+        catch (Exception ex)
+        {
+            var respon = new ResponData<OperationalRespon>
+            {
+                success = false,
+                message = ex.Message
+            };
+
+            return StatusCode(500, respon);
+        }
+    }
+
+    [HttpGet]
+    [Route("myoperational")]
+    [Authorize(Roles = "2")]
+    public IActionResult GetMyOperational()
+    {
+        try
+        {
+            int userId = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "tenant_id")?.Value ?? "0");
+            var operational = _mapper.Map<List<OperationalRespon>>(
+                (from o in dbContext.Operationals
+                 join t in dbContext.Tenants on o.tenant_id equals t.id
+                 where t.user_id == userId
+                 select o).ToList()
+            );
+
+            if (operational == null)
+            {
+                return NotFound(new ResponData<OperationalRespon>
+                {
+                    success = false,
+                    message = $"Operational data with user id {userId} not found"
+                });
+            }
+
+            var respon = new ResponData<List<OperationalRespon>>
+            {
+                success = true,
+                data = operational,
+                message = $"Successfully retrieved operational data with user id {userId}"
             };
 
             return Ok(respon);
@@ -125,18 +177,19 @@ public class OperationalController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = "2")]
     public IActionResult AddOperational([FromBody] OperationalDto operationalDto)
     {
         try
         {
-            var tenant = dbContext.Tenants.Find(operationalDto.tenant_id);
+            int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
+            var tenant = _mapper.Map<TenantRespon>(dbContext.Tenants.Include(c => c.user).FirstOrDefault(c => c.user_id == userId)); 
             if (tenant is null)
             {
-                return BadRequest("Tenant tidak ditemukan");
+                return BadRequest("Tenant not found");
             }
 
             var operational = _mapper.Map<Operational>(operationalDto);
-            operational.tenant = tenant;
             operational.tenant_id = tenant.id;
 
             dbContext.Operationals.Add(operational);
@@ -146,7 +199,7 @@ public class OperationalController : ControllerBase
             {
                 success = true,
                 data = _mapper.Map<OperationalRespon>(operational),
-                message = "Berhasil menambahkan data operational"
+                message = "Successfully added operational data"
             };
 
             return Ok(respon);
@@ -165,6 +218,7 @@ public class OperationalController : ControllerBase
 
     [HttpPut]
     [Route("{id:int}")]
+    [Authorize(Roles = "2")]
     public IActionResult UpdateOperational(int id, [FromBody] OperationalDto operationalDto)
     {
         try
@@ -187,7 +241,7 @@ public class OperationalController : ControllerBase
             {
                 success = true,
                 data = _mapper.Map<OperationalRespon>(operational),
-                message = "Berhasil memperbarui data"
+                message = "Successfully updated operational data"
             };
 
             return Ok(respon);

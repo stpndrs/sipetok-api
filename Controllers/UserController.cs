@@ -1,14 +1,14 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 
 using sipetok_api.dto.Request;
 using sipetok_api.Models;
 using sipetok_api.Data;
-using sipetok_api.helper;
 using AutoMapper;
 using sipetok_api.dto;
 using sipetok_api.dto.Respon;
 
+[Authorize]
 [Route("api/users")]
 [ApiController]
 public class UserController : ControllerBase
@@ -32,7 +32,7 @@ public class UserController : ControllerBase
             {
                 success = true,
                 data = allUser,
-                message = "Beehasil mengambil semua data user"
+                message = "Successfully retrieves all user data"
             };
             return Ok(respon);
         }
@@ -60,7 +60,7 @@ public class UserController : ControllerBase
                 return NotFound(new ResponData<UserRespon>
                 {
                     success = false,
-                    message = $"Data user dengan id {id} tidak ditemukan"
+                    message = $"User data with id {id} not found"
                 });
             }
 
@@ -68,10 +68,48 @@ public class UserController : ControllerBase
             {
                 success = true,
                 data = user,
-                message = $"Berhasil mengambil data user pada id {id}"
+                message = $"Successfully retrieved user data with id {id}"
             };
 
-            return Ok(Response);
+            return Ok(respon);
+        }
+        catch (Exception ex)
+        {
+            var respon = new ResponData<UserRespon>
+            {
+                success = false,
+                message = ex.Message
+            };
+            return StatusCode(500, respon);
+        }
+    }
+
+    [HttpGet]
+    [Route("myaccount")]
+    public IActionResult GetMyAccount()
+    {
+        try
+        {
+            int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
+            var user = _mapper.Map<UserRespon>(dbContext.Users.Find(userId));
+
+            if (user is null)
+            {
+                return NotFound(new ResponData<UserRespon>
+                {
+                    success = false,
+                    message = $"User data with id {userId} not found"
+                });
+            }
+
+            var respon = new ResponData<UserRespon>
+            {
+                success = true,
+                data = user,
+                message = $"Successfully retrieved user data with id {userId}"
+            };
+
+            return Ok(respon);
         }
         catch (Exception ex)
         {
@@ -107,7 +145,7 @@ public class UserController : ControllerBase
             {
                 success = true,
                 data = _mapper.Map<UserRespon>(user),
-                message = $"Berhasil menambahkan data customer"
+                message = $"Successfully added user data"
             };
 
             return Ok(respon);
@@ -135,21 +173,17 @@ public class UserController : ControllerBase
             {
                 return NotFound(new ResponData<UserRespon>
                 {
-                    success = true,
-                    message = $"Data user dengan id {id} tidak ditemukan"
+                    success = false,
+                    message = $"User data with id {id} not found"
                 });
             }
 
-            if (string.IsNullOrWhiteSpace(userDto.password))
+            if (!string.IsNullOrWhiteSpace(userDto.password))
             {
-                return BadRequest(new ResponData<UserRespon>
-                {
-                    success = false,
-                    message = "Password is required"
-                });
+                user.password = Bcrypt.BcryptPassword(userDto.password);
             }
+
             user.username = userDto.username;
-            user.password = Bcrypt.BcryptPassword(userDto.password);
             user.email = userDto.email;
             user.status = userDto.status;
             user.UpdateTimestamps();
@@ -160,7 +194,7 @@ public class UserController : ControllerBase
             {
                 success = true,
                 data = _mapper.Map<UserRespon>(user),
-                message = "Berhasil memperbarui data"
+                message = $"Successfully updated user data with id {id}"
             };
             return Ok(respon);
         }
@@ -168,10 +202,59 @@ public class UserController : ControllerBase
         {
             var respon = new ResponData<UserRespon>
             {
-                success = true,
+                success = false,
                 message = ex.Message
             };
+            return BadRequest(respon);
+        }
+    }
+
+    [HttpPut]
+    [Route("updatemyaccount")]
+    public IActionResult UpdateMyAccount([FromBody] UserDto userDto)
+    {
+        try
+        {
+            int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
+            var user = dbContext.Users.Find(userId);
+
+            if (user is null)
+            {
+                return NotFound(new ResponData<UserRespon>
+                {
+                    success = false,
+                    message = $"User data with id {userId} not found"
+                });
+            }
+
+            if (!string.IsNullOrWhiteSpace(userDto.password))
+            {
+                user.password = Bcrypt.BcryptPassword(userDto.password);
+            }
+
+            user.username = userDto.username;
+            user.email = userDto.email;
+            user.status = userDto.status;
+            user.UpdateTimestamps();
+
+            dbContext.SaveChanges();
+
+            var respon = new ResponData<UserRespon>
+            {
+                success = true,
+                data = _mapper.Map<UserRespon>(user),
+                message = $"Successfully updated user data with id {userId}"
+            };
             return Ok(respon);
+        }
+        catch (Exception ex)
+        {
+            var respon = new ResponData<UserRespon>
+            {
+                success = false,
+                message = ex.Message
+            };
+            return BadRequest(respon);
         }
     }
 
@@ -188,23 +271,23 @@ public class UserController : ControllerBase
                 return NotFound(new ResponData<UserRespon>
                 {
                     success = false,
-                    message = $"Data user dengan id {userId} tidak ditemukan"
+                    message = $"User data with id {userId} not found"
                 });
             }
 
             if (BCrypt.Net.BCrypt.Verify(changePasswordDto.password_old, user.password))
             {
-                return NotFound(new ResponData<UserRespon>
+                return BadRequest(new ResponData<UserRespon>
                 {
                     success = false,
-                    message = "Password lama salah"
+                    message = "Old password is incorrect"
                 });
             }
             user.password = Bcrypt.BcryptPassword(changePasswordDto.password);
             user.UpdateTimestamps();
 
             dbContext.SaveChanges();
-            return Ok("Password berhasil diubah");
+            return Ok("Password changed successfully");
         }
         catch (Exception ex)
         {

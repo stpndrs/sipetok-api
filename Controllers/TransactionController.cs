@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Org.BouncyCastle.Ocsp;
@@ -10,9 +10,11 @@ using sipetok_api.service;
 using sipetok_api.Utils;
 using System.Threading.Tasks;
 using static System.Net.Mime.MediaTypeNames;
+using Microsoft.AspNetCore.Authorization;
 
 namespace sipetok_api.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/transactions")]
     public class TransactionController : ControllerBase
@@ -151,4 +153,4 @@ namespace sipetok_api.Controllers
         }
     }
     
-}
+// }
