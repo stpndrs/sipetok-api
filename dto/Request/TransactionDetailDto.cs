@@ -15,6 +15,7 @@ namespace sipetok_api.dto.Request
         
         [Required(ErrorMessage = "Subtotal is required!")]
         public decimal subtotal { get; set; }
+        public double price { get; set; }
 
         public TransactionDetailDto() { }
 
@@ -23,6 +24,7 @@ namespace sipetok_api.dto.Request
             // this.transaction_id = transaction_id;
             this.category_name = category_name;
             this.quantity = quantity;
+            this.price = price;
             this.subtotal = subtotal;
         }
     }

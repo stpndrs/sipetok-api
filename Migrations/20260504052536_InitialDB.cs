@@ -7,7 +7,7 @@ using MySql.EntityFrameworkCore.Metadata;
 namespace sipetok_api.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialDb : Migration
+    public partial class InitialDB : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -135,19 +135,14 @@ namespace sipetok_api.Migrations
                     date = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     payment_amount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     total_price = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false),
                     tenant_id = table.Column<int>(type: "int", nullable: false),
-                    customer_id = table.Column<int>(type: "int", nullable: false),
-                    Status = table.Column<int>(type: "int", nullable: false)
+                    customer_name = table.Column<string>(type: "longtext", nullable: false),
+                    customer_phone_number = table.Column<string>(type: "longtext", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Transactions", x => x.id);
-                    table.ForeignKey(
-                        name: "FK_Transactions_Customers_customer_id",
-                        column: x => x.customer_id,
-                        principalTable: "Customers",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Transactions_Tenants_tenant_id",
                         column: x => x.tenant_id,
@@ -195,6 +190,7 @@ namespace sipetok_api.Migrations
                     transaction_id = table.Column<int>(type: "int", nullable: false),
                     category_name = table.Column<string>(type: "varchar(50)", maxLength: 50, nullable: false),
                     quantity = table.Column<double>(type: "double", nullable: false),
+                    price = table.Column<double>(type: "double", nullable: false),
                     subtotal = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false)
                 },
                 constraints: table =>
@@ -245,11 +241,6 @@ namespace sipetok_api.Migrations
                 column: "transaction_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Transactions_customer_id",
-                table: "Transactions",
-                column: "customer_id");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Transactions_tenant_id",
                 table: "Transactions",
                 column: "tenant_id");
@@ -258,6 +249,9 @@ namespace sipetok_api.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "Customers");
+
             migrationBuilder.DropTable(
                 name: "Eggs");
 
@@ -272,9 +266,6 @@ namespace sipetok_api.Migrations
 
             migrationBuilder.DropTable(
                 name: "Transactions");
-
-            migrationBuilder.DropTable(
-                name: "Customers");
 
             migrationBuilder.DropTable(
                 name: "Tenants");

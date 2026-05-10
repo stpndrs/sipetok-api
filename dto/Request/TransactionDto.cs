@@ -11,22 +11,24 @@ namespace sipetok_api.dto.Request
 
         public decimal total_price { get; set; }
 
-        public int customer_id { get; set; }
+        public int tenant_id { get; set; }
+        public string customer_name { get; set; } = string.Empty;
+        public string customer_phone_number { get; set; } = string.Empty;
 
         public PaymentState Status { get; set; } = PaymentState.Pending;
-
-        public virtual CustomerDto? customer { get; set; }
 
         public virtual ICollection<TransactionDetailDto> details { get; set; } = new List<TransactionDetailDto>();
         
         public TransactionDto() { }
 
-        public TransactionDto(decimal payment_amount, decimal total_price, int customer_id)
+        public TransactionDto(decimal payment_amount, decimal total_price, int tenant_id, int customer_id, string customer_name, string customer_phone_number)
         {
             this.date = DateTime.Now;
             this.payment_amount = payment_amount;
             this.total_price = total_price;
-            this.customer_id = customer_id;
+            this.tenant_id = tenant_id;
+            this.customer_name = customer_name;
+            this.customer_phone_number = customer_phone_number;
         }
     }
 }

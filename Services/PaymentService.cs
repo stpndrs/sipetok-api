@@ -1,7 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using sipetok_api.Data;
-using sipetok_api.Utils;
+using sipetok_api.dto.Request;
 using sipetok_api.Models;
+using sipetok_api.Utils;
 
 namespace sipetok_api.service
 {
@@ -25,6 +26,51 @@ namespace sipetok_api.service
         public PaymentService(AppDbContext context)
         {
             dbContext = context;
+        }
+
+        public async Task<Transaction> ProcessTransaction(TransactionDto dto)
+        {
+            using var transactionScope = await dbContext.Database.BeginTransactionAsync();
+            try
+            {
+                var transaction = new Transaction
+                {
+                    date = dto.date,
+                    payment_amount = dto.payment_amount,
+                    total_price = dto.total_price,
+                    tenant_id = dto.tenant_id,
+                    Status = dto.Status,
+                    customer_name = dto.customer_name,
+                    customer_phone_number = dto.customer_phone_number,
+                };
+
+                dbContext.Transactions.Add(transaction);
+                await dbContext.SaveChangesAsync();
+
+                // Tambahkan Details
+                if (dto.details != null)
+                {
+                    foreach (var d in dto.details)
+                    {
+                        dbContext.TransactionDetails.Add(new TransactionDetail
+                        {
+                            transaction_id = transaction.id,
+                            category_name = d.category_name,
+                            quantity = d.quantity,
+                            subtotal = d.subtotal
+                        });
+                    }
+                    await dbContext.SaveChangesAsync();
+                }
+
+                await transactionScope.CommitAsync();
+                return transaction;
+            }
+            catch (Exception)
+            {
+                await transactionScope.RollbackAsync();
+                throw;
+            }
         }
 
         public async Task<bool> UpdateStatus(int id, string action = "NEXT")
