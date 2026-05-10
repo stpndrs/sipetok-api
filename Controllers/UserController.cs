@@ -23,6 +23,7 @@ public class UserController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize(Roles = "1")]
     public IActionResult GetAllUsers()
     {
         try
@@ -49,6 +50,7 @@ public class UserController : ControllerBase
 
     [HttpGet]
     [Route("{id:int}")]
+    [Authorize(Roles = "1")]
     public IActionResult GetUserById(int id)
     {
         try
@@ -234,7 +236,6 @@ public class UserController : ControllerBase
 
             user.username = userDto.username;
             user.email = userDto.email;
-            user.status = userDto.status;
             user.UpdateTimestamps();
 
             dbContext.SaveChanges();

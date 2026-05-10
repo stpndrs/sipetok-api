@@ -135,17 +135,16 @@ public class CustomerController : ControllerBase
     {
         try
         {
-            var user = _mapper.Map<User>(customerDto.user);
             var customer = _mapper.Map<Customer>(customerDto);
 
             if (customerDto.user != null)
             {
+                var user = _mapper.Map<User>(customerDto.user);
                 if (string.IsNullOrWhiteSpace(customerDto.user.password))
                 {
                     throw new Exception("Password is required");
                 }
 
-                user.username = customerDto.user.username;
                 user.password = Bcrypt.BcryptPassword(user.password);
                 user.role = 3;
                 user.status = 1;
@@ -194,9 +193,7 @@ public class CustomerController : ControllerBase
                 });
             }
 
-            customer.name = customerDto.name;
-            customer.address = customerDto.address;
-            customer.phone_number = customerDto.phone_number;
+            _mapper.Map(customerDto, customer);
             customer.UpdateTimestamps();
 
             if (customerDto.user != null)
@@ -209,9 +206,7 @@ public class CustomerController : ControllerBase
                         user.password = Bcrypt.BcryptPassword(customerDto.user.password);
                     }
 
-                    user.username = customerDto.user.username;
-                    user.email = customerDto.user.email;
-                    user.status = customerDto.user.status;
+                    _mapper.Map(customerDto.user, user);
                     user.UpdateTimestamps();
                 }
             }
@@ -256,9 +251,7 @@ public class CustomerController : ControllerBase
                 });
             }
 
-            customer.name = customerDto.name;
-            customer.address = customerDto.address;
-            customer.phone_number = customerDto.phone_number;
+            _mapper.Map(customerDto, customer);
             customer.UpdateTimestamps();
 
             if (customerDto.user != null)
@@ -266,14 +259,14 @@ public class CustomerController : ControllerBase
                 var user = dbContext.Users.Find(customer.user_id);
                 if (user != null)
                 {
+                    _mapper.Map(customerDto.user, user);
                     if (!string.IsNullOrWhiteSpace(customerDto.user.password))
                     {
                         user.password = Bcrypt.BcryptPassword(customerDto.user.password);
                     }
 
-                    user.username = customerDto.user.username;
-                    user.email = customerDto.user.email;
-                    user.status = customerDto.user.status;
+                    user.role = 3;
+                    user.status = 1;
                     user.UpdateTimestamps();
                 }
             }
