@@ -1,6 +1,6 @@
 namespace sipetok_api.dto.Respon
 {
-    class TransactionDetailRespon
+    public class TransactionDetailRespon
     {
         public int id {get; set;}
         public int transaction_id { get; set; }

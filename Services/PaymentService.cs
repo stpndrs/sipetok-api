@@ -28,7 +28,7 @@ namespace sipetok_api.service
             dbContext = context;
         }
 
-        public async Task<Transaction> ProcessTransaction(TransactionDto dto)
+        public virtual async Task<Transaction> ProcessTransaction(TransactionDto dto)
         {
             using var transactionScope = await dbContext.Database.BeginTransactionAsync();
             try
@@ -73,28 +73,64 @@ namespace sipetok_api.service
             }
         }
 
-        public async Task<bool> UpdateStatus(int id, string action = "NEXT")
+        public virtual async Task<bool> UpdateStatus(int id, string action = "NEXT")
         {
-            var transaksi = await dbContext.Transactions.FirstOrDefaultAsync(t => t.id == id);
-            if (transaksi == null) return false;
+            using var dbTransaction = await dbContext.Database.BeginTransactionAsync();
 
-            // Cek tabel anomali atau tidak
-            if (_transitions.TryGetValue((transaksi.Status, action.ToUpper()), out PaymentState nextState))
+            try
             {
-                transaksi.Status = nextState;
+                // 1. Ambil data transaksi beserta detailnya
+                var transaksi = await dbContext.Transactions
+                    .Include(t => t.details)
+                    .FirstOrDefaultAsync(t => t.id == id);
 
-                try
+                if (transaksi == null) return false;
+
+                // 2. Cek validasi transisi status
+                if (_transitions.TryGetValue((transaksi.Status, action.ToUpper()), out PaymentState nextState))
                 {
+                    // LOGIKA PENGURANGAN STOK: Terjadi jika status berubah menjadi Success (Selesai/Dibayar)
+                    if (nextState == PaymentState.Success)
+                    {
+                        foreach (var detail in transaksi.details)
+                        {
+                            // Cari data telur di tabel Eggs. 
+                            // Kita asumsikan ada relasi atau pencocokan berdasarkan category_name
+                            var eggData = await dbContext.Eggs
+                                .FirstOrDefaultAsync(e => e.tenant_id == transaksi.tenant_id);
+                            // Catatan: Jika ada banyak jenis telur, tambahkan filter kategori di sini, 
+                            // misal: .FirstOrDefaultAsync(e => e.id == detail.egg_id)
+
+                            if (eggData == null)
+                                throw new Exception($"Data stok telur tidak ditemukan untuk Tenant ini.");
+
+                            if (eggData.stock < detail.quantity)
+                                throw new Exception($"Stok telur tidak mencukupi! Sisa stok: {eggData.stock}");
+
+                            // Kurangi stok di tabel Eggs
+                            //eggData.stock -= detail.quantity;
+                        }
+                    }
+
+                    // 3. Update status transaksi
+                    transaksi.Status = nextState;
+
                     await dbContext.SaveChangesAsync();
+
+                    // Komit transaksi database
+                    await dbTransaction.CommitAsync();
                     return true;
                 }
-                catch (Exception)
-                {
-                    return false;
-                }
-            }
 
-            return false;
+                return false;
+            }
+            catch (Exception ex)
+            {
+                // Jika ada error (stok kurang/DB error), batalkan semua perubahan
+                await dbTransaction.RollbackAsync();
+                // Log pesan error agar bisa ditangkap di Controller (ex.Message)
+                throw new Exception(ex.Message);
+            }
         }
     }
 }

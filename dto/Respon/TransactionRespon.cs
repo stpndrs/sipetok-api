@@ -2,7 +2,7 @@ using sipetok_api.Utils;
 
 namespace sipetok_api.dto.Respon
 {
-    class TransactionRespon
+    public class TransactionRespon
     {
         public int id {get; set;}
         public DateTime date { get; set; }

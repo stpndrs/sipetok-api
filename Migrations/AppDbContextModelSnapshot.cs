@@ -77,8 +77,8 @@ namespace sipetok_api.Migrations
                     b.Property<DateTime>("production_date")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<int>("stock")
-                        .HasColumnType("int");
+                    b.Property<double>("stock")
+                        .HasColumnType("double");
 
                     b.Property<int>("tenant_id")
                         .HasColumnType("int");
@@ -227,8 +227,6 @@ namespace sipetok_api.Migrations
                     b.Property<DateTime>("created_at")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<int>("customer_id")
-                        .HasColumnType("int");
                     b.Property<string>("customer_name")
                         .IsRequired()
                         .HasColumnType("longtext");
