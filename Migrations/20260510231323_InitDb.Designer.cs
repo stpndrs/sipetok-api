@@ -11,8 +11,8 @@ using sipetok_api.Data;
 namespace sipetok_api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260501230746_UpdateAuditAndFilters")]
-    partial class UpdateAuditAndFilters
+    [Migration("20260510231323_InitDb")]
+    partial class InitDb
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -80,8 +80,8 @@ namespace sipetok_api.Migrations
                     b.Property<DateTime>("production_date")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<int>("stock")
-                        .HasColumnType("int");
+                    b.Property<double>("stock")
+                        .HasColumnType("double");
 
                     b.Property<int>("tenant_id")
                         .HasColumnType("int");
@@ -230,8 +230,13 @@ namespace sipetok_api.Migrations
                     b.Property<DateTime>("created_at")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<int>("customer_id")
-                        .HasColumnType("int");
+                    b.Property<string>("customer_name")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("customer_phone_number")
+                        .IsRequired()
+                        .HasColumnType("longtext");
 
                     b.Property<DateTime>("date")
                         .HasColumnType("datetime(6)");
@@ -255,8 +260,6 @@ namespace sipetok_api.Migrations
 
                     b.HasKey("id");
 
-                    b.HasIndex("customer_id");
-
                     b.HasIndex("tenant_id");
 
                     b.ToTable("Transactions");
@@ -278,6 +281,9 @@ namespace sipetok_api.Migrations
 
                     b.Property<DateTime?>("deleted_at")
                         .HasColumnType("datetime(6)");
+
+                    b.Property<double>("price")
+                        .HasColumnType("double");
 
                     b.Property<double>("quantity")
                         .HasColumnType("double");
@@ -405,19 +411,11 @@ namespace sipetok_api.Migrations
 
             modelBuilder.Entity("sipetok_api.Models.Transaction", b =>
                 {
-                    b.HasOne("sipetok_api.Models.Customer", "customer")
-                        .WithMany()
-                        .HasForeignKey("customer_id")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("sipetok_api.Models.Tenant", "tenant")
                         .WithMany()
                         .HasForeignKey("tenant_id")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-
-                    b.Navigation("customer");
 
                     b.Navigation("tenant");
                 });

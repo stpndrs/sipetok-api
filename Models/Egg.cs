@@ -6,7 +6,7 @@ namespace sipetok_api.Models
     {
         public int id { get; set; }
         public DateTime production_date { get; set; }
-        public int stock { get; set; }
+        public double stock { get; set; }
 
         public int tenant_id { get; set; }
 
@@ -19,7 +19,7 @@ namespace sipetok_api.Models
 
         public Egg() { }
 
-        public Egg(int id, DateTime production_date, int stock, int tenant_id, int category_id)
+        public Egg(int id, DateTime production_date, double stock, int tenant_id, int category_id)
         {
             this.id = id;
             this.production_date = production_date;

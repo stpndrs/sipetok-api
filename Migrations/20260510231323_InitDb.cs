@@ -7,7 +7,7 @@ using MySql.EntityFrameworkCore.Metadata;
 namespace sipetok_api.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialDB : Migration
+    public partial class InitDb : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -25,7 +25,10 @@ namespace sipetok_api.Migrations
                     password = table.Column<string>(type: "varchar(255)", maxLength: 255, nullable: false),
                     email = table.Column<string>(type: "varchar(100)", maxLength: 100, nullable: false),
                     role = table.Column<int>(type: "int", nullable: false),
-                    status = table.Column<int>(type: "int", nullable: false)
+                    status = table.Column<int>(type: "int", nullable: false),
+                    created_at = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    deleted_at = table.Column<DateTime>(type: "datetime(6)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -42,7 +45,10 @@ namespace sipetok_api.Migrations
                     name = table.Column<string>(type: "varchar(100)", maxLength: 100, nullable: false),
                     user_id = table.Column<int>(type: "int", nullable: false),
                     address = table.Column<string>(type: "varchar(255)", maxLength: 255, nullable: false),
-                    phone_number = table.Column<string>(type: "varchar(20)", maxLength: 20, nullable: false)
+                    phone_number = table.Column<string>(type: "varchar(20)", maxLength: 20, nullable: false),
+                    created_at = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    deleted_at = table.Column<DateTime>(type: "datetime(6)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -65,8 +71,11 @@ namespace sipetok_api.Migrations
                     name = table.Column<string>(type: "varchar(100)", maxLength: 100, nullable: false),
                     address = table.Column<string>(type: "varchar(255)", maxLength: 255, nullable: false),
                     phoneNumber = table.Column<string>(type: "varchar(20)", maxLength: 20, nullable: false),
-                    isTenant = table.Column<bool>(type: "tinyint(1)", nullable: false),
-                    user_id = table.Column<int>(type: "int", nullable: false)
+                    isValid = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    user_id = table.Column<int>(type: "int", nullable: false),
+                    created_at = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    deleted_at = table.Column<DateTime>(type: "datetime(6)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -89,7 +98,10 @@ namespace sipetok_api.Migrations
                     price = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     description = table.Column<string>(type: "varchar(255)", maxLength: 255, nullable: false),
                     name = table.Column<string>(type: "varchar(50)", maxLength: 50, nullable: false),
-                    tenant_id = table.Column<int>(type: "int", nullable: false)
+                    tenant_id = table.Column<int>(type: "int", nullable: false),
+                    created_at = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    deleted_at = table.Column<DateTime>(type: "datetime(6)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -112,7 +124,10 @@ namespace sipetok_api.Migrations
                     name = table.Column<string>(type: "varchar(100)", maxLength: 100, nullable: false),
                     operational_cost = table.Column<string>(type: "varchar(50)", maxLength: 50, nullable: false),
                     tenant_id = table.Column<int>(type: "int", nullable: false),
-                    operational_date = table.Column<DateTime>(type: "datetime(6)", nullable: false)
+                    operational_date = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    created_at = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    deleted_at = table.Column<DateTime>(type: "datetime(6)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -138,7 +153,10 @@ namespace sipetok_api.Migrations
                     Status = table.Column<int>(type: "int", nullable: false),
                     tenant_id = table.Column<int>(type: "int", nullable: false),
                     customer_name = table.Column<string>(type: "longtext", nullable: false),
-                    customer_phone_number = table.Column<string>(type: "longtext", nullable: false)
+                    customer_phone_number = table.Column<string>(type: "longtext", nullable: false),
+                    created_at = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    deleted_at = table.Column<DateTime>(type: "datetime(6)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -159,9 +177,12 @@ namespace sipetok_api.Migrations
                     id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
                     production_date = table.Column<DateTime>(type: "datetime(6)", nullable: false),
-                    stock = table.Column<int>(type: "int", nullable: false),
+                    stock = table.Column<double>(type: "double", nullable: false),
                     tenant_id = table.Column<int>(type: "int", nullable: false),
-                    category_id = table.Column<int>(type: "int", nullable: false)
+                    category_id = table.Column<int>(type: "int", nullable: false),
+                    created_at = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    deleted_at = table.Column<DateTime>(type: "datetime(6)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -191,7 +212,10 @@ namespace sipetok_api.Migrations
                     category_name = table.Column<string>(type: "varchar(50)", maxLength: 50, nullable: false),
                     quantity = table.Column<double>(type: "double", nullable: false),
                     price = table.Column<double>(type: "double", nullable: false),
-                    subtotal = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false)
+                    subtotal = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    created_at = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    deleted_at = table.Column<DateTime>(type: "datetime(6)", nullable: true)
                 },
                 constraints: table =>
                 {

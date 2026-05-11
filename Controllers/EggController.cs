@@ -161,11 +161,11 @@ public class EggController : ControllerBase
                 });
             }
 
-            var totalStock = dbContext.Eggs
+            double totalStock = dbContext.Eggs
             .Where(e => e.tenant_id == tenant.id)
             .Sum(e => e.stock);
 
-            var respon = new ResponData<int>
+            var respon = new ResponData<double>
             {
                 success = true,
                 data = totalStock,
