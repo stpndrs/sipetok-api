@@ -2,44 +2,54 @@
 {
     public class AccountRoleTableDriven
     {
-        string[] namaRole =
+        private readonly Dictionary<int, string> codeToRole = new Dictionary<int, string>
         {
-            "ADMIN",
-            "TENANT",
-            "CUSTOMER"
+            { 1, "ADMIN" },
+            { 2, "TENANT" },
+            { 3, "CUSTOMER" }
         };
 
-        int[] kodeRole =
+        public string GetRoleName(int kode)
         {
-            1,
-            2,
-            3
-        };
-
-        public int GetKodeRole(string role)
-        {
-            for (int i = 0; i < namaRole.Length; i++)
+            try
             {
-                if (namaRole[i] == role.ToUpper())
+                if (!codeToRole.ContainsKey(kode))
                 {
-                    return kodeRole[i];
+                    return "ROLE TIDAK DITEMUKAN";
                 }
-            }
 
-            return 0;
+                return codeToRole[kode];
+            }
+            catch (Exception)
+            {
+                return "ROLE TIDAK DITEMUKAN";
+            }
         }
 
-        public string GetNamaRole(int kode)
+        public int GetRoleCode(string role)
         {
-            for (int i = 0; i < kodeRole.Length; i++)
+            try
             {
-                if (kodeRole[i] == kode)
+                if (string.IsNullOrWhiteSpace(role))
                 {
-                    return namaRole[i];
+                    return 0;
                 }
-            }
 
-            return "ROLE TIDAK DITEMUKAN";
+                string normalizedRole = role.ToUpper();
+
+                var data = codeToRole.FirstOrDefault(x => x.Value == normalizedRole);
+
+                if (data.Equals(default(KeyValuePair<int, string>)))
+                {
+                    return 0;
+                }
+
+                return data.Key;
+            }
+            catch (Exception)
+            {
+                return 0;
+            }
         }
     }
 }
