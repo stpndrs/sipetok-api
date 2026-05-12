@@ -2,20 +2,27 @@
 {
     public class AccountStatusTableDriven
     {
+        private readonly Dictionary<int, string> codeToStatus = new Dictionary<int, string>
+        {
+            { 0, "INACTIVE" },
+            { 1, "ACTIVE" }
+        };
+
         public string GetStatusName(int status)
         {
-            string[] namaStatus =
+            try
             {
-                 "INACTIVE",
-                  "ACTIVE"
-            };
+                if (!codeToStatus.ContainsKey(status))
+                {
+                    return "STATUS TIDAK DITEMUKAN";
+                }
 
-            if (status < 0 || status >= namaStatus.Length)
-            {
-                return "UNKNOWN STATUS";
+                return codeToStatus[status];
             }
-
-            return namaStatus[status];
+            catch (Exception)
+            {
+                return "STATUS TIDAK DITEMUKAN";
+            }
         }
     }
 }
