@@ -1,12 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
 
 using sipetok_api.Models;
 using sipetok_api.dto.Request;
 using sipetok_api.Data;
 using AutoMapper;
 using sipetok_api.dto.Respon;
-using Microsoft.EntityFrameworkCore;
 
 [Authorize]
 [Route("api/egg/categories")]

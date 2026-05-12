@@ -1,4 +1,4 @@
-using sipetok_api.Utilis;
+using sipetok_api.Services;
 using sipetok_api.Utils;
 
 namespace sipetok_api.dto
@@ -12,13 +12,15 @@ namespace sipetok_api.dto
         public TabelDriven status { get; set; } = null!;
         public UserRespon() {}
 
-        public UserRespon(int id, string username, string email, TabelDriven role, TabelDriven status)
+        public UserRespon(int id, string username, string email, int role, int status)
         {
+            var roleLogic = new AccountRoleTableDriven();
+            var statusLogic = new AccountStatusTableDriven();
             this.id = id;
             this.username = username;
             this.email = email;
-            this.role = role;
-            this.status = status;
+            this.role = new TabelDriven(role, roleLogic.GetNamaRole(role));
+            this.status = new TabelDriven(status, statusLogic.GetStatusName(status));
         }
     }
 }
