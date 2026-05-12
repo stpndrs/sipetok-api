@@ -7,6 +7,8 @@ using sipetok_api.Data;
 using AutoMapper;
 using sipetok_api.dto;
 using sipetok_api.dto.Respon;
+using sipetok_api.Utilis;
+using sipetok_api.Services;
 
 [Authorize]
 [Route("api/users")]
@@ -55,9 +57,9 @@ public class UserController : ControllerBase
     {
         try
         {
-            var user = _mapper.Map<UserRespon>(dbContext.Users.Find(id));
+            var userEntity = dbContext.Users.Find(id);
 
-            if (user is null)
+            if (userEntity is null)
             {
                 return NotFound(new ResponData<UserRespon>
                 {
@@ -66,10 +68,24 @@ public class UserController : ControllerBase
                 });
             }
 
+            var userRespon = _mapper.Map<UserRespon>(userEntity);
+            var roleLogic = new AccountRoleTableDriven();
+            var statusLogic = new AccountStatusTableDriven();
+
+            userRespon.role = new TabelDriven(
+                userEntity.role,
+                roleLogic.GetNamaRole(userEntity.role)
+            );
+
+            userRespon.status = new TabelDriven(
+                userEntity.status,
+                statusLogic.GetStatusName(userEntity.status)
+            );
+
             var respon = new ResponData<UserRespon>
             {
                 success = true,
-                data = user,
+                data = userRespon,
                 message = $"Successfully retrieved user data with id {id}"
             };
 
@@ -93,9 +109,9 @@ public class UserController : ControllerBase
         try
         {
             int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
-            var user = _mapper.Map<UserRespon>(dbContext.Users.Find(userId));
+            var userEntity = dbContext.Users.Find(userId);
 
-            if (user is null)
+            if (userEntity is null)
             {
                 return NotFound(new ResponData<UserRespon>
                 {
@@ -104,10 +120,24 @@ public class UserController : ControllerBase
                 });
             }
 
+            var userRespon = _mapper.Map<UserRespon>(userEntity);
+            var roleLogic = new AccountRoleTableDriven();
+            var statusLogic = new AccountStatusTableDriven();
+
+            userRespon.role = new TabelDriven(
+                userEntity.role,
+                roleLogic.GetNamaRole(userEntity.role)
+            );
+
+            userRespon.status = new TabelDriven(
+                userEntity.status,
+                statusLogic.GetStatusName(userEntity.status)
+            );
+
             var respon = new ResponData<UserRespon>
             {
                 success = true,
-                data = user,
+                data = userRespon,
                 message = $"Successfully retrieved user data with id {userId}"
             };
 

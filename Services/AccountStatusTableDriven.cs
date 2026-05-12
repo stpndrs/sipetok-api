@@ -10,6 +10,11 @@
                   "ACTIVE"
             };
 
+            if (status < 0 || status >= namaStatus.Length)
+            {
+                return "UNKNOWN STATUS";
+            }
+
             return namaStatus[status];
         }
     }

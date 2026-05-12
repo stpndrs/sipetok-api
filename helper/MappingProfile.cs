@@ -4,6 +4,8 @@ using sipetok_api.dto.Request;
 using sipetok_api.dto.Respon;
 using sipetok_api.Models;
 using sipetok_api.Respon;
+using sipetok_api.Utilis;
+using sipetok_api.Services;
 
 namespace sipetok_api
 {
@@ -11,6 +13,12 @@ namespace sipetok_api
     {
         public MappingProfile()
         {
+
+            CreateMap<User, UserRespon>()
+            .ConstructUsing(src => new UserRespon())
+            .ForMember(dest => dest.role, opt => opt.Ignore())
+            .ForMember(dest => dest.status, opt => opt.Ignore());
+
             CreateMap<UserDto, User>();
             CreateMap<CustomerDto, Customer>();
             CreateMap<TenantDto, Tenant>();
@@ -21,7 +29,7 @@ namespace sipetok_api
             CreateMap<TransactionDto, Transaction>();
             CreateMap<TransactionDetailDto, TransactionDetail>();
 
-            CreateMap<User, UserRespon>();
+            // CreateMap<User, UserRespon>();
             CreateMap<Customer, CustomerRespon>();
             CreateMap<Tenant, TenantRespon>();
             CreateMap<Operational, OperationalRespon>();
