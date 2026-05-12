@@ -1,16 +1,12 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Org.BouncyCastle.Ocsp;
+using Microsoft.AspNetCore.Authorization;
+
 using sipetok_api.Data;
 using sipetok_api.dto.Request;
 using sipetok_api.dto.Respon;
-using sipetok_api.Models;
 using sipetok_api.service;
-using sipetok_api.Utils;
-using System.Threading.Tasks;
-using static System.Net.Mime.MediaTypeNames;
-using Microsoft.AspNetCore.Authorization;
 
 namespace sipetok_api.Controllers
 {

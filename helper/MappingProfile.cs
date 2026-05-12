@@ -13,12 +13,6 @@ namespace sipetok_api
     {
         public MappingProfile()
         {
-
-            CreateMap<User, UserRespon>()
-            .ConstructUsing(src => new UserRespon())
-            .ForMember(dest => dest.role, opt => opt.Ignore())
-            .ForMember(dest => dest.status, opt => opt.Ignore());
-
             CreateMap<UserDto, User>();
             CreateMap<CustomerDto, Customer>();
             CreateMap<TenantDto, Tenant>();
@@ -29,7 +23,7 @@ namespace sipetok_api
             CreateMap<TransactionDto, Transaction>();
             CreateMap<TransactionDetailDto, TransactionDetail>();
 
-            // CreateMap<User, UserRespon>();
+            CreateMap<User, UserRespon>();
             CreateMap<Customer, CustomerRespon>();
             CreateMap<Tenant, TenantRespon>();
             CreateMap<Operational, OperationalRespon>();

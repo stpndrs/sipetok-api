@@ -7,8 +7,6 @@ using sipetok_api.Data;
 using AutoMapper;
 using sipetok_api.dto;
 using sipetok_api.dto.Respon;
-using sipetok_api.Utilis;
-using sipetok_api.Services;
 
 [Authorize]
 [Route("api/users")]
@@ -69,18 +67,6 @@ public class UserController : ControllerBase
             }
 
             var userRespon = _mapper.Map<UserRespon>(userEntity);
-            var roleLogic = new AccountRoleTableDriven();
-            var statusLogic = new AccountStatusTableDriven();
-
-            userRespon.role = new TabelDriven(
-                userEntity.role,
-                roleLogic.GetNamaRole(userEntity.role)
-            );
-
-            userRespon.status = new TabelDriven(
-                userEntity.status,
-                statusLogic.GetStatusName(userEntity.status)
-            );
 
             var respon = new ResponData<UserRespon>
             {
@@ -121,18 +107,6 @@ public class UserController : ControllerBase
             }
 
             var userRespon = _mapper.Map<UserRespon>(userEntity);
-            var roleLogic = new AccountRoleTableDriven();
-            var statusLogic = new AccountStatusTableDriven();
-
-            userRespon.role = new TabelDriven(
-                userEntity.role,
-                roleLogic.GetNamaRole(userEntity.role)
-            );
-
-            userRespon.status = new TabelDriven(
-                userEntity.status,
-                statusLogic.GetStatusName(userEntity.status)
-            );
 
             var respon = new ResponData<UserRespon>
             {

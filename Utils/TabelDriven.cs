@@ -1,4 +1,4 @@
-namespace sipetok_api.Utilis
+namespace sipetok_api.Utils
 {
     public class TabelDriven
     {
