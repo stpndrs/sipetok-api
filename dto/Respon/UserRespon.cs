@@ -1,3 +1,4 @@
+using sipetok_api.Utilis;
 using sipetok_api.Utils;
 
 namespace sipetok_api.dto
@@ -7,11 +8,11 @@ namespace sipetok_api.dto
         public int id {get; set;}
         public string username { get; set; } = string.Empty;
         public string email { get; set; } = string.Empty;
-        public int role { get; set; }
-        public int status { get; set; }
+        public TabelDriven role { get; set; } = null!;
+        public TabelDriven status { get; set; } = null!;
         public UserRespon() {}
 
-        public UserRespon(int id, string username, string email, int role, int status)
+        public UserRespon(int id, string username, string email, TabelDriven role, TabelDriven status)
         {
             this.id = id;
             this.username = username;
