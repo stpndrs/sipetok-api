@@ -6,7 +6,12 @@ using System.Threading.Tasks;
 
 namespace sipetok_api.Utils
 {
-    public enum PaymentTrigger { Next }
+    public enum PaymentTrigger
+    {
+        Process,
+        Pay,
+        Cancel
+    }
     public enum PaymentState
     {
         Pending,    
