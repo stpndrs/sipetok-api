@@ -8,7 +8,6 @@
             { 2, "TENANT" },
             { 3, "CUSTOMER" }
         };
-
         public string GetRoleName(int kode)
         {
             try
@@ -17,7 +16,6 @@
                 {
                     return "ROLE TIDAK DITEMUKAN";
                 }
-
                 return codeToRole[kode];
             }
             catch (Exception)

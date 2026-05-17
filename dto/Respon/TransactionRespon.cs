@@ -11,7 +11,9 @@ namespace sipetok_api.dto.Respon
         public int tenant_id { get; set; }
         public string customer_name { get; set; } = string.Empty;
         public string customer_phone_number { get; set; } = string.Empty;
-        public PaymentState Status { get; set; } = PaymentState.Pending;
+        public PaymentState Status { get; set; } = PaymentState.WaitingForPayment;
+        public OrderState OrderStatus { get; set; } = OrderState.OrderComeIn;
+
         public virtual ICollection<TransactionDetailRespon> details { get; set; } = new List<TransactionDetailRespon>();
 
         public TransactionRespon() { }

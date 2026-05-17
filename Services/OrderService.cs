@@ -1,4 +1,5 @@
-﻿using sipetok_api.Utils;
+﻿using sipetok_api.Models;
+using sipetok_api.Utils;
 
 namespace sipetok_api.Services
 {
@@ -7,29 +8,39 @@ namespace sipetok_api.Services
         private readonly Dictionary<(OrderState, OrderTrigger), OrderState> transitions =
             new Dictionary<(OrderState, OrderTrigger), OrderState>
         {
-            { (OrderState.WaitingForPayment, OrderTrigger.PaymentSucceeded), OrderState.ReadyForPickup },
+            { (OrderState.OrderComeIn, OrderTrigger.PaymentSucceeded), OrderState.ReadyForPickup },
             { (OrderState.ReadyForPickup, OrderTrigger.PickedUp), OrderState.Completed },
-            { (OrderState.WaitingForPayment, OrderTrigger.CancelledByCustomer), OrderState.Cancelled }
+            { (OrderState.OrderComeIn, OrderTrigger.CancelledByCustomer), OrderState.Cancelled }
         };
-
-        public bool UpdateOrderStatus(OrderState currentOrderState, OrderTrigger trigger, PaymentState currentPaymentState, out OrderState nextOrderState)
+       
+        public bool UpdateOrderStatus(Transaction transaction, OrderTrigger trigger)
         {
-            nextOrderState = currentOrderState;
+            try
+            {
+                if (transaction == null)
+                {
+                    return false;
+                }
 
-            if (currentOrderState == OrderState.WaitingForPayment &&
-                trigger == OrderTrigger.PaymentSucceeded &&
-                currentPaymentState != PaymentState.Success)
+                if (transaction.OrderStatus == OrderState.OrderComeIn &&
+                    trigger == OrderTrigger.PaymentSucceeded &&
+                    transaction.Status != PaymentState.Success)
+                {
+                    return false;
+                }
+
+                if (transitions.TryGetValue((transaction.OrderStatus, trigger), out OrderState nextOrderStatus))
+                {
+                    transaction.OrderStatus = nextOrderStatus;
+                    return true;
+                }
+
+                return false;
+            }
+            catch (Exception)
             {
                 return false;
             }
-
-            if (transitions.TryGetValue((currentOrderState, trigger), out OrderState result))
-            {
-                nextOrderState = result;
-                return true;
-            }
-
-            return false;
         }
     }
 }

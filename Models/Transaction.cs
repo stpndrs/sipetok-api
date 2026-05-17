@@ -9,7 +9,9 @@ namespace sipetok_api.Models
         public DateTime date { get; set; }
         public decimal payment_amount { get; set; }
         public decimal total_price { get; set; }
-        public PaymentState Status { get; set; } = PaymentState.Pending;
+        public PaymentState Status { get; set; } = PaymentState.WaitingForPayment;
+        public OrderState OrderStatus { get; set; } = OrderState.OrderComeIn;
+
 
         public int tenant_id { get; set; }
 

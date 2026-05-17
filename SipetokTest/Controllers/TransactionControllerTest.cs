@@ -1,11 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Moq;
 using sipetok_api.Controllers;
 using sipetok_api.dto.Request;
-using sipetok_api.dto.Respon;
 using sipetok_api.Models;
-using sipetok_api.service;
+using sipetok_api.Services;
 using sipetok_api.Utils;
 using SipetokTest.Helper;
 
@@ -17,7 +15,6 @@ namespace SipetokTest.Controller
 
         public TransactionControllerTest()
         {
-            // Karena PaymentService membutuhkan DbContext, kita kirimkan DbContext dummy ke constructor mock-nya
             var dbContext = TestHelper.CreateDbContext();
             _mockPaymentService = new Mock<PaymentService>(dbContext);
         }
@@ -28,11 +25,17 @@ namespace SipetokTest.Controller
             // Arrange
             var dbContext = TestHelper.CreateDbContext();
             var mapper = TestHelper.CreateMapper();
+            var orderService = new OrderService();
 
-            dbContext.Transactions.Add(new Transaction { id = 1, customer_name = "Stevan", total_price = 50000 });
+            dbContext.Transactions.Add(new Transaction
+            {
+                id = 1,
+                customer_name = "Stevan",
+                total_price = 50000
+            });
             dbContext.SaveChanges();
 
-            var controller = new TransactionController(dbContext, _mockPaymentService.Object, mapper);
+            var controller = new TransactionController(dbContext, _mockPaymentService.Object, orderService, mapper);
 
             // Act
             var result = controller.GetAll();
@@ -47,19 +50,28 @@ namespace SipetokTest.Controller
             // Arrange
             var dbContext = TestHelper.CreateDbContext();
             var mapper = TestHelper.CreateMapper();
+            var orderService = new OrderService();
 
-            var request = new TransactionDto { customer_name = "Andreas", total_price = 100000 };
-            var fakeTransaction = new Transaction { id = 10, customer_name = "Andreas" };
+            var request = new TransactionDto
+            {
+                customer_name = "Andreas",
+                total_price = 100000
+            };
 
-            // Mocking logic: Service berhasil memproses transaksi
+            var fakeTransaction = new Transaction
+            {
+                id = 10,
+                customer_name = "Andreas",
+                OrderStatus = OrderState.WaitingForPayment
+            };
+
             _mockPaymentService.Setup(s => s.ProcessTransaction(It.IsAny<TransactionDto>()))
                                .ReturnsAsync(fakeTransaction);
 
-            // Simpan data di in-memory agar query FirstOrDefault di controller berhasil (Line Coverage)
             dbContext.Transactions.Add(fakeTransaction);
             await dbContext.SaveChangesAsync();
 
-            var controller = new TransactionController(dbContext, _mockPaymentService.Object, mapper);
+            var controller = new TransactionController(dbContext, _mockPaymentService.Object, orderService, mapper);
 
             // Act
             var result = await controller.Store(request);
@@ -74,12 +86,12 @@ namespace SipetokTest.Controller
             // Arrange
             var dbContext = TestHelper.CreateDbContext();
             var mapper = TestHelper.CreateMapper();
+            var orderService = new OrderService();
 
-            // Mocking logic: Paksa service melempar error untuk mengetes blok catch (Line/Branch Coverage)
             _mockPaymentService.Setup(s => s.ProcessTransaction(It.IsAny<TransactionDto>()))
-                               .ThrowsAsync(new System.Exception("Database Error"));
+                               .ThrowsAsync(new Exception("Database Error"));
 
-            var controller = new TransactionController(dbContext, _mockPaymentService.Object, mapper);
+            var controller = new TransactionController(dbContext, _mockPaymentService.Object, orderService, mapper);
 
             // Act
             var result = await controller.Store(new TransactionDto());
@@ -94,22 +106,30 @@ namespace SipetokTest.Controller
             // Arrange
             var dbContext = TestHelper.CreateDbContext();
             var mapper = TestHelper.CreateMapper();
+            var orderService = new OrderService();
             int trxId = 1;
 
-            var trx = new Transaction { id = trxId, Status = PaymentState.Pending };
+            var trx = new Transaction
+            {
+                id = trxId,
+                Status = PaymentState.Success,
+                OrderStatus = OrderState.WaitingForPayment
+            };
+
             dbContext.Transactions.Add(trx);
             await dbContext.SaveChangesAsync();
 
             _mockPaymentService.Setup(s => s.UpdateStatus(trxId, "NEXT"))
                                .ReturnsAsync(true);
 
-            var controller = new TransactionController(dbContext, _mockPaymentService.Object, mapper);
+            var controller = new TransactionController(dbContext, _mockPaymentService.Object, orderService, mapper);
 
             // Act
             var result = await controller.Pay(trxId);
 
             // Assert
             Assert.IsType<OkObjectResult>(result);
+            Assert.Equal(OrderState.ReadyForPickup, trx.OrderStatus);
         }
 
         [Fact]
@@ -118,12 +138,12 @@ namespace SipetokTest.Controller
             // Arrange
             var dbContext = TestHelper.CreateDbContext();
             var mapper = TestHelper.CreateMapper();
+            var orderService = new OrderService();
 
-            // Mocking logic: Simulasikan UpdateStatus gagal (return false)
             _mockPaymentService.Setup(s => s.UpdateStatus(It.IsAny<int>(), "NEXT"))
                                .ReturnsAsync(false);
 
-            var controller = new TransactionController(dbContext, _mockPaymentService.Object, mapper);
+            var controller = new TransactionController(dbContext, _mockPaymentService.Object, orderService, mapper);
 
             // Act
             var result = await controller.Pay(999);
@@ -138,22 +158,30 @@ namespace SipetokTest.Controller
             // Arrange
             var dbContext = TestHelper.CreateDbContext();
             var mapper = TestHelper.CreateMapper();
+            var orderService = new OrderService();
             int trxId = 2;
 
-            var trx = new Transaction { id = trxId, Status = PaymentState.Pending };
+            var trx = new Transaction
+            {
+                id = trxId,
+                Status = PaymentState.Pending,
+                OrderStatus = OrderState.WaitingForPayment
+            };
+
             dbContext.Transactions.Add(trx);
             await dbContext.SaveChangesAsync();
 
             _mockPaymentService.Setup(s => s.UpdateStatus(trxId, "CANCEL"))
                                .ReturnsAsync(true);
 
-            var controller = new TransactionController(dbContext, _mockPaymentService.Object, mapper);
+            var controller = new TransactionController(dbContext, _mockPaymentService.Object, orderService, mapper);
 
             // Act
             var result = await controller.Cancel(trxId);
 
             // Assert
             Assert.IsType<OkObjectResult>(result);
+            Assert.Equal(OrderState.Cancelled, trx.OrderStatus);
         }
 
         [Fact]
@@ -162,11 +190,12 @@ namespace SipetokTest.Controller
             // Arrange
             var dbContext = TestHelper.CreateDbContext();
             var mapper = TestHelper.CreateMapper();
+            var orderService = new OrderService();
 
             _mockPaymentService.Setup(s => s.UpdateStatus(It.IsAny<int>(), "CANCEL"))
                                .ReturnsAsync(false);
 
-            var controller = new TransactionController(dbContext, _mockPaymentService.Object, mapper);
+            var controller = new TransactionController(dbContext, _mockPaymentService.Object, orderService, mapper);
 
             // Act
             var result = await controller.Cancel(999);

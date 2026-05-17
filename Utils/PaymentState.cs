@@ -9,7 +9,7 @@ namespace sipetok_api.Utils
     public enum PaymentTrigger { Next }
     public enum PaymentState
     {
-        Pending,    
+        WaitingForPayment,    
         Processing, 
         Success,    
         Cancelled   

@@ -4,7 +4,7 @@ using sipetok_api.dto.Request;
 using sipetok_api.Models;
 using sipetok_api.Utils;
 
-namespace sipetok_api.service
+namespace sipetok_api.Services
 {
     public class PaymentService
     {
@@ -15,11 +15,11 @@ namespace sipetok_api.service
             new Dictionary<(PaymentState, string), PaymentState>
         {
             // Jalur sukses
-            { (PaymentState.Pending, "NEXT"),    PaymentState.Processing },
+            { (PaymentState.WaitingForPayment, "NEXT"),    PaymentState.Processing },
             { (PaymentState.Processing, "NEXT"), PaymentState.Success },
 
             // Jalur gajadi (Cancel)
-            { (PaymentState.Pending, "CANCEL"),    PaymentState.Cancelled },
+            { (PaymentState.WaitingForPayment, "CANCEL"),    PaymentState.Cancelled },
             { (PaymentState.Processing, "CANCEL"), PaymentState.Cancelled }
         };
 
@@ -40,6 +40,7 @@ namespace sipetok_api.service
                     total_price = dto.total_price,
                     tenant_id = dto.tenant_id,
                     Status = dto.Status,
+                    OrderStatus = dto.OrderStatus,
                     customer_name = dto.customer_name,
                     customer_phone_number = dto.customer_phone_number,
                 };

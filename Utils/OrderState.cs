@@ -2,7 +2,7 @@
 {
     public enum OrderState
     {
-        WaitingForPayment,
+        OrderComeIn,
         ReadyForPickup,
         Completed,
         Cancelled
