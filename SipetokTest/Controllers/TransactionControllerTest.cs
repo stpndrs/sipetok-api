@@ -100,7 +100,7 @@ namespace SipetokTest.Controller
             dbContext.Transactions.Add(trx);
             await dbContext.SaveChangesAsync();
 
-            _mockPaymentService.Setup(s => s.UpdateStatus(trxId, "NEXT"))
+            _mockPaymentService.Setup(s => s.UpdateStatus(trxId, PaymentTrigger.Pay))
                                .ReturnsAsync(true);
 
             var controller = new TransactionController(dbContext, _mockPaymentService.Object, mapper);
@@ -120,7 +120,7 @@ namespace SipetokTest.Controller
             var mapper = TestHelper.CreateMapper();
 
             // Mocking logic: Simulasikan UpdateStatus gagal (return false)
-            _mockPaymentService.Setup(s => s.UpdateStatus(It.IsAny<int>(), "NEXT"))
+            _mockPaymentService.Setup(s => s.UpdateStatus(It.IsAny<int>(), PaymentTrigger.Pay))
                                .ReturnsAsync(false);
 
             var controller = new TransactionController(dbContext, _mockPaymentService.Object, mapper);
@@ -144,7 +144,7 @@ namespace SipetokTest.Controller
             dbContext.Transactions.Add(trx);
             await dbContext.SaveChangesAsync();
 
-            _mockPaymentService.Setup(s => s.UpdateStatus(trxId, "CANCEL"))
+            _mockPaymentService.Setup(s => s.UpdateStatus(trxId, PaymentTrigger.Pay))
                                .ReturnsAsync(true);
 
             var controller = new TransactionController(dbContext, _mockPaymentService.Object, mapper);
@@ -163,7 +163,7 @@ namespace SipetokTest.Controller
             var dbContext = TestHelper.CreateDbContext();
             var mapper = TestHelper.CreateMapper();
 
-            _mockPaymentService.Setup(s => s.UpdateStatus(It.IsAny<int>(), "CANCEL"))
+            _mockPaymentService.Setup(s => s.UpdateStatus(It.IsAny<int>(), PaymentTrigger.Cancel))
                                .ReturnsAsync(false);
 
             var controller = new TransactionController(dbContext, _mockPaymentService.Object, mapper);
