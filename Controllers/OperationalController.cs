@@ -295,6 +295,7 @@ public class OperationalController : ControllerBase
 
     [HttpDelete]
     [Route("{id:int}")]
+    [Authorize(Roles = "2")]
     public IActionResult DeleteOperational(int id)
     {
         try
