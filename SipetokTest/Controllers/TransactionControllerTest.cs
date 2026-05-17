@@ -62,7 +62,7 @@ namespace SipetokTest.Controller
             {
                 id = 10,
                 customer_name = "Andreas",
-                OrderStatus = OrderState.WaitingForPayment
+                OrderStatus = OrderState.OrderComeIn
             };
 
             _mockPaymentService.Setup(s => s.ProcessTransaction(It.IsAny<TransactionDto>()))
@@ -113,7 +113,7 @@ namespace SipetokTest.Controller
             {
                 id = trxId,
                 Status = PaymentState.Success,
-                OrderStatus = OrderState.WaitingForPayment
+                OrderStatus = OrderState.OrderComeIn
             };
 
             dbContext.Transactions.Add(trx);
@@ -165,8 +165,8 @@ namespace SipetokTest.Controller
             var trx = new Transaction
             {
                 id = trxId,
-                Status = PaymentState.Pending,
-                OrderStatus = OrderState.WaitingForPayment
+                Status = PaymentState.WaitingForPayment,
+                OrderStatus = OrderState.OrderComeIn
             };
 
             dbContext.Transactions.Add(trx);
