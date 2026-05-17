@@ -10,6 +10,7 @@ using sipetok_api.Data;
 using sipetok_api.dto.Request;
 using sipetok_api.dto.Respon;
 using sipetok_api.Models;
+using sipetok_api.Services;
 
 namespace sipetok_api.Controllers
 {
@@ -99,7 +100,7 @@ namespace sipetok_api.Controllers
                 {
                     success = true,
                     data = new AuthRespon(token != "false" ? token : null),
-                    message = $"Login berhasil" 
+                    message = $"Login berhasil"
                 };
 
                 return Ok(respon);
@@ -120,10 +121,11 @@ namespace sipetok_api.Controllers
         {
             try
             {
+                var roleService = new AccountRoleTableDriven();
                 var claims = new List<Claim>
                 {
                     new Claim(ClaimTypes.Name, user.username),
-                    new Claim(ClaimTypes.Role, user.role.ToString()),
+                    new Claim(ClaimTypes.Role, roleService.GetRoleName(user.role)),
                     new Claim("userId", user.id.ToString()),
                 };
 

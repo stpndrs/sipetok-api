@@ -23,7 +23,7 @@ public class EggCategoryController : ControllerBase
     }
 
     [HttpGet]
-    [Authorize(Roles = "1")]
+    [Authorize(Roles = "ADMIN")]
     public IActionResult GetAllEggCategory()
     {
         try
@@ -52,7 +52,7 @@ public class EggCategoryController : ControllerBase
 
     [HttpGet]
     [Route("myeggcategory")]
-    [Authorize(Roles = "2")]
+    [Authorize(Roles = "TENANT")]
     public IActionResult GetMyEggCategories()
     {
         try
@@ -90,7 +90,7 @@ public class EggCategoryController : ControllerBase
 
     [HttpGet]
     [Route("{id:int}")]
-    [Authorize(Roles = "1")]
+    [Authorize(Roles = "ADMIN")]
     public IActionResult GetEggCategoryById(int id)
     {
         try
@@ -128,7 +128,7 @@ public class EggCategoryController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Roles = "1")]
+    [Authorize(Roles = "ADMIN")]
     public IActionResult AddEggCategory([FromBody] EggCategoryDto eggCategoryDto)
     {
         try
@@ -171,7 +171,7 @@ public class EggCategoryController : ControllerBase
     
     [HttpPost]
     [Route("addmyeggcategory")]
-    [Authorize(Roles = "2")]
+    [Authorize(Roles = "TENANT")]
     public IActionResult AddMyEggCategory([FromBody] EggCategoryDto eggCategoryDto)
     {
         try
@@ -215,7 +215,7 @@ public class EggCategoryController : ControllerBase
 
     [HttpPut]
     [Route("{id:int}")]
-    [Authorize(Roles = "1")]
+    [Authorize(Roles = "ADMIN")]
     public IActionResult UpdateEggCategory(int id, [FromBody] EggCategoryDto eggCategoryDto)
     {
         try
@@ -256,7 +256,7 @@ public class EggCategoryController : ControllerBase
     
     [HttpPut]
     [Route("myeggcategory/{id:int}")]
-    [Authorize(Roles = "2")]
+    [Authorize(Roles = "TENANT")]
     public IActionResult UpdateMyEggCategory(int id, [FromBody] EggCategoryDto eggCategoryDto)
     {
         try
@@ -322,7 +322,7 @@ public class EggCategoryController : ControllerBase
 
     [HttpDelete]
     [Route("{id:int}")]
-    [Authorize(Roles = "2")]
+    [Authorize(Roles = "TENANT")]
     public IActionResult DeleteEggCategory(int id)
     {
         try
