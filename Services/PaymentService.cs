@@ -10,17 +10,16 @@ namespace sipetok_api.Services
     {
         private readonly AppDbContext dbContext;
 
-        
-        private static readonly Dictionary<(PaymentState, string), PaymentState> _transitions =
-            new Dictionary<(PaymentState, string), PaymentState>
+        private static readonly Dictionary<(PaymentState, PaymentTrigger), PaymentState> _transitions =
+            new Dictionary<(PaymentState, PaymentTrigger), PaymentState>
         {
             // Jalur sukses
-            { (PaymentState.WaitingForPayment, "NEXT"),    PaymentState.Processing },
-            { (PaymentState.Processing, "NEXT"), PaymentState.Success },
+            { (PaymentState.WaitingForPayment, PaymentTrigger.Process),    PaymentState.Processing },
+            { (PaymentState.Processing, PaymentTrigger.Pay), PaymentState.Success },
 
             // Jalur gajadi (Cancel)
-            { (PaymentState.WaitingForPayment, "CANCEL"),    PaymentState.Cancelled },
-            { (PaymentState.Processing, "CANCEL"), PaymentState.Cancelled }
+            { (PaymentState.WaitingForPayment, PaymentTrigger.Cancel ),    PaymentState.Cancelled },
+            { (PaymentState.Processing, PaymentTrigger.Cancel ), PaymentState.Cancelled }
         };
 
         public PaymentService(AppDbContext context)
@@ -74,7 +73,7 @@ namespace sipetok_api.Services
             }
         }
 
-        public virtual async Task<bool> UpdateStatus(int id, string action = "NEXT")
+        public virtual async Task<bool> UpdateStatus(int id, PaymentTrigger trigger = PaymentTrigger.Pay)
         {
             using var dbTransaction = await dbContext.Database.BeginTransactionAsync();
 
@@ -88,7 +87,7 @@ namespace sipetok_api.Services
                 if (transaksi == null) return false;
 
                 // 2. Cek validasi transisi status
-                if (_transitions.TryGetValue((transaksi.Status, action.ToUpper()), out PaymentState nextState))
+                if (_transitions.TryGetValue((transaksi.Status, PaymentTrigger.Pay), out PaymentState nextState))
                 {
                     // LOGIKA PENGURANGAN STOK: Terjadi jika status berubah menjadi Success (Selesai/Dibayar)
                     if (nextState == PaymentState.Success)

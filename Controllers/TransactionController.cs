@@ -84,9 +84,8 @@ namespace sipetok_api.Controllers
         {
             try
             {
-                // 1. Panggil service dengan parameter "NEXT" (sesuai default atau logic bisnis Anda)
-                var success = await _paymentService.UpdateStatus(id, "NEXT");
-
+                var success = await _paymentService.UpdateStatus(id, Utils.PaymentTrigger.Pay);
+                //1. validate data
                 if (!success)
                 {
                     return BadRequest(new ResponData<string>
@@ -131,7 +130,7 @@ namespace sipetok_api.Controllers
             try
             {
                 // 1. Panggil service dengan action "CANCEL"
-                var success = await _paymentService.UpdateStatus(id, "CANCEL");
+                var success = await _paymentService.UpdateStatus(id, Utils.PaymentTrigger.Cancel);
 
                 if (!success)
                 {
