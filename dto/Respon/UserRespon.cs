@@ -19,7 +19,7 @@ namespace sipetok_api.dto
             this.id = id;
             this.username = username;
             this.email = email;
-            this.role = new TabelDriven(role, roleLogic.GetNamaRole(role));
+            this.role = new TabelDriven(role, roleLogic.GetRoleName(role));
             this.status = new TabelDriven(status, statusLogic.GetStatusName(status));
         }
     }

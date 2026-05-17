@@ -1,12 +1,13 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Authorization;
-
 using sipetok_api.Data;
 using sipetok_api.dto.Request;
 using sipetok_api.dto.Respon;
-using sipetok_api.service;
+using sipetok_api.Services;
+using sipetok_api.Utils;
+
 
 namespace sipetok_api.Controllers
 {
@@ -17,13 +18,16 @@ namespace sipetok_api.Controllers
     {
         private readonly AppDbContext dbContext;
         private readonly PaymentService _paymentService;
+        private readonly OrderService _orderService;
         private readonly IMapper _mapper;
 
-        public TransactionController(AppDbContext context, PaymentService paymentService, IMapper mapper)
+
+        public TransactionController(AppDbContext context, PaymentService paymentService, OrderService orderService,IMapper mapper)
         {
             dbContext = context; 
             _mapper = mapper;
             _paymentService = paymentService;
+            _orderService = orderService;
         }
 
         [HttpGet]
@@ -95,8 +99,17 @@ namespace sipetok_api.Controllers
                 var transaction = await dbContext.Transactions
                     .Include(t => t.details)
                     .FirstOrDefaultAsync(t => t.id == id);
-                //3. mapping object Transaction ke TransactionRespon
+
+                if (transaction != null &&
+                transaction.Status == PaymentState.Success && _orderService.UpdateOrderStatus(transaction, OrderTrigger.PaymentSucceeded))
+                {
+                    await dbContext.SaveChangesAsync();
+                }
+
+
+                // 3. Mapping object Transaction ke TransactionRespon
                 var result = _mapper.Map<TransactionRespon>(transaction);
+
 
                 return Ok(new ResponData<TransactionRespon>
                 {
@@ -133,12 +146,19 @@ namespace sipetok_api.Controllers
                     .Include(t => t.details)
                     .FirstOrDefaultAsync(t => t.id == id);
 
+                if (transaction != null && _orderService.UpdateOrderStatus(transaction, OrderTrigger.CancelledByCustomer))
+                {
+                    await dbContext.SaveChangesAsync();
+                }
+
+
                 return Ok(new ResponData<TransactionRespon>
                 {
                     success = true,
                     data = _mapper.Map<TransactionRespon>(transaction),
                     message = "Transaksi telah berhasil dibatalkan."
                 });
+
             }
             catch (Exception ex)
             {
