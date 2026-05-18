@@ -23,7 +23,7 @@ public class TenantController : ControllerBase
     }
 
     [HttpGet]
-    [Authorize(Roles = "1")]
+    [Authorize(Roles = "ADMIN")]
     public IActionResult GetAllTenant()
     {
         try
@@ -52,6 +52,7 @@ public class TenantController : ControllerBase
 
     [HttpGet]
     [Route("{id:int}")]
+    [Authorize(Roles = "ADMIN")]
     public IActionResult GetTenantById(int id)
     {
         try
@@ -90,7 +91,7 @@ public class TenantController : ControllerBase
 
     [HttpGet]
     [Route("myprofile")]
-    [Authorize(Roles = "2")]
+    [Authorize(Roles = "TENANT")]
     public IActionResult GetMyProfile()
     {
         try
@@ -129,7 +130,7 @@ public class TenantController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Roles = "1")]
+    [Authorize(Roles = "ADMIN")]
     public IActionResult AddTenant([FromBody] TenantDto tenantDto)
     {
         try
@@ -186,7 +187,7 @@ public class TenantController : ControllerBase
 
     [HttpPut]
     [Route("{id:int}")]
-    [Authorize(Roles = "1")]
+    [Authorize(Roles = "ADMIN")]
     public IActionResult UpdateTenant(int id, [FromBody] TenantDto tenantDto)
     {
         try
@@ -245,7 +246,7 @@ public class TenantController : ControllerBase
 
     [HttpPut]
     [Route("updatemyprofile")]
-    [Authorize(Roles = "2")]
+    [Authorize(Roles = "TENANT")]
     public IActionResult UpdateMyProfile([FromBody] TenantDto tenantDto)
     {
         try
@@ -306,7 +307,7 @@ public class TenantController : ControllerBase
 
     [HttpPost]
     [Route("validate/{id:int}")]
-    [Authorize(Roles = "1")]
+    [Authorize(Roles = "ADMIN")]
     public IActionResult Validation(int id)
     {
         try
@@ -349,6 +350,7 @@ public class TenantController : ControllerBase
 
     [HttpDelete]
     [Route("{id:int}")]
+    [Authorize(Roles = "ADMIN")]
     public IActionResult DeleteTenant(int id)
     {
         try

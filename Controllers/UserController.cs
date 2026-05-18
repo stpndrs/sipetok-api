@@ -23,7 +23,7 @@ public class UserController : ControllerBase
     }
 
     [HttpGet]
-    [Authorize(Roles = "1")]
+    [Authorize(Roles = "ADMIN")]
     public IActionResult GetAllUsers()
     {
         try
@@ -50,7 +50,7 @@ public class UserController : ControllerBase
 
     [HttpGet]
     [Route("{id:int}")]
-    [Authorize(Roles = "1")]
+    [Authorize(Roles = "ADMIN")]
     public IActionResult GetUserById(int id)
     {
         try
@@ -90,6 +90,7 @@ public class UserController : ControllerBase
 
     [HttpGet]
     [Route("myaccount")]
+    [Authorize(Roles = "ADMIN")]
     public IActionResult GetMyAccount()
     {
         try
@@ -129,6 +130,7 @@ public class UserController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = "ADMIN")]
     public IActionResult AddUser([FromBody] UserDto userDto)
     {
         try
@@ -169,6 +171,7 @@ public class UserController : ControllerBase
 
     [HttpPut]
     [Route("{id:int}")]
+    [Authorize(Roles = "ADMIN")]
     public IActionResult UpdateUser(int id, [FromBody] UserDto userDto)
     {
         try
@@ -302,6 +305,7 @@ public class UserController : ControllerBase
 
     [HttpDelete]
     [Route("{id:int}")]
+    [Authorize(Roles = "ADMIN")]
     public IActionResult DeleteUser(int id)
     {
         try

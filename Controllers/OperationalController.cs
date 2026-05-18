@@ -23,7 +23,7 @@ public class OperationalController : ControllerBase
     }
 
     [HttpGet]
-    [Authorize(Roles = "1")]
+    [Authorize(Roles = "ADMIN")]
     public IActionResult GetAllOperationals()
     {
         try
@@ -53,7 +53,7 @@ public class OperationalController : ControllerBase
 
     [HttpGet]
     [Route("{id:int}")]
-    [Authorize(Roles = "1, 2")]
+    [Authorize(Roles = "ADMIN, TENANT")]
     public IActionResult GetOperationalById(int id)
     {
         try
@@ -92,7 +92,7 @@ public class OperationalController : ControllerBase
 
     [HttpGet]
     [Route("tenant/{tenantId:int}")]
-    [Authorize(Roles = "1, 2")]
+    [Authorize(Roles = "ADMIN")]
     public IActionResult GetOperationalByTenantId(int tenantId)
     {
         try
@@ -133,7 +133,7 @@ public class OperationalController : ControllerBase
 
     [HttpGet]
     [Route("myoperational")]
-    [Authorize(Roles = "2")]
+    [Authorize(Roles = "TENANT")]
     public IActionResult GetMyOperational()
     {
         try
@@ -180,7 +180,7 @@ public class OperationalController : ControllerBase
 
     [HttpPost]
     [Route("addmyoperational")]
-    [Authorize(Roles = "2")]
+    [Authorize(Roles = "TENANT")]
     public IActionResult AddMyOperational([FromBody] OperationalDto operationalDto)
     {
         try
@@ -227,7 +227,7 @@ public class OperationalController : ControllerBase
 
     [HttpPut]
     [Route("{id:int}")]
-    [Authorize(Roles = "2")]
+    [Authorize(Roles = "TENANT")]
     public IActionResult UpdateOperational(int id, [FromBody] OperationalDto operationalDto)
     {
         try
@@ -295,6 +295,7 @@ public class OperationalController : ControllerBase
 
     [HttpDelete]
     [Route("{id:int}")]
+    [Authorize(Roles = "TENANT")]
     public IActionResult DeleteOperational(int id)
     {
         try

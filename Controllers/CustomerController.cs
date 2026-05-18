@@ -23,7 +23,7 @@ public class CustomerController : ControllerBase
     }
 
     [HttpGet]
-    [Authorize(Roles = "1")]
+    [Authorize(Roles = "ADMIN")]
     public IActionResult GetAllCustomers()
     {
         try
@@ -52,7 +52,7 @@ public class CustomerController : ControllerBase
 
     [HttpGet]
     [Route("{id:int}")]
-    [Authorize(Roles = "1")]
+    [Authorize(Roles = "ADMIN")]
     public IActionResult GetCustomerById(int id)
     {
         try
@@ -91,7 +91,7 @@ public class CustomerController : ControllerBase
 
     [HttpGet]
     [Route("myprofile")]
-    [Authorize(Roles = "3")]
+    [Authorize(Roles = "CUSTOMER")]
     public IActionResult GetMyProfile()
     {
         try
@@ -130,7 +130,7 @@ public class CustomerController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Roles = "1")]
+    [Authorize(Roles = "ADMIN")]
     public IActionResult AddCustomer([FromBody] CustomerDto customerDto)
     {
         try
@@ -177,7 +177,7 @@ public class CustomerController : ControllerBase
 
     [HttpPut]
     [Route("{id:int}")]
-    [Authorize(Roles = "1")]
+    [Authorize(Roles = "ADMIN")]
     public IActionResult UpdateCustomer(int id, [FromBody] CustomerDto customerDto)
     {
         try
@@ -234,7 +234,7 @@ public class CustomerController : ControllerBase
 
     [HttpPut]
     [Route("updatemyprofile")]
-    [Authorize(Roles = "3")]
+    [Authorize(Roles = "CUSTOMER")]
     public IActionResult UpdateMyProfile([FromBody] CustomerDto customerDto)
     {
         try
@@ -296,7 +296,7 @@ public class CustomerController : ControllerBase
 
     [HttpDelete]
     [Route("{id:int}")]
-    [Authorize(Roles = "1")]
+    [Authorize(Roles = "ADMIN")]
     public IActionResult DeleteCustomer(int id)
     {
         try
