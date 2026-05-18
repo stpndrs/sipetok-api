@@ -24,27 +24,19 @@ public class CustomerController : ControllerBase
 
     [HttpGet]
     [Authorize(Roles = "ADMIN")]
-    public IActionResult GetAllCustomers()
+    public async Task<IActionResult> GetAllCustomers()
     {
         try
         {
-            var allCustomer = _mapper.Map<List<CustomerRespon>>(dbContext.Customers.Include(c => c.user).ToList());
-            var respon = new ResponData<List<CustomerRespon>>
-            {
-                success = true,
-                data = allCustomer,
-                message = "Successfully retrieved all customer data"
-            };
+            var allCustomer = _mapper.Map<List<CustomerRespon>>(await dbContext.Customers.Include(c => c.user).ToListAsync());
+            var respon = new ResponData<List<CustomerRespon>>(true, "Successfully retrieved all customer data", allCustomer);
+
 
             return Ok(respon);
         }
         catch (Exception ex)
         {
-            var respon = new ResponData<List<CustomerRespon>>
-            {
-                success = false,
-                message = ex.Message
-            };
+            var respon = new ResponData<List<CustomerRespon>>(ex.Message);
 
             return StatusCode(500, respon);
         }
@@ -53,37 +45,24 @@ public class CustomerController : ControllerBase
     [HttpGet]
     [Route("{id:int}")]
     [Authorize(Roles = "ADMIN")]
-    public IActionResult GetCustomerById(int id)
+    public async Task<IActionResult> GetCustomerById(int id)
     {
         try
         {
-            var customer = _mapper.Map<CustomerRespon>(dbContext.Customers.Include(c => c.user).FirstOrDefault(c => c.id == id));
+            var customer = _mapper.Map<CustomerRespon>(await dbContext.Customers.Include(c => c.user).FirstOrDefaultAsync(c => c.id == id));
 
             if (customer == null)
             {
-                return NotFound(new ResponData<CustomerRespon>
-                {
-                    success = false,
-                    message = $"Customer data with id {id} not found"
-                });
+                return NotFound(new ResponData<CustomerRespon>($"Customer data with id {id} not found"));
             }
 
-            var respon = new ResponData<CustomerRespon>
-            {
-                success = true,
-                data = customer,
-                message = $"Successfully retrieved customer data with id {id}"
-            };
+            var respon = new ResponData<CustomerRespon>(true, $"Successfully retrieved customer data with id {id}", customer);
 
             return Ok(respon);
         }
         catch (Exception ex)
         {
-            var respon = new ResponData<CustomerRespon>
-            {
-                success = false,
-                message = ex.Message
-            };
+            var respon = new ResponData<CustomerRespon>(ex.Message);
 
             return StatusCode(500, respon);
         }
@@ -92,38 +71,25 @@ public class CustomerController : ControllerBase
     [HttpGet]
     [Route("myprofile")]
     [Authorize(Roles = "CUSTOMER")]
-    public IActionResult GetMyProfile()
+    public async Task<IActionResult> GetMyProfile()
     {
         try
         {
             int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
-            var customer = _mapper.Map<CustomerRespon>(dbContext.Customers.FirstOrDefault(c => c.user_id == userId));
+            var customer = _mapper.Map<CustomerRespon>(await dbContext.Customers.FirstOrDefaultAsync(c => c.user_id == userId));
 
             if (customer == null)
             {
-                return NotFound(new ResponData<CustomerRespon>
-                {
-                    success = false,
-                    message = $"Customer data with id {userId} not found"
-                });
+                return NotFound(new ResponData<CustomerRespon>($"Customer data with id {userId} not found"));
             }
 
-            var respon = new ResponData<CustomerRespon>
-            {
-                success = true,
-                data = customer,
-                message = $"Successfully retrieved customer data with id {userId}"
-            };
+            var respon = new ResponData<CustomerRespon>(true, $"Successfully retrieved customer data with id {userId}", customer);
 
             return Ok(respon);
         }
         catch (Exception ex)
         {
-            var respon = new ResponData<CustomerRespon>
-            {
-                success = false,
-                message = ex.Message
-            };
+            var respon = new ResponData<CustomerRespon>(ex.Message);
 
             return StatusCode(500, respon);
         }
@@ -131,7 +97,7 @@ public class CustomerController : ControllerBase
 
     [HttpPost]
     [Authorize(Roles = "ADMIN")]
-    public IActionResult AddCustomer([FromBody] CustomerDto customerDto)
+    public async Task<IActionResult> AddCustomer([FromBody] CustomerDto customerDto)
     {
         try
         {
@@ -151,25 +117,16 @@ public class CustomerController : ControllerBase
                 customer.user = user;
             }
 
-            dbContext.Customers.Add(customer);
-            dbContext.SaveChanges();
+            await dbContext.Customers.AddAsync(customer);
+            await dbContext.SaveChangesAsync();
 
-            var respon = new ResponData<CustomerRespon>
-            {
-                success = true,
-                data = _mapper.Map<CustomerRespon>(customer),
-                message = $"Successfully added customer data"
-            };
+            var respon = new ResponData<CustomerRespon>(true, "Successfully added new customer data", _mapper.Map<CustomerRespon>(customer));
 
             return Ok(respon);
         }
         catch (Exception ex)
         {
-            var respon = new ResponData<CustomerRespon>
-            {
-                success = false,
-                message = ex.Message
-            };
+            var respon = new ResponData<CustomerRespon>(ex.Message);
 
             return BadRequest(respon);
         }
@@ -178,19 +135,15 @@ public class CustomerController : ControllerBase
     [HttpPut]
     [Route("{id:int}")]
     [Authorize(Roles = "ADMIN")]
-    public IActionResult UpdateCustomer(int id, [FromBody] CustomerDto customerDto)
+    public async Task<IActionResult> UpdateCustomer(int id, [FromBody] CustomerDto customerDto)
     {
         try
         {
-            var customer = dbContext.Customers.Find(id);
+            var customer = await dbContext.Customers.FindAsync(id);
 
             if (customer is null)
             {
-                return BadRequest(new ResponData<CustomerRespon>
-                {
-                    success = false,
-                    message = $"Customer data with id {id} not found"
-                });
+                return BadRequest(new ResponData<CustomerRespon>($"Customer data with id {id} not found"));
             }
 
             _mapper.Map(customerDto, customer);
@@ -198,7 +151,7 @@ public class CustomerController : ControllerBase
 
             if (customerDto.user != null)
             {
-                var user = dbContext.Users.Find(customer.user_id);
+                var user = await dbContext.Users.FindAsync(customer.user_id);
                 if (user != null)
                 {
                     if (!string.IsNullOrWhiteSpace(customerDto.user.password))
@@ -210,23 +163,14 @@ public class CustomerController : ControllerBase
                     user.UpdateTimestamps();
                 }
             }
-            dbContext.SaveChanges();
+            await dbContext.SaveChangesAsync();
 
-            var respon = new ResponData<CustomerRespon>
-            {
-                success = true,
-                data = _mapper.Map<CustomerRespon>(customer),
-                message = "Successfully updated customer data"
-            };
+            var respon = new ResponData<CustomerRespon>(true, "Successfully updated customer data", _mapper.Map<CustomerRespon>(customer));
             return Ok(respon);
         }
         catch (Exception ex)
         {
-            var respon = new ResponData<CustomerRespon>
-            {
-                success = false,
-                message = ex.Message
-            };
+            var respon = new ResponData<CustomerRespon>(ex.Message);
 
             return BadRequest(respon);
         }
@@ -235,20 +179,16 @@ public class CustomerController : ControllerBase
     [HttpPut]
     [Route("updatemyprofile")]
     [Authorize(Roles = "CUSTOMER")]
-    public IActionResult UpdateMyProfile([FromBody] CustomerDto customerDto)
+    public async Task<IActionResult> UpdateMyProfile([FromBody] CustomerDto customerDto)
     {
         try
         {
             int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
-            var customer = dbContext.Customers.FirstOrDefault(c => c.user_id == userId);
+            var customer = await dbContext.Customers.FirstOrDefaultAsync(c => c.user_id == userId);
 
             if (customer is null)
             {
-                return BadRequest(new ResponData<CustomerRespon>
-                {
-                    success = false,
-                    message = $"Customer data with id {userId} not found"
-                });
+                return BadRequest(new ResponData<CustomerRespon>($"Customer data with user id {userId} not found"));
             }
 
             _mapper.Map(customerDto, customer);
@@ -256,7 +196,7 @@ public class CustomerController : ControllerBase
 
             if (customerDto.user != null)
             {
-                var user = dbContext.Users.Find(customer.user_id);
+                var user = await dbContext.Users.FindAsync(customer.user_id);
                 if (user != null)
                 {
                     _mapper.Map(customerDto.user, user);
@@ -271,24 +211,15 @@ public class CustomerController : ControllerBase
                 }
             }
 
-            dbContext.SaveChanges();
+            await dbContext.SaveChangesAsync();
 
-            var respon = new ResponData<CustomerRespon>
-            {
-                success = true,
-                data = _mapper.Map<CustomerRespon>(customer),
-                message = "Successfully updated customer data"
-            };
+            var respon = new ResponData<CustomerRespon>(true, "Successfully updated my profile", _mapper.Map<CustomerRespon>(customer));
 
             return Ok(respon);
         }
         catch (Exception ex)
         {
-            var respon = new ResponData<CustomerRespon>
-            {
-                success = false,
-                message = ex.Message
-            };
+            var respon = new ResponData<CustomerRespon>(ex.Message);
 
             return BadRequest(respon);
         }
@@ -297,24 +228,20 @@ public class CustomerController : ControllerBase
     [HttpDelete]
     [Route("{id:int}")]
     [Authorize(Roles = "ADMIN")]
-    public IActionResult DeleteCustomer(int id)
+    public async Task<IActionResult> DeleteCustomer(int id)
     {
         try
         {
-            var customer = dbContext.Customers.Find(id);
+            var customer = await dbContext.Customers.FindAsync(id);
 
             if (customer is null)
             {
-                return BadRequest(new ResponData<CustomerRespon>
-                {
-                    success = false,
-                    message = $"Customer data with id {id} not found"
-                });
+                return BadRequest(new ResponData<CustomerRespon>($"Customer data with id {id} not found"));
             }
 
             if (customer.user_id != 0)
             {
-                var user = dbContext.Users.Find(customer.user_id);
+                var user = await dbContext.Users.FindAsync(customer.user_id);
                 if (user != null)
                 {
                     user.SoftDelete();
@@ -322,23 +249,15 @@ public class CustomerController : ControllerBase
             }
 
             customer.SoftDelete();
-            dbContext.SaveChanges();
+            await dbContext.SaveChangesAsync();
 
-            var respon = new ResponData<CustomerRespon>
-            {
-                success = true,
-                message = "Successfully deleted customer data"
-            };
+            var respon = new ResponData<string>(true, "Successfully deleted customer data", "null");
 
             return Ok(respon);
         }
         catch (Exception ex)
         {
-            var respon = new ResponData<CustomerRespon>
-            {
-                success = false,
-                message = ex.Message
-            };
+            var respon = new ResponData<CustomerRespon>(ex.Message);
 
             return BadRequest(respon);
         }
