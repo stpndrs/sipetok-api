@@ -14,12 +14,11 @@ namespace sipetok_api.Services
             new Dictionary<(PaymentState, PaymentTrigger), PaymentState>
         {
             // Jalur sukses
-            { (PaymentState.WaitingForPayment, PaymentTrigger.Process),    PaymentState.Processing },
-            { (PaymentState.Processing, PaymentTrigger.Pay), PaymentState.Success },
+            { (PaymentState.WaitingForPayment, PaymentTrigger.Pay),PaymentState.Success },
 
             // Jalur gajadi (Cancel)
             { (PaymentState.WaitingForPayment, PaymentTrigger.Cancel ),    PaymentState.Cancelled },
-            { (PaymentState.Processing, PaymentTrigger.Cancel ), PaymentState.Cancelled }
+            
         };
 
         public PaymentService(AppDbContext context)
