@@ -4,22 +4,22 @@ namespace sipetok_api.Respon
 {
     public class EggRespon
     {
-        public int id {get; set;}
-        public DateTime production_date { get; set; }
-        public double stock { get; set; }
-        public int tenant_id { get; set; }
-        public int category_id { get; set; }
-        public virtual EggCategoryRespon? category { get; set; }
+        public int Id {get; set;}
+        public DateTime ProductionDate { get; set; }
+        public double Stock { get; set; }
+        public int TenantId { get; set; }
+        public int CategoryId { get; set; }
+        public virtual EggCategoryRespon? Category { get; set; }
 
         public EggRespon() { }
 
-        public EggRespon(int id, DateTime production_date, double stock, int tenant_id, int category_id)
+        public EggRespon(int Id, DateTime ProductionDate, double Stock, int TenantId, int CategoryId)
         {
-            this.id = id;
-            this.production_date = production_date;
-            this.stock = stock;
-            this.tenant_id = tenant_id;
-            this.category_id = category_id;
+            this.Id = Id;
+            this.ProductionDate = ProductionDate;
+            this.Stock = Stock;
+            this.TenantId = TenantId;
+            this.CategoryId = CategoryId;
         }
     }
 }

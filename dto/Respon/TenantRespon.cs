@@ -2,20 +2,20 @@ namespace sipetok_api.dto.Respon
 {
     public class TenantRespon
     {
-        public int id {get; set;}
-        public string name { get; set; } = string.Empty;
-        public string address { get; set; } = string.Empty;
-        public string phoneNumber { get; set; } = string.Empty;
-        public int user_id { get; set; }
-        public TenantRespon() { } 
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Address { get; set; } = string.Empty;
+        public string PhoneNumber { get; set; } = string.Empty;
+        public int UserId { get; set; }
+        public TenantRespon() { }
 
-        public TenantRespon(int id, string name, string address, string phoneNumber, int user_id)
+        public TenantRespon(int Id, string Name, string Address, string PhoneNumber, int UserId)
         {
-            this.id = id;
-            this.name = name;
-            this.address = address;
-            this.phoneNumber = phoneNumber;
-            this.user_id = user_id;
+            this.Id = Id;
+            this.Name = Name;
+            this.Address = Address;
+            this.PhoneNumber = PhoneNumber;
+            this.UserId = UserId;
         }
     }
 }

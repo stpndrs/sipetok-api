@@ -8,7 +8,6 @@ using sipetok_api.dto.Respon;
 using sipetok_api.Services;
 using sipetok_api.Utils;
 
-
 namespace sipetok_api.Controllers
 {
     [Authorize]
@@ -21,10 +20,9 @@ namespace sipetok_api.Controllers
         private readonly OrderService _orderService;
         private readonly IMapper _mapper;
 
-
-        public TransactionController(AppDbContext context, PaymentService paymentService, OrderService orderService,IMapper mapper)
+        public TransactionController(AppDbContext context, PaymentService paymentService, OrderService orderService, IMapper mapper)
         {
-            dbContext = context; 
+            dbContext = context;
             _mapper = mapper;
             _paymentService = paymentService;
             _orderService = orderService;
@@ -36,21 +34,20 @@ namespace sipetok_api.Controllers
             try
             {
                 var data = dbContext.Transactions
-                    .Include(t => t.details)
+                    .Include(t => t.Details)
                     .ToList();
 
                 var result = _mapper.Map<List<TransactionRespon>>(data);
 
-                return Ok(new ResponData<List<TransactionRespon>>
-                {
-                    success = true,
-                    data = result,
-                    message = "Berhasil mengambil semua data transaksi"
-                });
+                var respon = new ResponData<List<TransactionRespon>>(true, result, "Berhasil mengambil semua data transaksi");
+
+                return Ok(respon);
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new ResponData<string> { success = false, message = ex.Message });
+                var respon = new ResponData<object?>(false, ex.Message);
+
+                return StatusCode(500, respon);
             }
         }
 
@@ -61,21 +58,19 @@ namespace sipetok_api.Controllers
             {
                 var transaction = await _paymentService.ProcessTransaction(transactionDto);
 
-                // Ambil data lengkap untuk respon (include details)
                 var completeData = dbContext.Transactions
-                    .Include(t => t.details)
-                    .FirstOrDefault(t => t.id == transaction.id);
+                    .Include(t => t.Details)
+                    .FirstOrDefault(t => t.Id == transaction.Id);
 
-                return Ok(new ResponData<TransactionRespon>
-                {
-                    success = true,
-                    data = _mapper.Map<TransactionRespon>(completeData),
-                    message = "Berhasil menambahkan transaksi"
-                });
+                var respon = new ResponData<TransactionRespon>(true, _mapper.Map<TransactionRespon>(completeData), "Berhasil menambahkan transaksi (Orderan Masuk & Menunggu Pembayaran)");
+
+                return Ok(respon);
             }
             catch (Exception ex)
             {
-                return BadRequest(new ResponData<string> { success = false, message = ex.Message });
+                var respon = new ResponData<object?>(false, ex.Message);
+
+                return BadRequest(respon);
             }
         }
 
@@ -84,43 +79,28 @@ namespace sipetok_api.Controllers
         {
             try
             {
-                var success = await _paymentService.UpdateStatus(id, Utils.PaymentTrigger.Pay);
-                //1. validate data
+                var success = await _paymentService.UpdateStatus(id, PaymentTrigger.Pay, _orderService, OrderTrigger.PaymentSucceeded);
+
                 if (!success)
                 {
-                    return BadRequest(new ResponData<string>
-                    {
-                        success = false,
-                        message = "Gagal memperbarui status pembayaran. Pastikan ID benar atau transisi status valid."
-                    });
+                    return BadRequest(new ResponData<object?>(false, "Gagal memproses pembayaran. Pastikan ID benar atau status saat ini valid."));
                 }
 
-                // 2. Ambil data transaksi terbaru dari database untuk di-map
                 var transaction = await dbContext.Transactions
-                    .Include(t => t.details)
-                    .FirstOrDefaultAsync(t => t.id == id);
+                    .Include(t => t.Details)
+                    .FirstOrDefaultAsync(t => t.Id == id);
 
-                if (transaction != null &&
-                transaction.Status == PaymentState.Success && _orderService.UpdateOrderStatus(transaction, OrderTrigger.PaymentSucceeded))
-                {
-                    await dbContext.SaveChangesAsync();
-                }
-
-
-                // 3. Mapping object Transaction ke TransactionRespon
                 var result = _mapper.Map<TransactionRespon>(transaction);
 
+                var respon = new ResponData<TransactionRespon>(true, result, "Pembayaran sukses dicatat, stok telur berhasil dikurangi, dan pesanan SIAP DIAMBIL.");
 
-                return Ok(new ResponData<TransactionRespon>
-                {
-                    success = true,
-                    data = result,
-                    message = "Status pembayaran berhasil diperbarui."
-                });
+                return Ok(respon);
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new ResponData<string> { success = false, message = ex.Message });
+                var respon = new ResponData<object?>(false, ex.Message);
+
+                return BadRequest(respon);
             }
         }
 
@@ -129,42 +109,62 @@ namespace sipetok_api.Controllers
         {
             try
             {
-                // 1. Panggil service dengan action "CANCEL"
-                var success = await _paymentService.UpdateStatus(id, Utils.PaymentTrigger.Cancel);
+                var success = await _paymentService.UpdateStatus(id, PaymentTrigger.Cancel, _orderService, OrderTrigger.CancelledByCustomer);
 
                 if (!success)
                 {
-                    return BadRequest(new ResponData<string>
-                    {
-                        success = false,
-                        message = "Transaksi tidak ditemukan atau tidak dapat dibatalkan pada status saat ini."
-                    });
+                    return BadRequest(new ResponData<object?>(false, "Transaksi tidak ditemukan atau tidak dapat dibatalkan pada status saat ini."));
                 }
 
-                // 2. Ambil data terbaru
                 var transaction = await dbContext.Transactions
-                    .Include(t => t.details)
-                    .FirstOrDefaultAsync(t => t.id == id);
+                    .Include(t => t.Details)
+                    .FirstOrDefaultAsync(t => t.Id == id);
 
-                if (transaction != null && _orderService.UpdateOrderStatus(transaction, OrderTrigger.CancelledByCustomer))
-                {
-                    await dbContext.SaveChangesAsync();
-                }
+                var respon = new ResponData<TransactionRespon>(true, _mapper.Map<TransactionRespon>(transaction), "Transaksi dan pesanan telah berhasil dibatalkan.");
 
-
-                return Ok(new ResponData<TransactionRespon>
-                {
-                    success = true,
-                    data = _mapper.Map<TransactionRespon>(transaction),
-                    message = "Transaksi telah berhasil dibatalkan."
-                });
-
+                return Ok(respon);
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new ResponData<string> { success = false, message = ex.Message });
+                var respon = new ResponData<object?>(false, ex.Message);
+
+                return BadRequest(respon);
+            }
+        }
+
+        [HttpPost("complete/{id:int}")]
+        public async Task<IActionResult> CompleteOrder(int id)
+        {
+            try
+            {
+                var transaction = await dbContext.Transactions
+                    .Include(t => t.Details)
+                    .FirstOrDefaultAsync(t => t.Id == id);
+
+                if (transaction == null)
+                {
+                    return NotFound(new ResponData<object?>(false, "Transaksi tidak ditemukan."));
+                }
+
+                var isUpdated = _orderService.UpdateOrderStatus(transaction, OrderTrigger.PickedUp);
+
+                if (!isUpdated)
+                {
+                    return BadRequest(new ResponData<object?>(false, "Gagal menyelesaikan pesanan. Pastikan status pesanan saat ini adalah 'ReadyForPickup' (Siap Diambil)."));
+                }
+
+                await dbContext.SaveChangesAsync();
+
+                var respon = new ResponData<TransactionRespon>(true, _mapper.Map<TransactionRespon>(transaction), "Pesanan selesai! Telur telah diambil oleh pelanggan.");
+
+                return Ok(respon);
+            }
+            catch (Exception ex)
+            {
+                var respon = new ResponData<object?>(false, ex.Message);
+
+                return StatusCode(500, respon);
             }
         }
     }
-    
 }

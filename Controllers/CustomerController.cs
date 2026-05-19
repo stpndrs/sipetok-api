@@ -28,15 +28,15 @@ public class CustomerController : ControllerBase
     {
         try
         {
-            var allCustomer = _mapper.Map<List<CustomerRespon>>(await dbContext.Customers.Include(c => c.user).ToListAsync());
-            var respon = new ResponData<List<CustomerRespon>>(true, "Successfully retrieved all customer data", allCustomer);
+            var allCustomer = _mapper.Map<List<CustomerRespon>>(await dbContext.Customers.Include(c => c.User).ToListAsync());
 
+            var respon = new ResponData<List<CustomerRespon>>(true, allCustomer, "Successfully retrieved all customer data");
 
             return Ok(respon);
         }
         catch (Exception ex)
         {
-            var respon = new ResponData<List<CustomerRespon>>(ex.Message);
+            var respon = new ResponData<object?>(false, ex.Message);
 
             return StatusCode(500, respon);
         }
@@ -49,20 +49,20 @@ public class CustomerController : ControllerBase
     {
         try
         {
-            var customer = _mapper.Map<CustomerRespon>(await dbContext.Customers.Include(c => c.user).FirstOrDefaultAsync(c => c.id == id));
+            var customer = _mapper.Map<CustomerRespon>(await dbContext.Customers.Include(c => c.User).FirstOrDefaultAsync(c => c.Id == id));
 
             if (customer == null)
             {
-                return NotFound(new ResponData<CustomerRespon>($"Customer data with id {id} not found"));
+                return NotFound(new ResponData<object?>(false, $"Customer data with id {id} not found"));
             }
 
-            var respon = new ResponData<CustomerRespon>(true, $"Successfully retrieved customer data with id {id}", customer);
+            var respon = new ResponData<CustomerRespon>(true, customer, $"Successfully retrieved customer data with id {id}");
 
             return Ok(respon);
         }
         catch (Exception ex)
         {
-            var respon = new ResponData<CustomerRespon>(ex.Message);
+            var respon = new ResponData<object?>(false, ex.Message);
 
             return StatusCode(500, respon);
         }
@@ -76,20 +76,20 @@ public class CustomerController : ControllerBase
         try
         {
             int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
-            var customer = _mapper.Map<CustomerRespon>(await dbContext.Customers.FirstOrDefaultAsync(c => c.user_id == userId));
+            var customer = _mapper.Map<CustomerRespon>(await dbContext.Customers.FirstOrDefaultAsync(c => c.UserId == userId));
 
             if (customer == null)
             {
-                return NotFound(new ResponData<CustomerRespon>($"Customer data with id {userId} not found"));
+                return NotFound(new ResponData<object?>(false, $"Customer data with id {userId} not found"));
             }
 
-            var respon = new ResponData<CustomerRespon>(true, $"Successfully retrieved customer data with id {userId}", customer);
+            var respon = new ResponData<CustomerRespon>(true, customer, $"Successfully retrieved customer data with id {userId}");
 
             return Ok(respon);
         }
         catch (Exception ex)
         {
-            var respon = new ResponData<CustomerRespon>(ex.Message);
+            var respon = new ResponData<object?>(false, ex.Message);
 
             return StatusCode(500, respon);
         }
@@ -103,30 +103,30 @@ public class CustomerController : ControllerBase
         {
             var customer = _mapper.Map<Customer>(customerDto);
 
-            if (customerDto.user != null)
+            if (customerDto.User != null)
             {
-                var user = _mapper.Map<User>(customerDto.user);
-                if (string.IsNullOrWhiteSpace(customerDto.user.password))
+                var User = _mapper.Map<User>(customerDto.User);
+                if (string.IsNullOrWhiteSpace(customerDto.User.Password))
                 {
                     throw new Exception("Password is required");
                 }
 
-                user.password = Bcrypt.BcryptPassword(user.password);
-                user.role = 3;
-                user.status = 1;
-                customer.user = user;
+                User.Password = Bcrypt.BcryptPassword(User.Password);
+                User.Role = 3;
+                User.Status = 1;
+                customer.User = User;
             }
 
             await dbContext.Customers.AddAsync(customer);
             await dbContext.SaveChangesAsync();
 
-            var respon = new ResponData<CustomerRespon>(true, "Successfully added new customer data", _mapper.Map<CustomerRespon>(customer));
+            var respon = new ResponData<CustomerRespon>(true, _mapper.Map<CustomerRespon>(customer), "Successfully added new customer data");
 
             return Ok(respon);
         }
         catch (Exception ex)
         {
-            var respon = new ResponData<CustomerRespon>(ex.Message);
+            var respon = new ResponData<object?>(false, ex.Message);
 
             return BadRequest(respon);
         }
@@ -143,34 +143,34 @@ public class CustomerController : ControllerBase
 
             if (customer is null)
             {
-                return BadRequest(new ResponData<CustomerRespon>($"Customer data with id {id} not found"));
+                return BadRequest(new ResponData<object?>(false, $"Customer data with id {id} not found"));
             }
 
             _mapper.Map(customerDto, customer);
             customer.UpdateTimestamps();
 
-            if (customerDto.user != null)
+            if (customerDto.User != null)
             {
-                var user = await dbContext.Users.FindAsync(customer.user_id);
-                if (user != null)
+                var User = await dbContext.Users.FindAsync(customer.UserId);
+                if (User != null)
                 {
-                    if (!string.IsNullOrWhiteSpace(customerDto.user.password))
+                    if (!string.IsNullOrWhiteSpace(customerDto.User.Password))
                     {
-                        user.password = Bcrypt.BcryptPassword(customerDto.user.password);
+                        User.Password = Bcrypt.BcryptPassword(customerDto.User.Password);
                     }
 
-                    _mapper.Map(customerDto.user, user);
-                    user.UpdateTimestamps();
+                    _mapper.Map(customerDto.User, User);
+                    User.UpdateTimestamps();
                 }
             }
             await dbContext.SaveChangesAsync();
 
-            var respon = new ResponData<CustomerRespon>(true, "Successfully updated customer data", _mapper.Map<CustomerRespon>(customer));
+            var respon = new ResponData<CustomerRespon>(true, _mapper.Map<CustomerRespon>(customer), "Successfully updated customer data");
             return Ok(respon);
         }
         catch (Exception ex)
         {
-            var respon = new ResponData<CustomerRespon>(ex.Message);
+            var respon = new ResponData<object?>(false, ex.Message);
 
             return BadRequest(respon);
         }
@@ -184,42 +184,42 @@ public class CustomerController : ControllerBase
         try
         {
             int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
-            var customer = await dbContext.Customers.FirstOrDefaultAsync(c => c.user_id == userId);
+            var customer = await dbContext.Customers.FirstOrDefaultAsync(c => c.UserId == userId);
 
             if (customer is null)
             {
-                return BadRequest(new ResponData<CustomerRespon>($"Customer data with user id {userId} not found"));
+                return BadRequest(new ResponData<object?>(false, $"Customer data with User id {userId} not found"));
             }
 
             _mapper.Map(customerDto, customer);
             customer.UpdateTimestamps();
 
-            if (customerDto.user != null)
+            if (customerDto.User != null)
             {
-                var user = await dbContext.Users.FindAsync(customer.user_id);
-                if (user != null)
+                var User = await dbContext.Users.FindAsync(customer.UserId);
+                if (User != null)
                 {
-                    _mapper.Map(customerDto.user, user);
-                    if (!string.IsNullOrWhiteSpace(customerDto.user.password))
+                    _mapper.Map(customerDto.User, User);
+                    if (!string.IsNullOrWhiteSpace(customerDto.User.Password))
                     {
-                        user.password = Bcrypt.BcryptPassword(customerDto.user.password);
+                        User.Password = Bcrypt.BcryptPassword(customerDto.User.Password);
                     }
 
-                    user.role = 3;
-                    user.status = 1;
-                    user.UpdateTimestamps();
+                    User.Role = 3;
+                    User.Status = 1;
+                    User.UpdateTimestamps();
                 }
             }
 
             await dbContext.SaveChangesAsync();
 
-            var respon = new ResponData<CustomerRespon>(true, "Successfully updated my profile", _mapper.Map<CustomerRespon>(customer));
+            var respon = new ResponData<CustomerRespon>(true, _mapper.Map<CustomerRespon>(customer), "Successfully updated my profile");
 
             return Ok(respon);
         }
         catch (Exception ex)
         {
-            var respon = new ResponData<CustomerRespon>(ex.Message);
+            var respon = new ResponData<object?>(false, ex.Message);
 
             return BadRequest(respon);
         }
@@ -236,28 +236,28 @@ public class CustomerController : ControllerBase
 
             if (customer is null)
             {
-                return BadRequest(new ResponData<CustomerRespon>($"Customer data with id {id} not found"));
+                return BadRequest(new ResponData<object?>(false, $"Customer data with id {id} not found"));
             }
 
-            if (customer.user_id != 0)
+            if (customer.UserId != 0)
             {
-                var user = await dbContext.Users.FindAsync(customer.user_id);
-                if (user != null)
+                var User = await dbContext.Users.FindAsync(customer.UserId);
+                if (User != null)
                 {
-                    user.SoftDelete();
+                    User.SoftDelete();
                 }
             }
 
             customer.SoftDelete();
             await dbContext.SaveChangesAsync();
 
-            var respon = new ResponData<string>(true, "Successfully deleted customer data", "null");
+            var respon = new ResponData<string?>(true, null, "Successfully deleted customer data");
 
             return Ok(respon);
         }
         catch (Exception ex)
         {
-            var respon = new ResponData<CustomerRespon>(ex.Message);
+            var respon = new ResponData<object?>(false, ex.Message);
 
             return BadRequest(respon);
         }

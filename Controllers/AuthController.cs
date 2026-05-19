@@ -37,33 +37,56 @@ namespace sipetok_api.Controllers
                 string passwordHash = Bcrypt.BcryptPassword(req.Password);
                 var user = new User
                 {
-                    username = req.Username,
-                    email = req.Email,
-                    password = passwordHash,
-                    role = 3,
-                    status = 1
+                    Username = req.Username,
+                    Email = req.Email,
+                    Password = passwordHash,
+                    Role = 3,
+                    Status = 1
                 };
 
                 dbContext.Users.Add(user);
                 await dbContext.SaveChangesAsync();
                 string token = CreateToken(user);
 
-                var respon = new ResponData<AuthRespon>
-                {
-                    success = true,
-                    data = new AuthRespon(token != "false" ? token : null),
-                    message = $"Register berhasil"
-                };
+                // Menggunakan konstruktor: ResponData(bool success, T data, string message)
+                ResponData<AuthRespon> respon = new ResponData<AuthRespon>
+                (
+                    true,
+                    new AuthRespon(token != "false" ? token : null),
+                    "Register berhasil"
+                );
 
                 return Ok(respon);
             }
+            catch (DbUpdateException ex)
+            {
+                if (ex.InnerException != null && (ex.InnerException.Message.Contains("Duplicate") || ex.InnerException.Message.Contains("unique")))
+                {
+                    // 1. Buat dictionary error manual untuk menentukan field mana yang error
+                    var errorDetail = new Dictionary<string, string[]>
+                    {
+                        { "Account", new[] { "Email atau Username sudah terdaftar, silakan gunakan yang lain." } }
+                    };
+
+                    // 2. Masukkan ke dalam objek ResponValidation menggunakan konstruktornya
+                    var responUnique = new ResponValidation(errorDetail);
+
+                    return BadRequest(responUnique);
+                }
+                ResponData<object?> responDb = new ResponData<object?>
+                (
+                    false,
+                    "Terjadi kesalahan saat menyimpan data ke database."
+                );
+                return StatusCode(500, responDb);
+            }
             catch (Exception ex)
             {
-                var respon = new ResponData<object>
-                {
-                    success = false,
-                    message = ex.Message
-                };
+                ResponData<object?> respon = new ResponData<object?>
+                (
+                    false,
+                    ex.Message
+                );
 
                 return StatusCode(500, respon);
             }
@@ -74,44 +97,44 @@ namespace sipetok_api.Controllers
         {
             try
             {
-                var user = await dbContext.Users.FirstOrDefaultAsync(u => u.username == req.Username);
+                var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Username == req.Username);
 
-                if (user == null || !Bcrypt.VerifyPassword(req.Password, user.password))
+                if (user == null || !Bcrypt.VerifyPassword(req.Password, user.Password))
                 {
-                    return BadRequest(new ResponData<object>
-                    {
-                        success = false,
-                        message = "Wrong username or password!"
-                    });
+                    return BadRequest(new ResponData<object?>
+                    (
+                        false,
+                        "Wrong Username or Password"
+                    ));
                 }
 
-                if (user.status == 0)
+                if (user.Status == 0)
                 {
-                    return BadRequest(new ResponData<object>
-                    {
-                        success = false,
-                        message = "Your account has been deactivated"
-                    });
+                    return BadRequest(new ResponData<object?>
+                    (
+                        false,
+                        "Your account has been deactivated"
+                    ));
                 }
 
                 string token = CreateToken(user);
 
                 var respon = new ResponData<AuthRespon>
-                {
-                    success = true,
-                    data = new AuthRespon(token != "false" ? token : null),
-                    message = $"Login berhasil"
-                };
+                (
+                    true,
+                    new AuthRespon(token != "false" ? token : null),
+                    "Login berhasil"
+                );
 
                 return Ok(respon);
             }
             catch (Exception ex)
             {
-                var respon = new ResponData<object>
-                {
-                    success = false,
-                    message = ex.Message
-                };
+                var respon = new ResponData<object?>
+                (
+                    false,
+                    ex.Message
+                );
 
                 return StatusCode(500, respon);
             }
@@ -124,9 +147,9 @@ namespace sipetok_api.Controllers
                 var roleService = new AccountRoleTableDriven();
                 var claims = new List<Claim>
                 {
-                    new Claim(ClaimTypes.Name, user.username),
-                    new Claim(ClaimTypes.Role, roleService.GetRoleName(user.role)),
-                    new Claim("userId", user.id.ToString()),
+                    new Claim(ClaimTypes.Name, user.Username),
+                    new Claim(ClaimTypes.Role, roleService.GetRoleName(user.Role)),
+                    new Claim("userId", user.Id.ToString()),
                 };
 
                 var jwtSection = appConfig.GetSection("configProperties:JWT");
@@ -148,7 +171,7 @@ namespace sipetok_api.Controllers
 
                 return new JwtSecurityTokenHandler().WriteToken(token);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return "false";
             }

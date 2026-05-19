@@ -43,10 +43,7 @@ builder.Services.AddControllers()
                     kvp => kvp.Value!.Errors.Select(e => e.ErrorMessage).ToArray()
                 );
 
-            var response = new ResponValidation
-            {
-                errors = validationErrors
-            };
+            ResponValidation response = new ResponValidation(validationErrors);
 
             return new BadRequestObjectResult(response);
         };
@@ -88,7 +85,7 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddAuthorization(options =>
 {
     // Policy untuk mengecek apakah user aktif
-    options.AddPolicy("ActiveUser", policy => 
+    options.AddPolicy("ActiveUser", policy =>
         policy.RequireClaim("status", "active"));
 });
 

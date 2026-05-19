@@ -2,20 +2,20 @@ namespace sipetok_api.dto.Respon
 {
     public class EggCategoryRespon
     {
-        public int id {get; set;}
-        public decimal price { get; set; }
-        public string description { get; set; } = string.Empty;
-        public string name { get; set; } = string.Empty;
-        public int tenant_id { get; set; }
+        public int Id { get; set; }
+        public decimal Price { get; set; }
+        public string Description { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+        public int TenantId { get; set; }
         public EggCategoryRespon() { }
 
-        public EggCategoryRespon(int id, decimal price, string description, string name, int tenant_id)
+        public EggCategoryRespon(int Id, decimal Price, string Description, string Name, int TenantId)
         {
-            this.id = id;
-            this.price = price;
-            this.description = description;
-            this.name = name;
-            this.tenant_id = tenant_id;
+            this.Id = Id;
+            this.Price = Price;
+            this.Description = Description;
+            this.Name = Name;
+            this.TenantId = TenantId;
         }
     }
 }

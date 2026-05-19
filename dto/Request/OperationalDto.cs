@@ -5,23 +5,23 @@ namespace sipetok_api.dto.Request
     public class OperationalDto
     {
         [Required(ErrorMessage = "Name is required!")]
-        public string name { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Operational cost is required!")]
-        public string operational_cost { get; set; } = string.Empty;
+        public string OperationalCost { get; set; } = string.Empty;
 
         // [Required(ErrorMessage = "Tenant ID is required!")]
         // public int tenant_id { get; set; }
 
         [Required(ErrorMessage = "Operational date is required!")]
-        public DateTime operational_date { get; set; }
-        
+        public DateTime OperationalDate { get; set; }
+
         public OperationalDto() { }
-        public OperationalDto(string name, string operational_cost, DateTime operational_date)
+        public OperationalDto(string Name, string OperationalCost, DateTime OperationalDate)
         {
-            this.name = name;
-            this.operational_cost = operational_cost;
-            this.operational_date = operational_date;
+            this.Name = Name;
+            this.OperationalCost = OperationalCost;
+            this.OperationalDate = OperationalDate;
         }
     }
 }

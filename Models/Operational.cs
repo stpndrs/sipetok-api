@@ -5,29 +5,29 @@ namespace sipetok_api.Models
 {
     public class Operational : BaseEntity
     {
-        public int id { get; set; }
+        public int Id { get; set; }
 
         [Required, MaxLength(100)]
-        public string name { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
 
         [MaxLength(50)]
-        public string operational_cost { get; set; } = string.Empty;
+        public string OperationalCost { get; set; } = string.Empty;
 
-        public int tenant_id { get; set; }
+        public int TenantId { get; set; }
 
-        [ForeignKey("tenant_id")]
-        public virtual Tenant? tenant { get; set; }
-        public DateTime operational_date { get; set; }
+        [ForeignKey("TenantId")]
+        public virtual Tenant? Tenant { get; set; }
+        public DateTime OperationalDate { get; set; }
 
         public Operational() { }
 
-        public Operational(int id, string name, string operational_cost, int tenant_id, DateTime operational_date)
+        public Operational(int Id, string Name, string OperationalCost, int TenantId, DateTime OperationalDate)
         {
-            this.id = id;
-            this.name = name;
-            this.operational_cost = operational_cost;
-            this.tenant_id = tenant_id;
-            this.operational_date = operational_date;
+            this.Id = Id;
+            this.Name = Name;
+            this.OperationalCost = OperationalCost;
+            this.TenantId = TenantId;
+            this.OperationalDate = OperationalDate;
         }
     }
 }

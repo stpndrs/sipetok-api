@@ -5,32 +5,32 @@ namespace sipetok_api.dto.Request
 {
     public class TransactionDto
     {
-        public DateTime date { get; set; }
+        public DateTime Date { get; set; }
 
-        public decimal payment_amount { get; set; }
+        public decimal PaymentAmount { get; set; }
 
-        public decimal total_price { get; set; }
+        public decimal TotalPrice { get; set; }
 
-        public int tenant_id { get; set; }
-        public string customer_name { get; set; } = string.Empty;
-        public string customer_phone_number { get; set; } = string.Empty;
+        public int TenantId { get; set; }
+        public string CustomerName { get; set; } = string.Empty;
+        public string CustomerPhoneNumber { get; set; } = string.Empty;
 
         public PaymentState Status { get; set; } = PaymentState.WaitingForPayment;
         public OrderState OrderStatus { get; set; } = OrderState.OrderComeIn;
 
 
-        public virtual ICollection<TransactionDetailDto> details { get; set; } = new List<TransactionDetailDto>();
-        
+        public virtual ICollection<TransactionDetailDto> Details { get; set; } = new List<TransactionDetailDto>();
+
         public TransactionDto() { }
 
-        public TransactionDto(decimal payment_amount, decimal total_price, int tenant_id, int customer_id, string customer_name, string customer_phone_number)
+        public TransactionDto(decimal PaymentAmount, decimal TotalPrice, int TenantId, int customer_id, string CustomerName, string CustomerPhoneNumber)
         {
-            this.date = DateTime.Now;
-            this.payment_amount = payment_amount;
-            this.total_price = total_price;
-            this.tenant_id = tenant_id;
-            this.customer_name = customer_name;
-            this.customer_phone_number = customer_phone_number;
+            this.Date = DateTime.Now;
+            this.PaymentAmount = PaymentAmount;
+            this.TotalPrice = TotalPrice;
+            this.TenantId = TenantId;
+            this.CustomerName = CustomerName;
+            this.CustomerPhoneNumber = CustomerPhoneNumber;
         }
     }
 }

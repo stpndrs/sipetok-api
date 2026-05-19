@@ -5,22 +5,22 @@ namespace sipetok_api.dto.Request
     public class CustomerDto
     {
         [Required(ErrorMessage = "Name is required!")]
-        public string name { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
 
-        public virtual UserDto? user { get; set; }
+        public virtual UserDto? User { get; set; }
 
         [Required(ErrorMessage = "Address is required!")]
-        public string address { get; set; } = string.Empty;
+        public string Address { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Phone number is required!")]
-        public string phone_number { get; set; } = string.Empty;
-        
+        public string PhoneNumber { get; set; } = string.Empty;
+
         public CustomerDto() { }
-        public CustomerDto(string name, string address, string phone_number)
+        public CustomerDto(string Name, string Address, string PhoneNumber)
         {
-            this.name = name;
-            this.address = address;
-            this.phone_number = phone_number;
+            this.Name = Name;
+            this.Address = Address;
+            this.PhoneNumber = PhoneNumber;
         }
     }
 }

@@ -2,8 +2,13 @@ namespace sipetok_api.dto.Respon
 {
     class ResponValidation
     {
-        public bool success { get; set; } = false;
-        public string message { get; set; } = "Validation error";
-        public Dictionary<string, string[]> errors { get; set; } = new();
+        public bool Success { get; set; } = false;
+        public string Message { get; set; } = "Validation error";
+        public Dictionary<string, string[]> Errors { get; set; }
+
+        public ResponValidation(Dictionary<string, string[]> errors)
+        {
+            this.Errors = errors;
+        }
     }
 }
