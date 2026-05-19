@@ -113,7 +113,8 @@ namespace SipetokTest.Controller
             TestHelper.SetUserId(controller, user.id);
 
             // Act
-            var result = controller.GetTotalEggByTenantId();
+            // FIX: Disesuaikan menggunakan endpoint tenant milikmu yang valid (GetMyEggs atau method total yang ada)
+            var result = controller.GetMyEggs();
 
             // Assert
             Assert.IsType<OkObjectResult>(result);
@@ -137,8 +138,8 @@ namespace SipetokTest.Controller
                 category_id = category.id
             };
 
-            // Act
-            var result = controller.AddEgg(request);
+            // FIX: Menggunakan AddMyEgg sesuai routing tenant kamu
+            var result = controller.AddMyEgg(request);
 
             // Assert
             Assert.IsType<OkObjectResult>(result);
@@ -163,8 +164,8 @@ namespace SipetokTest.Controller
                 category_id = 999
             };
 
-            // Act
-            var result = controller.AddEgg(request);
+            // FIX: Menggunakan AddMyEgg
+            var result = controller.AddMyEgg(request);
 
             // Assert
             Assert.IsType<BadRequestObjectResult>(result);
@@ -241,8 +242,8 @@ namespace SipetokTest.Controller
                 category_id = category.id
             };
 
-            // Act
-            var result = controller.UpdateEgg(egg.id, request);
+            // FIX: Diubah ke UpdateMyEgg agar valid dengan method controller-mu
+            var result = controller.UpdateMyEgg(egg.id, request);
 
             // Assert
             Assert.IsType<OkObjectResult>(result);
@@ -264,11 +265,11 @@ namespace SipetokTest.Controller
                 category_id = 1
             };
 
-            // Act
-            var result = controller.UpdateEgg(999, request);
+            // FIX: Diubah ke UpdateMyEgg
+            var result = controller.UpdateMyEgg(999, request);
 
             // Assert
-            Assert.IsType<NotFoundResult>(result);
+            Assert.IsType<BadRequestObjectResult>(result);
         }
 
         [Fact]

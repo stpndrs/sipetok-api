@@ -112,14 +112,19 @@ namespace SipetokTest.Controller
             var trx = new Transaction
             {
                 id = trxId,
-                Status = PaymentState.Success,
+                Status = PaymentState.WaitingForPayment,
                 OrderStatus = OrderState.OrderComeIn
             };
 
             dbContext.Transactions.Add(trx);
             await dbContext.SaveChangesAsync();
 
-            _mockPaymentService.Setup(s => s.UpdateStatus(trxId, PaymentTrigger.Pay))
+            // Setup Mock dengan 4 parameter & Callback untuk mensimulasikan perubahan state asli di dalam Service
+            _mockPaymentService.Setup(s => s.UpdateStatus(trxId, PaymentTrigger.Pay, It.IsAny<OrderService>(), OrderTrigger.PaymentSucceeded))
+                               .Callback<int, PaymentTrigger, OrderService, OrderTrigger>((id, pt, os, ot) => {
+                                   trx.Status = PaymentState.Success;
+                                   trx.OrderStatus = OrderState.ReadyForPickup;
+                               })
                                .ReturnsAsync(true);
 
             var controller = new TransactionController(dbContext, _mockPaymentService.Object, orderService, mapper);
@@ -130,6 +135,7 @@ namespace SipetokTest.Controller
             // Assert
             Assert.IsType<OkObjectResult>(result);
             Assert.Equal(OrderState.ReadyForPickup, trx.OrderStatus);
+            Assert.Equal(PaymentState.Success, trx.Status);
         }
 
         [Fact]
@@ -140,8 +146,8 @@ namespace SipetokTest.Controller
             var mapper = TestHelper.CreateMapper();
             var orderService = new OrderService();
 
-            // Mocking logic: Simulasikan UpdateStatus gagal (return false)
-            _mockPaymentService.Setup(s => s.UpdateStatus(It.IsAny<int>(), PaymentTrigger.Pay))
+            // Setup Mock dengan 4 parameter
+            _mockPaymentService.Setup(s => s.UpdateStatus(It.IsAny<int>(), PaymentTrigger.Pay, It.IsAny<OrderService>(), OrderTrigger.PaymentSucceeded))
                                .ReturnsAsync(false);
 
             var controller = new TransactionController(dbContext, _mockPaymentService.Object, orderService, mapper);
@@ -172,7 +178,12 @@ namespace SipetokTest.Controller
             dbContext.Transactions.Add(trx);
             await dbContext.SaveChangesAsync();
 
-            _mockPaymentService.Setup(s => s.UpdateStatus(trxId, PaymentTrigger.Pay))
+            // Setup Mock dengan 4 parameter menggunakan Trigger Cancel
+            _mockPaymentService.Setup(s => s.UpdateStatus(trxId, PaymentTrigger.Cancel, It.IsAny<OrderService>(), OrderTrigger.CancelledByCustomer))
+                               .Callback<int, PaymentTrigger, OrderService, OrderTrigger>((id, pt, os, ot) => {
+                                   trx.Status = PaymentState.Cancelled;
+                                   trx.OrderStatus = OrderState.Cancelled;
+                               })
                                .ReturnsAsync(true);
 
             var controller = new TransactionController(dbContext, _mockPaymentService.Object, orderService, mapper);
@@ -183,6 +194,7 @@ namespace SipetokTest.Controller
             // Assert
             Assert.IsType<OkObjectResult>(result);
             Assert.Equal(OrderState.Cancelled, trx.OrderStatus);
+            Assert.Equal(PaymentState.Cancelled, trx.Status);
         }
 
         [Fact]
@@ -193,7 +205,8 @@ namespace SipetokTest.Controller
             var mapper = TestHelper.CreateMapper();
             var orderService = new OrderService();
 
-            _mockPaymentService.Setup(s => s.UpdateStatus(It.IsAny<int>(), PaymentTrigger.Cancel))
+            // Setup Mock dengan 4 parameter
+            _mockPaymentService.Setup(s => s.UpdateStatus(It.IsAny<int>(), PaymentTrigger.Cancel, It.IsAny<OrderService>(), OrderTrigger.CancelledByCustomer))
                                .ReturnsAsync(false);
 
             var controller = new TransactionController(dbContext, _mockPaymentService.Object, orderService, mapper);

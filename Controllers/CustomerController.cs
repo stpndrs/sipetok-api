@@ -29,14 +29,14 @@ public class CustomerController : ControllerBase
         try
         {
             var allCustomer = _mapper.Map<List<CustomerRespon>>(await dbContext.Customers.Include(c => c.user).ToListAsync());
-            var respon = new ResponData<List<CustomerRespon>>(true, "Successfully retrieved all customer data", allCustomer);
 
+            var respon = new ResponData<List<CustomerRespon>>(true, allCustomer, "Successfully retrieved all customer data");
 
             return Ok(respon);
         }
         catch (Exception ex)
         {
-            var respon = new ResponData<List<CustomerRespon>>(ex.Message);
+            var respon = new ResponData<object?>(false, ex.Message);
 
             return StatusCode(500, respon);
         }
@@ -53,16 +53,16 @@ public class CustomerController : ControllerBase
 
             if (customer == null)
             {
-                return NotFound(new ResponData<CustomerRespon>($"Customer data with id {id} not found"));
+                return NotFound(new ResponData<object?>(false, $"Customer data with id {id} not found"));
             }
 
-            var respon = new ResponData<CustomerRespon>(true, $"Successfully retrieved customer data with id {id}", customer);
+            var respon = new ResponData<CustomerRespon>(true, customer, $"Successfully retrieved customer data with id {id}");
 
             return Ok(respon);
         }
         catch (Exception ex)
         {
-            var respon = new ResponData<CustomerRespon>(ex.Message);
+            var respon = new ResponData<object?>(false, ex.Message);
 
             return StatusCode(500, respon);
         }
@@ -80,16 +80,16 @@ public class CustomerController : ControllerBase
 
             if (customer == null)
             {
-                return NotFound(new ResponData<CustomerRespon>($"Customer data with id {userId} not found"));
+                return NotFound(new ResponData<object?>(false, $"Customer data with id {userId} not found"));
             }
 
-            var respon = new ResponData<CustomerRespon>(true, $"Successfully retrieved customer data with id {userId}", customer);
+            var respon = new ResponData<CustomerRespon>(true, customer, $"Successfully retrieved customer data with id {userId}");
 
             return Ok(respon);
         }
         catch (Exception ex)
         {
-            var respon = new ResponData<CustomerRespon>(ex.Message);
+            var respon = new ResponData<object?>(false, ex.Message);
 
             return StatusCode(500, respon);
         }
@@ -120,13 +120,13 @@ public class CustomerController : ControllerBase
             await dbContext.Customers.AddAsync(customer);
             await dbContext.SaveChangesAsync();
 
-            var respon = new ResponData<CustomerRespon>(true, "Successfully added new customer data", _mapper.Map<CustomerRespon>(customer));
+            var respon = new ResponData<CustomerRespon>(true, _mapper.Map<CustomerRespon>(customer), "Successfully added new customer data");
 
             return Ok(respon);
         }
         catch (Exception ex)
         {
-            var respon = new ResponData<CustomerRespon>(ex.Message);
+            var respon = new ResponData<object?>(false, ex.Message);
 
             return BadRequest(respon);
         }
@@ -143,7 +143,7 @@ public class CustomerController : ControllerBase
 
             if (customer is null)
             {
-                return BadRequest(new ResponData<CustomerRespon>($"Customer data with id {id} not found"));
+                return BadRequest(new ResponData<object?>(false, $"Customer data with id {id} not found"));
             }
 
             _mapper.Map(customerDto, customer);
@@ -165,12 +165,12 @@ public class CustomerController : ControllerBase
             }
             await dbContext.SaveChangesAsync();
 
-            var respon = new ResponData<CustomerRespon>(true, "Successfully updated customer data", _mapper.Map<CustomerRespon>(customer));
+            var respon = new ResponData<CustomerRespon>(true, _mapper.Map<CustomerRespon>(customer), "Successfully updated customer data");
             return Ok(respon);
         }
         catch (Exception ex)
         {
-            var respon = new ResponData<CustomerRespon>(ex.Message);
+            var respon = new ResponData<object?>(false, ex.Message);
 
             return BadRequest(respon);
         }
@@ -188,7 +188,7 @@ public class CustomerController : ControllerBase
 
             if (customer is null)
             {
-                return BadRequest(new ResponData<CustomerRespon>($"Customer data with user id {userId} not found"));
+                return BadRequest(new ResponData<object?>(false, $"Customer data with user id {userId} not found"));
             }
 
             _mapper.Map(customerDto, customer);
@@ -213,13 +213,13 @@ public class CustomerController : ControllerBase
 
             await dbContext.SaveChangesAsync();
 
-            var respon = new ResponData<CustomerRespon>(true, "Successfully updated my profile", _mapper.Map<CustomerRespon>(customer));
+            var respon = new ResponData<CustomerRespon>(true, _mapper.Map<CustomerRespon>(customer), "Successfully updated my profile");
 
             return Ok(respon);
         }
         catch (Exception ex)
         {
-            var respon = new ResponData<CustomerRespon>(ex.Message);
+            var respon = new ResponData<object?>(false, ex.Message);
 
             return BadRequest(respon);
         }
@@ -236,7 +236,7 @@ public class CustomerController : ControllerBase
 
             if (customer is null)
             {
-                return BadRequest(new ResponData<CustomerRespon>($"Customer data with id {id} not found"));
+                return BadRequest(new ResponData<object?>(false, $"Customer data with id {id} not found"));
             }
 
             if (customer.user_id != 0)
@@ -251,13 +251,13 @@ public class CustomerController : ControllerBase
             customer.SoftDelete();
             await dbContext.SaveChangesAsync();
 
-            var respon = new ResponData<string>(true, "Successfully deleted customer data", "null");
+            var respon = new ResponData<string?>(true, null, "Successfully deleted customer data");
 
             return Ok(respon);
         }
         catch (Exception ex)
         {
-            var respon = new ResponData<CustomerRespon>(ex.Message);
+            var respon = new ResponData<object?>(false, ex.Message);
 
             return BadRequest(respon);
         }

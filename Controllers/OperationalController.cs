@@ -1,360 +1,247 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
+using AutoMapper;
 
 using sipetok_api.dto.Request;
 using sipetok_api.Models;
 using sipetok_api.Data;
-using AutoMapper;
 using sipetok_api.dto.Respon;
 
-[Authorize]
-[Route("api/operationals")]
-[ApiController]
-public class OperationalController : ControllerBase
+namespace sipetok_api.Controllers
 {
-    private readonly AppDbContext dbContext;
-    private readonly IMapper _mapper;
-
-    public OperationalController(AppDbContext context, IMapper mapper)
+    [Authorize]
+    [Route("api/operationals")]
+    [ApiController]
+    public class OperationalController : ControllerBase
     {
-        dbContext = context;
-        _mapper = mapper;
-    }
+        private readonly AppDbContext dbContext;
+        private readonly IMapper _mapper;
 
-    [HttpGet]
-    [Authorize(Roles = "ADMIN")]
-    public IActionResult GetAllOperationals()
-    {
-        try
+        public OperationalController(AppDbContext context, IMapper mapper)
         {
-            var allOperational = _mapper.Map<List<OperationalRespon>>(dbContext.Operationals.Include(c => c.tenant).ToList());
-
-            var respon = new ResponData<List<OperationalRespon>>
-            {
-                success = true,
-                data = allOperational,
-                message = "Successfully retrieved all Operational data"
-            };
-
-            return Ok(respon);
+            dbContext = context;
+            _mapper = mapper;
         }
-        catch (Exception ex)
-        {
-            var respon = new ResponData<List<OperationalRespon>>
-            {
-                success = false,
-                message = ex.Message
-            };
 
-            return StatusCode(500, respon);
+        [HttpGet]
+        [Authorize(Roles = "ADMIN")]
+        public IActionResult GetAllOperationals()
+        {
+            try
+            {
+                var allOperational = _mapper.Map<List<OperationalRespon>>(dbContext.Operationals.Include(c => c.tenant).ToList());
+
+                var respon = new ResponData<List<OperationalRespon>>(true, allOperational, "Successfully retrieved all Operational data");
+
+                return Ok(respon);
+            }
+            catch (Exception ex)
+            {
+                var respon = new ResponData<object?>(false, ex.Message);
+
+                return StatusCode(500, respon);
+            }
         }
-    }
 
-    [HttpGet]
-    [Route("{id:int}")]
-    [Authorize(Roles = "ADMIN, TENANT")]
-    public IActionResult GetOperationalById(int id)
-    {
-        try
+        [HttpGet]
+        [Route("{id:int}")]
+        [Authorize(Roles = "ADMIN, TENANT")]
+        public IActionResult GetOperationalById(int id)
         {
-            var operational = _mapper.Map<OperationalRespon>(dbContext.Operationals.Include(c => c.tenant).FirstOrDefault(c => c.id == id));
-
-            if (operational == null)
+            try
             {
-                return NotFound(new ResponData<OperationalRespon>
+                var operational = _mapper.Map<OperationalRespon>(dbContext.Operationals.Include(c => c.tenant).FirstOrDefault(c => c.id == id));
+
+                if (operational == null)
                 {
-                    success = false,
-                    message = $"Operational data with id {id} not found"
-                });
+                    return NotFound(new ResponData<object?>(false, $"Operational data with id {id} not found"));
+                }
+
+                var respon = new ResponData<OperationalRespon>(true, operational, $"Successfully retrieved operational data with id {id}");
+
+                return Ok(respon);
             }
-
-            var respon = new ResponData<OperationalRespon>
+            catch (Exception ex)
             {
-                success = true,
-                data = operational,
-                message = $"Successfully retrieved operational data with id {id}"
-            };
+                var respon = new ResponData<object?>(false, ex.Message);
 
-            return Ok(respon);
+                return StatusCode(500, respon);
+            }
         }
-        catch (Exception ex)
+
+        [HttpGet]
+        [Route("tenant/{tenantId:int}")]
+        [Authorize(Roles = "ADMIN")]
+        public IActionResult GetOperationalByTenantId(int tenantId)
         {
-            var respon = new ResponData<OperationalRespon>
+            try
             {
-                success = false,
-                message = ex.Message
-            };
+                var operational = _mapper.Map<List<OperationalRespon>>(
+                    dbContext.Operationals.Include(o => o.tenant).Where(o => o.tenant_id == tenantId).ToList()
+                );
 
-            return StatusCode(500, respon);
-        }
-    }
-
-    [HttpGet]
-    [Route("tenant/{tenantId:int}")]
-    [Authorize(Roles = "ADMIN")]
-    public IActionResult GetOperationalByTenantId(int tenantId)
-    {
-        try
-        {
-            var operational = _mapper.Map<List<OperationalRespon>>(
-                dbContext.Operationals.Include(o => o.tenant).Where(o => o.tenant_id == tenantId).ToList()
-            );
-
-            if (operational == null)
-            {
-                return NotFound(new ResponData<OperationalRespon>
+                if (operational == null)
                 {
-                    success = false,
-                    message = $"Operational data with tenant id {tenantId} not found"
-                });
+                    return NotFound(new ResponData<object?>(false, $"Operational data with tenant id {tenantId} not found"));
+                }
+
+                var respon = new ResponData<List<OperationalRespon>>(true, operational, $"Successfully retrieved operational data with tenant id {tenantId}");
+
+                return Ok(respon);
             }
-
-            var respon = new ResponData<List<OperationalRespon>>
+            catch (Exception ex)
             {
-                success = true,
-                data = operational,
-                message = $"Successfully retrieved operational data with tenant id {tenantId}"
-            };
+                var respon = new ResponData<object?>(false, ex.Message);
 
-            return Ok(respon);
+                return StatusCode(500, respon);
+            }
         }
-        catch (Exception ex)
+
+        [HttpGet]
+        [Route("myoperational")]
+        [Authorize(Roles = "TENANT")]
+        public IActionResult GetMyOperational()
         {
-            var respon = new ResponData<OperationalRespon>
+            try
             {
-                success = false,
-                message = ex.Message
-            };
+                int userId = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value ?? "0");
+                var operational = _mapper.Map<List<OperationalRespon>>
+                (
+                    (from o in dbContext.Operationals
+                     join t in dbContext.Tenants on o.tenant_id equals t.id
+                     where t.user_id == userId
+                     select o
+                     ).ToList()
+                );
 
-            return StatusCode(500, respon);
-        }
-    }
-
-    [HttpGet]
-    [Route("myoperational")]
-    [Authorize(Roles = "TENANT")]
-    public IActionResult GetMyOperational()
-    {
-        try
-        {
-            int userId = int.Parse(User.Claims.FirstOrDefault(c => c.Type == "userId")?.Value ?? "0");
-            var operational = _mapper.Map<List<OperationalRespon>>
-            (
-                (from o in dbContext.Operationals
-                 join t in dbContext.Tenants on o.tenant_id equals t.id
-                 where t.user_id == userId
-                 select o
-                 ).ToList()
-            );
-
-            if (operational == null)
-            {
-                return NotFound(new ResponData<OperationalRespon>
+                if (operational == null)
                 {
-                    success = false,
-                    message = $"Operational data with user id {userId} not found"
-                });
+                    return NotFound(new ResponData<object?>(false, $"Operational data with user id {userId} not found"));
+                }
+
+                var respon = new ResponData<List<OperationalRespon>>(true, operational, $"Successfully retrieved operational data with user id {userId}");
+
+                return Ok(respon);
             }
-
-            var respon = new ResponData<List<OperationalRespon>>
+            catch (Exception ex)
             {
-                success = true,
-                data = operational,
-                message = $"Successfully retrieved operational data with user id {userId}"
-            };
+                var respon = new ResponData<object?>(false, ex.Message);
 
-            return Ok(respon);
+                return StatusCode(500, respon);
+            }
         }
-        catch (Exception ex)
-        {
-            var respon = new ResponData<OperationalRespon>
-            {
-                success = false,
-                message = ex.Message
-            };
 
-            return StatusCode(500, respon);
+        [HttpPost]
+        [Route("addmyoperational")]
+        [Authorize(Roles = "TENANT")]
+        public IActionResult AddMyOperational([FromBody] OperationalDto operationalDto)
+        {
+            try
+            {
+                int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
+                var tenant = _mapper.Map<TenantRespon>(dbContext.Tenants.Include(c => c.user).FirstOrDefault(c => c.user_id == userId));
+                if (tenant is null)
+                {
+                    return BadRequest(new ResponData<object?>(false, "Tenant not found"));
+                }
+
+                var operational = _mapper.Map<Operational>(operationalDto);
+                operational.tenant_id = tenant.id;
+
+                dbContext.Operationals.Add(operational);
+                dbContext.SaveChanges();
+
+                var respon = new ResponData<OperationalRespon>(true, _mapper.Map<OperationalRespon>(operational), "Successfully added operational data");
+
+                return Ok(respon);
+            }
+            catch (Exception ex)
+            {
+                var respon = new ResponData<object?>(false, ex.Message);
+
+                return BadRequest(respon);
+            }
         }
-    }
 
-    [HttpPost]
-    [Route("addmyoperational")]
-    [Authorize(Roles = "TENANT")]
-    public IActionResult AddMyOperational([FromBody] OperationalDto operationalDto)
-    {
-        try
+        [HttpPut]
+        [Route("{id:int}")]
+        [Authorize(Roles = "TENANT")]
+        public IActionResult UpdateOperational(int id, [FromBody] OperationalDto operationalDto)
         {
-            int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
-            var tenant = _mapper.Map<TenantRespon>(dbContext.Tenants.Include(c => c.user).FirstOrDefault(c => c.user_id == userId)); 
-            if (tenant is null)
+            try
             {
-                return BadRequest(
-                    new ResponData<OperationalRespon>
-                    {
-                        success = false,
-                        message = "Tenant not found"
-                    }
-                );
+                var operational = dbContext.Operationals.Find(id);
+                int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
+                var tenant = _mapper.Map<TenantRespon>(dbContext.Tenants.Include(c => c.user).FirstOrDefault(c => c.user_id == userId));
+
+                if (tenant is null)
+                {
+                    return BadRequest(new ResponData<object?>(false, "Tenant not found"));
+                }
+                if (operational is null)
+                {
+                    return NotFound(new ResponData<object?>(false, $"Operational data with id {id} not found"));
+                }
+                if (operational.tenant_id != tenant.id)
+                {
+                    return BadRequest(new ResponData<object?>(false, "You are not authorized to update this operational data"));
+                }
+
+                _mapper.Map(operationalDto, operational);
+                operational.UpdateTimestamps();
+
+                dbContext.SaveChanges();
+
+                var respon = new ResponData<OperationalRespon>(true, _mapper.Map<OperationalRespon>(operational), "Successfully updated operational data");
+
+                return Ok(respon);
             }
-
-            var operational = _mapper.Map<Operational>(operationalDto);
-            operational.tenant_id = tenant.id;
-
-            dbContext.Operationals.Add(operational);
-            dbContext.SaveChanges();
-
-            var respon = new ResponData<OperationalRespon>
+            catch (Exception ex)
             {
-                success = true,
-                data = _mapper.Map<OperationalRespon>(operational),
-                message = "Successfully added operational data"
-            };
+                var respon = new ResponData<object?>(false, ex.Message);
 
-            return Ok(respon);
+                return BadRequest(respon);
+            }
         }
-        catch (Exception ex)
+
+        [HttpDelete]
+        [Route("{id:int}")]
+        [Authorize(Roles = "TENANT")]
+        public IActionResult DeleteOperational(int id)
         {
-            var respon = new ResponData<OperationalRespon>
+            try
             {
-                success = false,
-                message = ex.Message
-            };
+                var operational = dbContext.Operationals.Find(id);
+                int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
+                var tenant = _mapper.Map<TenantRespon>(dbContext.Tenants.Include(c => c.user).FirstOrDefault(c => c.user_id == userId));
 
-            return Ok(respon);
-        }
-    }
+                if (tenant is null)
+                {
+                    return BadRequest(new ResponData<object?>(false, "Tenant not found"));
+                }
+                if (operational is null)
+                {
+                    return NotFound(new ResponData<object?>(false, $"Operational data with id {id} not found"));
+                }
+                if (operational.tenant_id != tenant.id)
+                {
+                    return BadRequest(new ResponData<object?>(false, "You are not authorized to update this operational data"));
+                }
 
-    [HttpPut]
-    [Route("{id:int}")]
-    [Authorize(Roles = "TENANT")]
-    public IActionResult UpdateOperational(int id, [FromBody] OperationalDto operationalDto)
-    {
-        try
-        {
-            var operational = dbContext.Operationals.Find(id);
-            int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
-            var tenant = _mapper.Map<TenantRespon>(dbContext.Tenants.Include(c => c.user).FirstOrDefault(c => c.user_id == userId)); 
+                operational.SoftDelete();
+                dbContext.SaveChanges();
 
-            if (tenant is null)
-            {
-                return BadRequest(
-                    new ResponData<OperationalRespon>
-                    {
-                        success = false,
-                        message = "Tenant not found"
-                    }
-                );
+                var respon = new ResponData<object?>(true, "Successfully deleted operational data");
+
+                return Ok(respon);
             }
-            if (operational is null)
+            catch (Exception ex)
             {
-                return NotFound(
-                    new ResponData<OperationalRespon>
-                    {
-                        success = false,
-                        message = $"Operational data with id {id} not found"
-                    }
-                );
+                var respon = new ResponData<object?>(false, ex.Message);
+
+                return BadRequest(respon);
             }
-            if(operational.tenant_id != tenant.id)
-            {
-                return BadRequest(
-                    new ResponData<OperationalRespon>
-                    {
-                        success = false,
-                        message = "You are not authorized to update this operational data"
-                    }
-                );
-            }
-
-            _mapper.Map(operationalDto, operational);
-            operational.UpdateTimestamps();
-
-            dbContext.SaveChanges();
-
-            var respon = new ResponData<OperationalRespon>
-            {
-                success = true,
-                data = _mapper.Map<OperationalRespon>(operational),
-                message = "Successfully updated operational data"
-            };
-
-            return Ok(respon);
-        }
-        catch (Exception ex)
-        {
-            var respon = new ResponData<OperationalRespon>
-            {
-                success = false,
-                message = ex.Message
-            };
-
-            return Ok(respon);
-        }
-    }
-
-    [HttpDelete]
-    [Route("{id:int}")]
-    [Authorize(Roles = "TENANT")]
-    public IActionResult DeleteOperational(int id)
-    {
-        try
-        {
-            var operational = dbContext.Operationals.Find(id);
-            int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
-            var tenant = _mapper.Map<TenantRespon>(dbContext.Tenants.Include(c => c.user).FirstOrDefault(c => c.user_id == userId)); 
-
-            if (tenant is null)
-            {
-                return BadRequest(
-                    new ResponData<OperationalRespon>
-                    {
-                        success = false,
-                        message = "Tenant not found"
-                    }
-                );
-            }
-            if (operational is null)
-            {
-                return NotFound(
-                    new ResponData<OperationalRespon>
-                    {
-                        success = false,
-                        message = $"Operational data with id {id} not found"
-                    }
-                );
-            }
-            if(operational.tenant_id != tenant.id)
-            {
-                return BadRequest(
-                    new ResponData<OperationalRespon>
-                    {
-                        success = false,
-                        message = "You are not authorized to update this operational data"
-                    }
-                );
-            }
-
-            operational.SoftDelete();
-            dbContext.SaveChanges();
-
-            var respon = new ResponData<OperationalRespon>
-            {
-                success = true,
-                message = "Successfully deleted operational data"
-            };
-
-            return Ok(respon);
-        }
-        catch (Exception ex)
-        {
-            var respon = new ResponData<OperationalRespon>
-            {
-                success = false,
-                message = ex.Message
-            };
-
-            return BadRequest(respon);
         }
     }
 }

@@ -1,400 +1,299 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
+using AutoMapper;
 
 using sipetok_api.Models;
 using sipetok_api.dto.Request;
 using sipetok_api.Data;
-using AutoMapper;
 using sipetok_api.dto.Respon;
 
-[Authorize]
-[Route("api/tenants")]
-[ApiController]
-public class TenantController : ControllerBase
+namespace sipetok_api.Controllers
 {
-    private readonly AppDbContext dbContext;
-    private readonly IMapper _mapper;
-
-    public TenantController(AppDbContext context, IMapper mapper)
+    [Authorize]
+    [Route("api/tenants")]
+    [ApiController]
+    public class TenantController : ControllerBase
     {
-        dbContext = context;
-        _mapper = mapper;
-    }
+        private readonly AppDbContext dbContext;
+        private readonly IMapper _mapper;
 
-    [HttpGet]
-    [Authorize(Roles = "ADMIN")]
-    public IActionResult GetAllTenant()
-    {
-        try
+        public TenantController(AppDbContext context, IMapper mapper)
         {
-            var allCustomer = _mapper.Map<List<TenantRespon>>(dbContext.Tenants.Include(c => c.user).ToList());
-            var respon = new ResponData<List<TenantRespon>>
-            {
-                success = true,
-                data = allCustomer,
-                message = "Berhasil mengambil semua data tenant"
-            };
-
-            return Ok(respon);
+            dbContext = context;
+            _mapper = mapper;
         }
-        catch (Exception ex)
+
+        [HttpGet]
+        [Authorize(Roles = "ADMIN")]
+        public IActionResult GetAllTenant()
         {
-            var respon = new ResponData<List<TenantRespon>>
+            try
             {
-                success = true,
-                message = ex.Message
-            };
+                var allCustomer = _mapper.Map<List<TenantRespon>>(dbContext.Tenants.Include(c => c.user).ToList());
+                var respon = new ResponData<List<TenantRespon>>(true, allCustomer, "Berhasil mengambil semua data tenant");
 
-            return StatusCode(500, respon);
-        }
-    }
-
-    [HttpGet]
-    [Route("{id:int}")]
-    [Authorize(Roles = "ADMIN")]
-    public IActionResult GetTenantById(int id)
-    {
-        try
-        {
-            var tenant = _mapper.Map<TenantRespon>(dbContext.Tenants.Include(c => c.user).FirstOrDefault(c => c.id == id));
-
-            if (tenant is null)
-            {
-                return NotFound(new ResponData<TenantRespon>
-                {
-                    success = false,
-                    message = $"Tenant data with id {id} not found"
-                });
+                return Ok(respon);
             }
-
-            var respon = new ResponData<TenantRespon>
+            catch (Exception ex)
             {
-                success = true,
-                data = tenant,
-                message = $"Successfully retrieved tenant data with id {id}"
-            };
+                var respon = new ResponData<object?>(false, ex.Message);
 
-            return Ok(respon);
-        }
-        catch (Exception ex)
-        {
-            var respon = new ResponData<TenantRespon>
-            {
-                success = true,
-            };
-            respon.message = ex.Message;
-
-            return StatusCode(500, respon);
-        }
-    }
-
-    [HttpGet]
-    [Route("myprofile")]
-    [Authorize(Roles = "TENANT")]
-    public IActionResult GetMyProfile()
-    {
-        try
-        {
-            int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
-            var tenant = _mapper.Map<TenantRespon>(dbContext.Tenants.Include(c => c.user).FirstOrDefault(c => c.user_id == userId));
-
-            if (tenant is null)
-            {
-                return NotFound(new ResponData<TenantRespon>
-                {
-                    success = false,
-                    message = $"Tenant data with id {userId} not found"
-                });
+                return StatusCode(500, respon);
             }
-
-            var respon = new ResponData<TenantRespon>
-            {
-                success = true,
-                data = tenant,
-                message = $"Successfully retrieved tenant data with id {userId}"
-            };
-
-            return Ok(respon);
         }
-        catch (Exception ex)
-        {
-            var respon = new ResponData<TenantRespon>
-            {
-                success = true,
-            };
-            respon.message = ex.Message;
 
-            return StatusCode(500, respon);
-        }
-    }
-
-    [HttpPost]
-    [Authorize(Roles = "ADMIN")]
-    public IActionResult AddTenant([FromBody] TenantDto tenantDto)
-    {
-        try
+        [HttpGet]
+        [Route("{id:int}")]
+        [Authorize(Roles = "ADMIN")]
+        public IActionResult GetTenantById(int id)
         {
-            if (tenantDto.user == null)
+            try
             {
-                return BadRequest(new ResponData<TenantRespon>
+                var tenant = _mapper.Map<TenantRespon>(dbContext.Tenants.Include(c => c.user).FirstOrDefault(c => c.id == id));
+
+                if (tenant is null)
                 {
-                    success = false,
-                    message = "User is required"
-                });
+                    return NotFound(new ResponData<object?>(false, $"Tenant data with id {id} not found"));
+                }
+
+                var respon = new ResponData<TenantRespon>(true, tenant, $"Successfully retrieved tenant data with id {id}");
+
+                return Ok(respon);
             }
-            if (string.IsNullOrWhiteSpace(tenantDto.user.password))
+            catch (Exception ex)
             {
-                return BadRequest(new ResponData<TenantRespon>
-                {
-                    success = false,
-                    message = "Password is required"
-                });
+                var respon = new ResponData<object?>(false, ex.Message);
+
+                return StatusCode(500, respon);
             }
-
-            var user = _mapper.Map<User>(tenantDto.user);
-            user.password = Bcrypt.BcryptPassword(user.password);
-            user.role = 2;
-            user.status = 1;
-            tenantDto.isValid = false;
-
-            var tenant = _mapper.Map<Tenant>(tenantDto);
-            tenant.user = user;
-
-            dbContext.Tenants.Add(tenant);
-            dbContext.SaveChanges();
-
-            var respon = new ResponData<TenantRespon>
-            {
-                success = true,
-                data = _mapper.Map<TenantRespon>(tenant)
-            };
-            respon.message = $"Successfully added tenant data";
-
-            return Ok(respon);
         }
-        catch (Exception ex)
+
+        [HttpGet]
+        [Route("myprofile")]
+        [Authorize(Roles = "TENANT")]
+        public IActionResult GetMyProfile()
         {
-            var respon = new ResponData<TenantRespon>
+            try
             {
-                success = false,
-                message = ex.Message
-            };
+                int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
+                var tenant = _mapper.Map<TenantRespon>(dbContext.Tenants.Include(c => c.user).FirstOrDefault(c => c.user_id == userId));
 
-            return BadRequest(respon);
-        }
-    }
-
-    [HttpPut]
-    [Route("{id:int}")]
-    [Authorize(Roles = "ADMIN")]
-    public IActionResult UpdateTenant(int id, [FromBody] TenantDto tenantDto)
-    {
-        try
-        {
-            var tenant = dbContext.Tenants.Find(id);
-
-            if (tenant is null)
-            {
-                return NotFound(new ResponData<TenantRespon>
+                if (tenant is null)
                 {
-                    success = false,
-                    message = $"Tenant data with id {id} not found"
-                });
+                    return NotFound(new ResponData<object?>(false, $"Tenant data with id {userId} not found"));
+                }
+
+                var respon = new ResponData<TenantRespon>(true, tenant, $"Successfully retrieved tenant data with id {userId}");
+
+                return Ok(respon);
             }
-
-            _mapper.Map(tenantDto, tenant);
-            tenant.UpdateTimestamps();
-
-            if (tenantDto.user != null)
+            catch (Exception ex)
             {
-                var user = dbContext.Users.Find(tenant.user_id);
-                if (user != null)
+                var respon = new ResponData<object?>(false, ex.Message);
+
+                return StatusCode(500, respon);
+            }
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "ADMIN")]
+        public IActionResult AddTenant([FromBody] TenantDto tenantDto)
+        {
+            try
+            {
+                if (tenantDto.user == null)
                 {
-                    _mapper.Map(tenantDto.user, user);
-                    if (!string.IsNullOrWhiteSpace(tenantDto.user.password))
+                    return BadRequest(new ResponData<object?>(false, "User is required"));
+                }
+                if (string.IsNullOrWhiteSpace(tenantDto.user.password))
+                {
+                    return BadRequest(new ResponData<object?>(false, "Password is required"));
+                }
+
+                var user = _mapper.Map<User>(tenantDto.user);
+                user.password = Bcrypt.BcryptPassword(user.password);
+                user.role = 2;
+                user.status = 1;
+                tenantDto.isValid = false;
+
+                var tenant = _mapper.Map<Tenant>(tenantDto);
+                tenant.user = user;
+
+                dbContext.Tenants.Add(tenant);
+                dbContext.SaveChanges();
+
+                var respon = new ResponData<TenantRespon>(true, _mapper.Map<TenantRespon>(tenant), "Successfully added tenant data");
+
+                return Ok(respon);
+            }
+            catch (Exception ex)
+            {
+                var respon = new ResponData<object?>(false, ex.Message);
+
+                return BadRequest(respon);
+            }
+        }
+
+        [HttpPut]
+        [Route("{id:int}")]
+        [Authorize(Roles = "ADMIN")]
+        public IActionResult UpdateTenant(int id, [FromBody] TenantDto tenantDto)
+        {
+            try
+            {
+                var tenant = dbContext.Tenants.Find(id);
+
+                if (tenant is null)
+                {
+                    return NotFound(new ResponData<object?>(false, $"Tenant data with id {id} not found"));
+                }
+
+                _mapper.Map(tenantDto, tenant);
+                tenant.UpdateTimestamps();
+
+                if (tenantDto.user != null)
+                {
+                    var user = dbContext.Users.Find(tenant.user_id);
+                    if (user != null)
                     {
-                        user.password = Bcrypt.BcryptPassword(tenantDto.user.password);
+                        _mapper.Map(tenantDto.user, user);
+                        if (!string.IsNullOrWhiteSpace(tenantDto.user.password))
+                        {
+                            user.password = Bcrypt.BcryptPassword(tenantDto.user.password);
+                        }
+
+                        user.UpdateTimestamps();
                     }
-
-                    user.UpdateTimestamps();
                 }
+
+                dbContext.SaveChanges();
+
+                var respon = new ResponData<TenantRespon>(true, _mapper.Map<TenantRespon>(tenant), $"Successfully updated tenant data with id {id}");
+
+                return Ok(respon);
             }
-
-            dbContext.SaveChanges();
-
-            var respon = new ResponData<TenantRespon>
+            catch (Exception ex)
             {
-                success = true,
-                data = _mapper.Map<TenantRespon>(tenant),
-                message = $"Successfully updated tenant data with id {id}"
-            };
+                var respon = new ResponData<object?>(false, ex.Message);
 
-            return Ok(respon);
-        }
-        catch (Exception ex)
-        {
-            var respon = new ResponData<TenantRespon>
-            {
-                success = false,
-                message = ex.Message
-            };
-
-            return BadRequest(respon);
-        }
-    }
-
-    [HttpPut]
-    [Route("updatemyprofile")]
-    [Authorize(Roles = "TENANT")]
-    public IActionResult UpdateMyProfile([FromBody] TenantDto tenantDto)
-    {
-        try
-        {
-            int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
-            var tenant = dbContext.Tenants.FirstOrDefault(t => t.user_id == userId);
-
-            if (tenant is null)
-            {
-                return NotFound(new ResponData<TenantRespon>
-                {
-                    success = false,
-                    message = $"Tenant data with id {userId} not found"
-                });
+                return BadRequest(respon);
             }
+        }
 
-            _mapper.Map(tenantDto, tenant);
-            tenant.UpdateTimestamps();
-
-            if (tenantDto.user != null)
+        [HttpPut]
+        [Route("updatemyprofile")]
+        [Authorize(Roles = "TENANT")]
+        public IActionResult UpdateMyProfile([FromBody] TenantDto tenantDto)
+        {
+            try
             {
-                var user = dbContext.Users.Find(tenant.user_id);
-                if (user != null)
+                int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
+                var tenant = dbContext.Tenants.FirstOrDefault(t => t.user_id == userId);
+
+                if (tenant is null)
                 {
-                    if (!string.IsNullOrWhiteSpace(tenantDto.user.password))
+                    return NotFound(new ResponData<object?>(false, $"Tenant data with id {userId} not found"));
+                }
+
+                _mapper.Map(tenantDto, tenant);
+                tenant.UpdateTimestamps();
+
+                if (tenantDto.user != null)
+                {
+                    var user = dbContext.Users.Find(tenant.user_id);
+                    if (user != null)
                     {
-                        user.password = Bcrypt.BcryptPassword(tenantDto.user.password);
+                        if (!string.IsNullOrWhiteSpace(tenantDto.user.password))
+                        {
+                            user.password = Bcrypt.BcryptPassword(tenantDto.user.password);
+                        }
+                        _mapper.Map(tenantDto.user, user);
+                        user.role = 2;
+                        user.status = 1;
+                        user.UpdateTimestamps();
                     }
-                    _mapper.Map(tenantDto.user, user);
-                    user.role = 2;
-                    user.status = 1;
-                    user.UpdateTimestamps();
                 }
+
+                dbContext.SaveChanges();
+
+                var respon = new ResponData<TenantRespon>(true, _mapper.Map<TenantRespon>(tenant), $"Successfully updated tenant data with id {userId}");
+
+                return Ok(respon);
             }
-
-            dbContext.SaveChanges();
-
-            var respon = new ResponData<TenantRespon>
+            catch (Exception ex)
             {
-                success = true,
-                data = _mapper.Map<TenantRespon>(tenant),
-                message = $"Successfully updated tenant data with id {userId}"
-            };
+                var respon = new ResponData<object?>(false, ex.Message);
 
-            return Ok(respon);
-        }
-        catch (Exception ex)
-        {
-            var respon = new ResponData<TenantRespon>
-            {
-                success = false,
-                message = ex.Message
-            };
-
-            return BadRequest(respon);
-        }
-    }
-
-    [HttpPost]
-    [Route("validate/{id:int}")]
-    [Authorize(Roles = "ADMIN")]
-    public IActionResult Validation(int id)
-    {
-        try
-        {
-            var tenant = dbContext.Tenants.Find(id);
-
-            if (tenant is null)
-            {
-                return NotFound(new ResponData<TenantRespon>
-                {
-                    success = false,
-                    message = $"Tenant data with id {id} not found"
-                });
+                return BadRequest(respon);
             }
-
-            tenant.isValid = true;
-
-            var respon = new ResponData<TenantRespon>
-            {
-                success = true,
-                data = _mapper.Map<TenantRespon>(tenant),
-                message = $"Successfully validated tenant data with id {id}"
-            };
-
-            dbContext.SaveChanges();
-            return Ok(respon);
-
         }
-        catch (Exception ex)
+
+        [HttpPost]
+        [Route("validate/{id:int}")]
+        [Authorize(Roles = "ADMIN")]
+        public IActionResult Validation(int id)
         {
-            var respon = new ResponData<TenantRespon>
+            try
             {
-                success = false,
-                message = ex.Message
-            };
+                var tenant = dbContext.Tenants.Find(id);
 
-            return BadRequest(respon);
-        }
-    }
-
-    [HttpDelete]
-    [Route("{id:int}")]
-    [Authorize(Roles = "ADMIN")]
-    public IActionResult DeleteTenant(int id)
-    {
-        try
-        {
-            var tenant = dbContext.Tenants.Find(id);
-
-            if (tenant is null)
-            {
-                return NotFound(new ResponData<TenantRespon>
+                if (tenant is null)
                 {
-                    success = false,
-                    message = $"Tenant data with id {id} not found"
-                });
-            }
-
-            if (tenant.user_id != 0)
-            {
-                var user = dbContext.Users.Find(tenant.user_id);
-                if (user != null)
-                {
-                    user.SoftDelete();
+                    return NotFound(new ResponData<object?>(false, $"Tenant data with id {id} not found"));
                 }
+
+                tenant.isValid = true;
+                dbContext.SaveChanges();
+
+                var respon = new ResponData<TenantRespon>(true, _mapper.Map<TenantRespon>(tenant), $"Successfully validated tenant data with id {id}");
+
+                return Ok(respon);
             }
-
-            tenant.SoftDelete();
-            dbContext.SaveChanges();
-
-            var respon = new ResponData<TenantRespon>
+            catch (Exception ex)
             {
-                success = true,
-                message = "Successfully deleted tenant data"
-            };
+                var respon = new ResponData<object?>(false, ex.Message);
 
-            return Ok(respon);
+                return BadRequest(respon);
+            }
         }
-        catch (Exception ex)
-        {
-            var respon = new ResponData<TenantRespon>
-            {
-                success = false,
-                message = ex.Message
-            };
 
-            return BadRequest(respon);
+        [HttpDelete]
+        [Route("{id:int}")]
+        [Authorize(Roles = "ADMIN")]
+        public IActionResult DeleteTenant(int id)
+        {
+            try
+            {
+                var tenant = dbContext.Tenants.Find(id);
+
+                if (tenant is null)
+                {
+                    return NotFound(new ResponData<object?>(false, $"Tenant data with id {id} not found"));
+                }
+
+                if (tenant.user_id != 0)
+                {
+                    var user = dbContext.Users.Find(tenant.user_id);
+                    if (user != null)
+                    {
+                        user.SoftDelete();
+                    }
+                }
+
+                tenant.SoftDelete();
+                dbContext.SaveChanges();
+
+                var respon = new ResponData<object?>(true, "Successfully deleted tenant data");
+
+                return Ok(respon);
+            }
+            catch (Exception ex)
+            {
+                var respon = new ResponData<object?>(false, ex.Message);
+
+                return BadRequest(respon);
+            }
         }
     }
 }

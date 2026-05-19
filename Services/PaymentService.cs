@@ -13,12 +13,8 @@ namespace sipetok_api.Services
         private static readonly Dictionary<(PaymentState, PaymentTrigger), PaymentState> _transitions =
             new Dictionary<(PaymentState, PaymentTrigger), PaymentState>
         {
-            // Jalur sukses
-            { (PaymentState.WaitingForPayment, PaymentTrigger.Pay),PaymentState.Success },
-
-            // Jalur gajadi (Cancel)
-            { (PaymentState.WaitingForPayment, PaymentTrigger.Cancel ),    PaymentState.Cancelled },
-            
+            { (PaymentState.WaitingForPayment, PaymentTrigger.Pay),    PaymentState.Success },
+            { (PaymentState.WaitingForPayment, PaymentTrigger.Cancel), PaymentState.Cancelled },
         };
 
         public PaymentService(AppDbContext context)
@@ -37,8 +33,8 @@ namespace sipetok_api.Services
                     payment_amount = dto.payment_amount,
                     total_price = dto.total_price,
                     tenant_id = dto.tenant_id,
-                    Status = dto.Status,
-                    OrderStatus = dto.OrderStatus,
+                    Status = PaymentState.WaitingForPayment,
+                    OrderStatus = OrderState.OrderComeIn, // Awal: Orderan Masuk
                     customer_name = dto.customer_name,
                     customer_phone_number = dto.customer_phone_number,
                 };
@@ -46,7 +42,6 @@ namespace sipetok_api.Services
                 dbContext.Transactions.Add(transaction);
                 await dbContext.SaveChangesAsync();
 
-                // Tambahkan Details
                 if (dto.details != null)
                 {
                     foreach (var d in dto.details)
@@ -72,51 +67,55 @@ namespace sipetok_api.Services
             }
         }
 
-        public virtual async Task<bool> UpdateStatus(int id, PaymentTrigger trigger = PaymentTrigger.Pay)
+        // Ditambahkan parameter OrderService dan OrderTrigger agar eksekusi se-grup (Atomic)
+        public virtual async Task<bool> UpdateStatus(int id, PaymentTrigger paymentTrigger, OrderService orderService, OrderTrigger orderTrigger)
         {
             using var dbTransaction = await dbContext.Database.BeginTransactionAsync();
 
             try
             {
-                // 1. Ambil data transaksi beserta detailnya
                 var transaksi = await dbContext.Transactions
                     .Include(t => t.details)
                     .FirstOrDefaultAsync(t => t.id == id);
 
                 if (transaksi == null) return false;
 
-                // 2. Cek validasi transisi status
-                if (_transitions.TryGetValue((transaksi.Status, PaymentTrigger.Pay), out PaymentState nextState))
+                // 1. Validasi & Transisi Status Pembayaran
+                if (_transitions.TryGetValue((transaksi.Status, paymentTrigger), out PaymentState nextPaymentState))
                 {
-                    // LOGIKA PENGURANGAN STOK: Terjadi jika status berubah menjadi Success (Selesai/Dibayar)
-                    if (nextState == PaymentState.Success)
+                    // 2. LOGIKA PENGURANGAN STOK (Hanya jika Pembayaran Sukses)
+                    if (nextPaymentState == PaymentState.Success)
                     {
                         foreach (var detail in transaksi.details)
                         {
-                            // Cari data telur di tabel Eggs. 
-                            // Kita asumsikan ada relasi atau pencocokan berdasarkan category_name
+                            // Mengambil data stok telur berdasarkan tenant
                             var eggData = await dbContext.Eggs
                                 .FirstOrDefaultAsync(e => e.tenant_id == transaksi.tenant_id);
-                            // Catatan: Jika ada banyak jenis telur, tambahkan filter kategori di sini, 
-                            // misal: .FirstOrDefaultAsync(e => e.id == detail.egg_id)
 
                             if (eggData == null)
                                 throw new Exception($"Data stok telur tidak ditemukan untuk Tenant ini.");
 
                             if (eggData.stock < detail.quantity)
-                                throw new Exception($"Stok telur tidak mencukupi! Sisa stok: {eggData.stock}");
+                                throw new Exception($"Stok telur tidak mencukupi! Sisa stok saat ini: {eggData.stock}, jumlah dibeli: {detail.quantity}");
 
-                            // Kurangi stok di tabel Eggs
-                            //eggData.stock -= detail.quantity;
+                            // IMPLEMENTASI NYATA: Kurangi stok telur
+                            eggData.stock -= detail.quantity;
                         }
                     }
 
-                    // 3. Update status transaksi
-                    transaksi.Status = nextState;
+                    // Set status pembayaran baru
+                    transaksi.Status = nextPaymentState;
 
+                    // 3. SINKRONISASI STATUS ORDER (OrderState)
+                    // Panggil OrderService untuk merubah state order (misal: OrderComeIn -> ReadyForPickup)
+                    var isOrderUpdated = orderService.UpdateOrderStatus(transaksi, orderTrigger);
+                    if (!isOrderUpdated)
+                    {
+                        throw new Exception($"Transisi status pesanan tidak valid dari '{transaksi.OrderStatus}' dengan trigger '{orderTrigger}'.");
+                    }
+
+                    // Simpan semua perubahan (Payment, Stok Egg, dan Order Status)
                     await dbContext.SaveChangesAsync();
-
-                    // Komit transaksi database
                     await dbTransaction.CommitAsync();
                     return true;
                 }
@@ -125,9 +124,8 @@ namespace sipetok_api.Services
             }
             catch (Exception ex)
             {
-                // Jika ada error (stok kurang/DB error), batalkan semua perubahan
+                // Jika stok kurang atau ada error lain, rollback total!
                 await dbTransaction.RollbackAsync();
-                // Log pesan error agar bisa ditangkap di Controller (ex.Message)
                 throw new Exception(ex.Message);
             }
         }

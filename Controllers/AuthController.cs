@@ -48,22 +48,22 @@ namespace sipetok_api.Controllers
                 await dbContext.SaveChangesAsync();
                 string token = CreateToken(user);
 
-                var respon = new ResponData<AuthRespon>
-                {
-                    success = true,
-                    data = new AuthRespon(token != "false" ? token : null),
-                    message = $"Register berhasil"
-                };
+                ResponData<AuthRespon> respon = new ResponData<AuthRespon>
+                (
+                    true,
+                    new AuthRespon(token != "false" ? token : null),
+                    "Register berhasil"
+                );
 
                 return Ok(respon);
             }
             catch (Exception ex)
             {
-                var respon = new ResponData<object>
-                {
-                    success = false,
-                    message = ex.Message
-                };
+                ResponData<object?> respon = new ResponData<object?>
+                (
+                    false,
+                    ex.Message
+                );
 
                 return StatusCode(500, respon);
             }
@@ -78,40 +78,40 @@ namespace sipetok_api.Controllers
 
                 if (user == null || !Bcrypt.VerifyPassword(req.Password, user.password))
                 {
-                    return BadRequest(new ResponData<object>
-                    {
-                        success = false,
-                        message = "Wrong username or password!"
-                    });
+                    return BadRequest(new ResponData<object?>
+                    (
+                        false,
+                        "Wrong username or password"
+                    ));
                 }
 
                 if (user.status == 0)
                 {
-                    return BadRequest(new ResponData<object>
-                    {
-                        success = false,
-                        message = "Your account has been deactivated"
-                    });
+                    return BadRequest(new ResponData<object?>
+                    (
+                        false,
+                        "Your account has been deactivated"
+                    ));
                 }
 
                 string token = CreateToken(user);
 
                 var respon = new ResponData<AuthRespon>
-                {
-                    success = true,
-                    data = new AuthRespon(token != "false" ? token : null),
-                    message = $"Login berhasil"
-                };
+                (
+                    true,
+                    new AuthRespon(token != "false" ? token : null),
+                    "Login berhasil"
+                );
 
                 return Ok(respon);
             }
             catch (Exception ex)
             {
-                var respon = new ResponData<object>
-                {
-                    success = false,
-                    message = ex.Message
-                };
+                var respon = new ResponData<object?>
+                (
+                    false,
+                    ex.Message
+                );
 
                 return StatusCode(500, respon);
             }
@@ -148,7 +148,7 @@ namespace sipetok_api.Controllers
 
                 return new JwtSecurityTokenHandler().WriteToken(token);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return "false";
             }
