@@ -34,7 +34,7 @@ namespace sipetok_api.Controllers
             try
             {
                 var data = dbContext.Transactions
-                    .Include(t => t.details)
+                    .Include(t => t.Details)
                     .ToList();
 
                 var result = _mapper.Map<List<TransactionRespon>>(data);
@@ -59,8 +59,8 @@ namespace sipetok_api.Controllers
                 var transaction = await _paymentService.ProcessTransaction(transactionDto);
 
                 var completeData = dbContext.Transactions
-                    .Include(t => t.details)
-                    .FirstOrDefault(t => t.id == transaction.id);
+                    .Include(t => t.Details)
+                    .FirstOrDefault(t => t.Id == transaction.Id);
 
                 var respon = new ResponData<TransactionRespon>(true, _mapper.Map<TransactionRespon>(completeData), "Berhasil menambahkan transaksi (Orderan Masuk & Menunggu Pembayaran)");
 
@@ -87,8 +87,8 @@ namespace sipetok_api.Controllers
                 }
 
                 var transaction = await dbContext.Transactions
-                    .Include(t => t.details)
-                    .FirstOrDefaultAsync(t => t.id == id);
+                    .Include(t => t.Details)
+                    .FirstOrDefaultAsync(t => t.Id == id);
 
                 var result = _mapper.Map<TransactionRespon>(transaction);
 
@@ -117,8 +117,8 @@ namespace sipetok_api.Controllers
                 }
 
                 var transaction = await dbContext.Transactions
-                    .Include(t => t.details)
-                    .FirstOrDefaultAsync(t => t.id == id);
+                    .Include(t => t.Details)
+                    .FirstOrDefaultAsync(t => t.Id == id);
 
                 var respon = new ResponData<TransactionRespon>(true, _mapper.Map<TransactionRespon>(transaction), "Transaksi dan pesanan telah berhasil dibatalkan.");
 
@@ -138,8 +138,8 @@ namespace sipetok_api.Controllers
             try
             {
                 var transaction = await dbContext.Transactions
-                    .Include(t => t.details)
-                    .FirstOrDefaultAsync(t => t.id == id);
+                    .Include(t => t.Details)
+                    .FirstOrDefaultAsync(t => t.Id == id);
 
                 if (transaction == null)
                 {

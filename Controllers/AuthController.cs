@@ -37,17 +37,18 @@ namespace sipetok_api.Controllers
                 string passwordHash = Bcrypt.BcryptPassword(req.Password);
                 var user = new User
                 {
-                    username = req.Username,
-                    email = req.Email,
-                    password = passwordHash,
-                    role = 3,
-                    status = 1
+                    Username = req.Username,
+                    Email = req.Email,
+                    Password = passwordHash,
+                    Role = 3,
+                    Status = 1
                 };
 
                 dbContext.Users.Add(user);
                 await dbContext.SaveChangesAsync();
                 string token = CreateToken(user);
 
+                // Menggunakan konstruktor: ResponData(bool success, T data, string message)
                 ResponData<AuthRespon> respon = new ResponData<AuthRespon>
                 (
                     true,
@@ -74,18 +75,18 @@ namespace sipetok_api.Controllers
         {
             try
             {
-                var user = await dbContext.Users.FirstOrDefaultAsync(u => u.username == req.Username);
+                var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Username == req.Username);
 
-                if (user == null || !Bcrypt.VerifyPassword(req.Password, user.password))
+                if (user == null || !Bcrypt.VerifyPassword(req.Password, user.Password))
                 {
                     return BadRequest(new ResponData<object?>
                     (
                         false,
-                        "Wrong username or password"
+                        "Wrong Username or Password"
                     ));
                 }
 
-                if (user.status == 0)
+                if (user.Status == 0)
                 {
                     return BadRequest(new ResponData<object?>
                     (
@@ -124,9 +125,9 @@ namespace sipetok_api.Controllers
                 var roleService = new AccountRoleTableDriven();
                 var claims = new List<Claim>
                 {
-                    new Claim(ClaimTypes.Name, user.username),
-                    new Claim(ClaimTypes.Role, roleService.GetRoleName(user.role)),
-                    new Claim("userId", user.id.ToString()),
+                    new Claim(ClaimTypes.Name, user.Username),
+                    new Claim(ClaimTypes.Role, roleService.GetRoleName(user.Role)),
+                    new Claim("userId", user.Id.ToString()),
                 };
 
                 var jwtSection = appConfig.GetSection("configProperties:JWT");

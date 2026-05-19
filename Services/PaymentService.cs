@@ -29,29 +29,29 @@ namespace sipetok_api.Services
             {
                 var transaction = new Transaction
                 {
-                    date = dto.date,
-                    payment_amount = dto.payment_amount,
-                    total_price = dto.total_price,
-                    tenant_id = dto.tenant_id,
+                    Date = dto.Date,
+                    PaymentAmount = dto.PaymentAmount,
+                    TotalPrice = dto.TotalPrice,
+                    TenantId = dto.TenantId,
                     Status = PaymentState.WaitingForPayment,
                     OrderStatus = OrderState.OrderComeIn, // Awal: Orderan Masuk
-                    customer_name = dto.customer_name,
-                    customer_phone_number = dto.customer_phone_number,
+                    CustomerName = dto.CustomerName,
+                    CustomerPhoneNumber = dto.CustomerPhoneNumber,
                 };
 
                 dbContext.Transactions.Add(transaction);
                 await dbContext.SaveChangesAsync();
 
-                if (dto.details != null)
+                if (dto.Details != null)
                 {
-                    foreach (var d in dto.details)
+                    foreach (var d in dto.Details)
                     {
                         dbContext.TransactionDetails.Add(new TransactionDetail
                         {
-                            transaction_id = transaction.id,
-                            category_name = d.category_name,
-                            quantity = d.quantity,
-                            subtotal = d.subtotal
+                            TransactionId = transaction.Id,
+                            CategoryName = d.CategoryName,
+                            Quantity = d.Quantity,
+                            Subtotal = d.Subtotal
                         });
                     }
                     await dbContext.SaveChangesAsync();
@@ -75,8 +75,8 @@ namespace sipetok_api.Services
             try
             {
                 var transaksi = await dbContext.Transactions
-                    .Include(t => t.details)
-                    .FirstOrDefaultAsync(t => t.id == id);
+                    .Include(t => t.Details)
+                    .FirstOrDefaultAsync(t => t.Id == id);
 
                 if (transaksi == null) return false;
 
@@ -86,20 +86,20 @@ namespace sipetok_api.Services
                     // 2. LOGIKA PENGURANGAN STOK (Hanya jika Pembayaran Sukses)
                     if (nextPaymentState == PaymentState.Success)
                     {
-                        foreach (var detail in transaksi.details)
+                        foreach (var detail in transaksi.Details)
                         {
                             // Mengambil data stok telur berdasarkan tenant
                             var eggData = await dbContext.Eggs
-                                .FirstOrDefaultAsync(e => e.tenant_id == transaksi.tenant_id);
+                                .FirstOrDefaultAsync(e => e.TenantId == transaksi.TenantId);
 
                             if (eggData == null)
                                 throw new Exception($"Data stok telur tidak ditemukan untuk Tenant ini.");
 
-                            if (eggData.stock < detail.quantity)
-                                throw new Exception($"Stok telur tidak mencukupi! Sisa stok saat ini: {eggData.stock}, jumlah dibeli: {detail.quantity}");
+                            if (eggData.Stock < detail.Quantity)
+                                throw new Exception($"Stok telur tidak mencukupi! Sisa stok saat ini: {eggData.Stock}, jumlah dibeli: {detail.Quantity}");
 
                             // IMPLEMENTASI NYATA: Kurangi stok telur
-                            eggData.stock -= detail.quantity;
+                            eggData.Stock -= detail.Quantity;
                         }
                     }
 

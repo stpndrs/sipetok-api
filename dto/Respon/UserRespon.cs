@@ -5,22 +5,22 @@ namespace sipetok_api.dto
 {
     public class UserRespon
     {
-        public int id {get; set;}
-        public string username { get; set; } = string.Empty;
-        public string email { get; set; } = string.Empty;
-        public TabelDriven role { get; set; } = null!;
-        public TabelDriven status { get; set; } = null!;
+        public int Id {get; set;}
+        public string Username { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public TabelDriven Role { get; set; } = null!;
+        public TabelDriven Status { get; set; } = null!;
         public UserRespon() {}
 
-        public UserRespon(int id, string username, string email, int role, int status)
+        public UserRespon(int Id, string Username, string Email, int Role, int Status)
         {
             var roleLogic = new AccountRoleTableDriven();
             var statusLogic = new AccountStatusTableDriven();
-            this.id = id;
-            this.username = username;
-            this.email = email;
-            this.role = new TabelDriven(role, roleLogic.GetRoleName(role));
-            this.status = new TabelDriven(status, statusLogic.GetStatusName(status));
+            this.Id = Id;
+            this.Username = Username;
+            this.Email = Email;
+            this.Role = new TabelDriven(Role, roleLogic.GetRoleName(Role));
+            this.Status = new TabelDriven(Status, statusLogic.GetStatusName(Status));
         }
     }
 }

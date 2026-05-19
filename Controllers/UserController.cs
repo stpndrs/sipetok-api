@@ -105,11 +105,11 @@ namespace sipetok_api.Controllers
             try
             {
                 var user = _mapper.Map<User>(userDto);
-                if (string.IsNullOrWhiteSpace(user.password))
+                if (string.IsNullOrWhiteSpace(user.Password))
                 {
                     return BadRequest(new ResponData<object?>(false, "Password is required"));
                 }
-                user.password = Bcrypt.BcryptPassword(user.password);
+                user.Password = Bcrypt.BcryptPassword(user.Password);
 
                 dbContext.Users.Add(user);
                 dbContext.SaveChanges();
@@ -140,14 +140,14 @@ namespace sipetok_api.Controllers
                     return NotFound(new ResponData<object?>(false, $"User data with id {id} not found"));
                 }
 
-                if (!string.IsNullOrWhiteSpace(userDto.password))
+                if (!string.IsNullOrWhiteSpace(userDto.Password))
                 {
-                    user.password = Bcrypt.BcryptPassword(userDto.password);
+                    user.Password = Bcrypt.BcryptPassword(userDto.Password);
                 }
 
-                user.username = userDto.username;
-                user.email = userDto.email;
-                user.status = userDto.status;
+                user.Username = userDto.Username;
+                user.Email = userDto.Email;
+                user.Status = userDto.Status;
                 user.UpdateTimestamps();
 
                 dbContext.SaveChanges();
@@ -178,13 +178,13 @@ namespace sipetok_api.Controllers
                     return NotFound(new ResponData<object?>(false, $"User data with id {userId} not found"));
                 }
 
-                if (!string.IsNullOrWhiteSpace(userDto.password))
+                if (!string.IsNullOrWhiteSpace(userDto.Password))
                 {
-                    user.password = Bcrypt.BcryptPassword(userDto.password);
+                    user.Password = Bcrypt.BcryptPassword(userDto.Password);
                 }
 
-                user.username = userDto.username;
-                user.email = userDto.email;
+                user.Username = userDto.Username;
+                user.Email = userDto.Email;
                 user.UpdateTimestamps();
 
                 dbContext.SaveChanges();
@@ -214,11 +214,11 @@ namespace sipetok_api.Controllers
                     return NotFound(new ResponData<object?>(false, $"User data with id {userId} not found"));
                 }
 
-                if (BCrypt.Net.BCrypt.Verify(changePasswordDto.password_old, user.password))
+                if (BCrypt.Net.BCrypt.Verify(changePasswordDto.PasswordOld, user.Password))
                 {
-                    return BadRequest(new ResponData<object?>(false, "Old password is incorrect"));
+                    return BadRequest(new ResponData<object?>(false, "Old Password is incorrect"));
                 }
-                user.password = Bcrypt.BcryptPassword(changePasswordDto.password);
+                user.Password = Bcrypt.BcryptPassword(changePasswordDto.Password);
                 user.UpdateTimestamps();
 
                 dbContext.SaveChanges();

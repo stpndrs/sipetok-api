@@ -2,23 +2,23 @@ namespace sipetok_api.dto.Respon
 {
     public class TransactionDetailRespon
     {
-        public int id {get; set;}
-        public int transaction_id { get; set; }
-        public string category_name { get; set; } = string.Empty;
-        public double quantity { get; set; }
-        public double price { get; set; }
-        public decimal subtotal { get; set; } // Ubah ke decimal
+        public int Id { get; set; }
+        public int TransactionId { get; set; }
+        public string CategoryName { get; set; } = string.Empty;
+        public double Quantity { get; set; }
+        public double Price { get; set; }
+        public decimal Subtotal { get; set; } // Ubah ke decimal
 
         public TransactionDetailRespon() { }
 
-        public TransactionDetailRespon(int id, int transaction_id, string category_name, double quantity, double price, decimal subtotal)
+        public TransactionDetailRespon(int Id, int TransactionId, string CategoryName, double Quantity, double Price, decimal Subtotal)
         {
-            this.id = id;
-            this.transaction_id = transaction_id;
-            this.category_name = category_name;
-            this.quantity = quantity;
-            this.price = price;
-            this.subtotal = subtotal;
+            this.Id = Id;
+            this.TransactionId = TransactionId;
+            this.CategoryName = CategoryName;
+            this.Quantity = Quantity;
+            this.Price = Price;
+            this.Subtotal = Subtotal;
         }
     }
 }

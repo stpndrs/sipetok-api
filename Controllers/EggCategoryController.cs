@@ -55,9 +55,9 @@ namespace sipetok_api.Controllers
                 var allEggCategory = _mapper.Map<List<EggCategoryRespon>>(
                     (
                         from u in dbContext.Users
-                        join t in dbContext.Tenants on u.id equals t.user_id
-                        join ec in dbContext.EggCategories on t.id equals ec.tenant_id
-                        where u.id == userId
+                        join t in dbContext.Tenants on u.Id equals t.UserId
+                        join ec in dbContext.EggCategories on t.Id equals ec.TenantId
+                        where u.Id == userId
                         select ec
                     ).ToList()
                 );
@@ -106,14 +106,14 @@ namespace sipetok_api.Controllers
         {
             try
             {
-                var tenant = dbContext.Tenants.Find(eggCategoryDto.tenant_id);
+                var tenant = dbContext.Tenants.Find(eggCategoryDto.TenantId);
                 if (tenant is null)
                 {
                     return BadRequest(new ResponData<object?>(false, "Tenant not found"));
                 }
 
                 var eggCategory = _mapper.Map<EggCategory>(eggCategoryDto);
-                eggCategory.tenant_id = tenant.id;
+                eggCategory.TenantId = tenant.Id;
                 dbContext.EggCategories.Add(eggCategory);
                 dbContext.SaveChanges();
 
@@ -137,14 +137,14 @@ namespace sipetok_api.Controllers
             try
             {
                 int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
-                var tenant = dbContext.Tenants.Include(c => c.user).FirstOrDefault(c => c.user_id == userId);
-                if (tenant is null || tenant.user_id != userId)
+                var tenant = dbContext.Tenants.Include(c => c.User).FirstOrDefault(c => c.UserId == userId);
+                if (tenant is null || tenant.UserId != userId)
                 {
                     return BadRequest(new ResponData<object?>(false, "Egg category data does not have tenant information"));
                 }
 
                 var eggCategory = _mapper.Map<EggCategory>(eggCategoryDto);
-                eggCategory.tenant_id = tenant.id;
+                eggCategory.TenantId = tenant.Id;
                 dbContext.EggCategories.Add(eggCategory);
                 dbContext.SaveChanges();
 
@@ -173,9 +173,9 @@ namespace sipetok_api.Controllers
                     return NotFound(new ResponData<object?>(false, "Egg category data not found"));
                 }
 
-                eggCategory.name = eggCategoryDto.name;
-                eggCategory.price = eggCategoryDto.price;
-                eggCategory.description = eggCategoryDto.description;
+                eggCategory.Name = eggCategoryDto.Name;
+                eggCategory.Price = eggCategoryDto.Price;
+                eggCategory.Description = eggCategoryDto.Description;
                 eggCategory.UpdateTimestamps();
 
                 dbContext.SaveChanges();
@@ -200,7 +200,7 @@ namespace sipetok_api.Controllers
             try
             {
                 int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
-                var tenant = dbContext.Tenants.Include(c => c.user).FirstOrDefault(c => c.user_id == userId);
+                var tenant = dbContext.Tenants.Include(c => c.User).FirstOrDefault(c => c.UserId == userId);
                 var eggCategory = dbContext.EggCategories.Find(id);
 
                 if (eggCategory is null)
@@ -211,14 +211,14 @@ namespace sipetok_api.Controllers
                 {
                     return BadRequest(new ResponData<object?>(false, "Tenant not found"));
                 }
-                if (eggCategory.tenant_id != tenant.id)
+                if (eggCategory.TenantId != tenant.Id)
                 {
                     return BadRequest(new ResponData<object?>(false, "You are not authorized to update this egg category data"));
                 }
 
-                eggCategory.name = eggCategoryDto.name;
-                eggCategory.price = eggCategoryDto.price;
-                eggCategory.description = eggCategoryDto.description;
+                eggCategory.Name = eggCategoryDto.Name;
+                eggCategory.Price = eggCategoryDto.Price;
+                eggCategory.Description = eggCategoryDto.Description;
                 eggCategory.UpdateTimestamps();
 
                 dbContext.SaveChanges();
@@ -243,7 +243,7 @@ namespace sipetok_api.Controllers
             try
             {
                 int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
-                var tenant = dbContext.Tenants.Include(c => c.user).FirstOrDefault(c => c.user_id == userId);
+                var tenant = dbContext.Tenants.Include(c => c.User).FirstOrDefault(c => c.UserId == userId);
                 var eggCategory = dbContext.EggCategories.Find(id);
 
                 if (eggCategory is null)
@@ -254,7 +254,7 @@ namespace sipetok_api.Controllers
                 {
                     return BadRequest(new ResponData<object?>(false, "Tenant not found"));
                 }
-                if (eggCategory.tenant_id != tenant.id)
+                if (eggCategory.TenantId != tenant.Id)
                 {
                     return BadRequest(new ResponData<object?>(false, "You are not authorized to delete this egg category data"));
                 }

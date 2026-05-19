@@ -21,419 +21,419 @@ namespace sipetok_api.Migrations
 
             modelBuilder.Entity("sipetok_api.Models.Customer", b =>
                 {
-                    b.Property<int>("id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    b.Property<string>("address")
+                    b.Property<string>("Address")
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("varchar(255)");
 
-                    b.Property<DateTime>("created_at")
+                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<DateTime?>("deleted_at")
+                    b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<string>("name")
+                    b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("varchar(100)");
 
-                    b.Property<string>("phone_number")
+                    b.Property<string>("PhoneNumber")
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("varchar(20)");
 
-                    b.Property<DateTime?>("updated_at")
+                    b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<int>("user_id")
+                    b.Property<int>("UserId")
                         .HasColumnType("int");
 
-                    b.HasKey("id");
+                    b.HasKey("Id");
 
-                    b.HasIndex("user_id");
+                    b.HasIndex("UserId");
 
                     b.ToTable("Customers");
                 });
 
             modelBuilder.Entity("sipetok_api.Models.Egg", b =>
                 {
-                    b.Property<int>("id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    b.Property<int>("category_id")
+                    b.Property<int>("CategoryId")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("created_at")
+                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<DateTime?>("deleted_at")
+                    b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<DateTime>("production_date")
+                    b.Property<DateTime>("ProductionDate")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<double>("stock")
+                    b.Property<double>("Stock")
                         .HasColumnType("double");
 
-                    b.Property<int>("tenant_id")
+                    b.Property<int>("TenantId")
                         .HasColumnType("int");
 
-                    b.Property<DateTime?>("updated_at")
+                    b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime(6)");
 
-                    b.HasKey("id");
+                    b.HasKey("Id");
 
-                    b.HasIndex("category_id");
+                    b.HasIndex("CategoryId");
 
-                    b.HasIndex("tenant_id");
+                    b.HasIndex("TenantId");
 
                     b.ToTable("Eggs");
                 });
 
             modelBuilder.Entity("sipetok_api.Models.EggCategory", b =>
                 {
-                    b.Property<int>("id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("created_at")
+                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<DateTime?>("deleted_at")
+                    b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<string>("description")
+                    b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("varchar(255)");
 
-                    b.Property<string>("name")
+                    b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("varchar(50)");
 
-                    b.Property<decimal>("price")
+                    b.Property<decimal>("Price")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int>("tenant_id")
+                    b.Property<int>("TenantId")
                         .HasColumnType("int");
 
-                    b.Property<DateTime?>("updated_at")
+                    b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime(6)");
 
-                    b.HasKey("id");
+                    b.HasKey("Id");
 
-                    b.HasIndex("tenant_id");
+                    b.HasIndex("TenantId");
 
                     b.ToTable("EggCategories");
                 });
 
             modelBuilder.Entity("sipetok_api.Models.Operational", b =>
                 {
-                    b.Property<int>("id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("created_at")
+                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<DateTime?>("deleted_at")
+                    b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<string>("name")
+                    b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("varchar(100)");
 
-                    b.Property<string>("operational_cost")
+                    b.Property<string>("OperationalCost")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("varchar(50)");
 
-                    b.Property<DateTime>("operational_date")
+                    b.Property<DateTime>("OperationalDate")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<int>("tenant_id")
+                    b.Property<int>("TenantId")
                         .HasColumnType("int");
 
-                    b.Property<DateTime?>("updated_at")
+                    b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime(6)");
 
-                    b.HasKey("id");
+                    b.HasKey("Id");
 
-                    b.HasIndex("tenant_id");
+                    b.HasIndex("TenantId");
 
                     b.ToTable("Operationals");
                 });
 
             modelBuilder.Entity("sipetok_api.Models.Tenant", b =>
                 {
-                    b.Property<int>("id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    b.Property<string>("address")
+                    b.Property<string>("Address")
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("varchar(255)");
 
-                    b.Property<DateTime>("created_at")
+                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<DateTime?>("deleted_at")
+                    b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<bool>("isValid")
+                    b.Property<bool>("IsValid")
                         .HasColumnType("tinyint(1)");
 
-                    b.Property<string>("name")
+                    b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("varchar(100)");
 
-                    b.Property<string>("phoneNumber")
+                    b.Property<string>("PhoneNumber")
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("varchar(20)");
 
-                    b.Property<DateTime?>("updated_at")
+                    b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<int>("user_id")
+                    b.Property<int>("UserId")
                         .HasColumnType("int");
 
-                    b.HasKey("id");
+                    b.HasKey("Id");
 
-                    b.HasIndex("user_id");
+                    b.HasIndex("UserId");
 
                     b.ToTable("Tenants");
                 });
 
             modelBuilder.Entity("sipetok_api.Models.Transaction", b =>
                 {
-                    b.Property<int>("id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("CustomerName")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("CustomerPhoneNumber")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime(6)");
 
                     b.Property<int>("OrderStatus")
                         .HasColumnType("int");
 
+                    b.Property<decimal>("PaymentAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("created_at")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<string>("customer_name")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("customer_phone_number")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<DateTime>("date")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<DateTime?>("deleted_at")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<decimal>("payment_amount")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("tenant_id")
+                    b.Property<int>("TenantId")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("total_price")
+                    b.Property<decimal>("TotalPrice")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<DateTime?>("updated_at")
+                    b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime(6)");
 
-                    b.HasKey("id");
+                    b.HasKey("Id");
 
-                    b.HasIndex("tenant_id");
+                    b.HasIndex("TenantId");
 
                     b.ToTable("Transactions");
                 });
 
             modelBuilder.Entity("sipetok_api.Models.TransactionDetail", b =>
                 {
-                    b.Property<int>("id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    b.Property<string>("category_name")
+                    b.Property<string>("CategoryName")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("varchar(50)");
 
-                    b.Property<DateTime>("created_at")
+                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<DateTime?>("deleted_at")
+                    b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<double>("price")
+                    b.Property<double>("Price")
                         .HasColumnType("double");
 
-                    b.Property<double>("quantity")
+                    b.Property<double>("Quantity")
                         .HasColumnType("double");
 
-                    b.Property<decimal>("subtotal")
+                    b.Property<decimal>("Subtotal")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int>("transaction_id")
+                    b.Property<int>("TransactionId")
                         .HasColumnType("int");
 
-                    b.Property<DateTime?>("updated_at")
+                    b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime(6)");
 
-                    b.HasKey("id");
+                    b.HasKey("Id");
 
-                    b.HasIndex("transaction_id");
+                    b.HasIndex("TransactionId");
 
                     b.ToTable("TransactionDetails");
                 });
 
             modelBuilder.Entity("sipetok_api.Models.User", b =>
                 {
-                    b.Property<int>("id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("created_at")
+                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<DateTime?>("deleted_at")
+                    b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<string>("email")
+                    b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("varchar(100)");
 
-                    b.Property<string>("password")
+                    b.Property<string>("Password")
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("varchar(255)");
 
-                    b.Property<int>("role")
+                    b.Property<int>("Role")
                         .HasColumnType("int");
 
-                    b.Property<int>("status")
+                    b.Property<int>("Status")
                         .HasColumnType("int");
 
-                    b.Property<DateTime?>("updated_at")
+                    b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<string>("username")
+                    b.Property<string>("Username")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("varchar(50)");
 
-                    b.HasKey("id");
+                    b.HasKey("Id");
 
                     b.ToTable("Users");
                 });
 
             modelBuilder.Entity("sipetok_api.Models.Customer", b =>
                 {
-                    b.HasOne("sipetok_api.Models.User", "user")
+                    b.HasOne("sipetok_api.Models.User", "User")
                         .WithMany()
-                        .HasForeignKey("user_id")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("user");
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("sipetok_api.Models.Egg", b =>
                 {
-                    b.HasOne("sipetok_api.Models.EggCategory", "category")
+                    b.HasOne("sipetok_api.Models.EggCategory", "Category")
                         .WithMany()
-                        .HasForeignKey("category_id")
+                        .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("sipetok_api.Models.Tenant", "tenant")
+                    b.HasOne("sipetok_api.Models.Tenant", "Tenant")
                         .WithMany()
-                        .HasForeignKey("tenant_id")
+                        .HasForeignKey("TenantId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("category");
+                    b.Navigation("Category");
 
-                    b.Navigation("tenant");
+                    b.Navigation("Tenant");
                 });
 
             modelBuilder.Entity("sipetok_api.Models.EggCategory", b =>
                 {
-                    b.HasOne("sipetok_api.Models.Tenant", "tenant")
+                    b.HasOne("sipetok_api.Models.Tenant", "Tenant")
                         .WithMany()
-                        .HasForeignKey("tenant_id")
+                        .HasForeignKey("TenantId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("tenant");
+                    b.Navigation("Tenant");
                 });
 
             modelBuilder.Entity("sipetok_api.Models.Operational", b =>
                 {
-                    b.HasOne("sipetok_api.Models.Tenant", "tenant")
+                    b.HasOne("sipetok_api.Models.Tenant", "Tenant")
                         .WithMany()
-                        .HasForeignKey("tenant_id")
+                        .HasForeignKey("TenantId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("tenant");
+                    b.Navigation("Tenant");
                 });
 
             modelBuilder.Entity("sipetok_api.Models.Tenant", b =>
                 {
-                    b.HasOne("sipetok_api.Models.User", "user")
+                    b.HasOne("sipetok_api.Models.User", "User")
                         .WithMany()
-                        .HasForeignKey("user_id")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("user");
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("sipetok_api.Models.Transaction", b =>
                 {
-                    b.HasOne("sipetok_api.Models.Tenant", "tenant")
+                    b.HasOne("sipetok_api.Models.Tenant", "Tenant")
                         .WithMany()
-                        .HasForeignKey("tenant_id")
+                        .HasForeignKey("TenantId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("tenant");
+                    b.Navigation("Tenant");
                 });
 
             modelBuilder.Entity("sipetok_api.Models.TransactionDetail", b =>
                 {
-                    b.HasOne("sipetok_api.Models.Transaction", "transaction")
-                        .WithMany("details")
-                        .HasForeignKey("transaction_id")
+                    b.HasOne("sipetok_api.Models.Transaction", "Transaction")
+                        .WithMany("Details")
+                        .HasForeignKey("TransactionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("transaction");
+                    b.Navigation("Transaction");
                 });
 
             modelBuilder.Entity("sipetok_api.Models.Transaction", b =>
                 {
-                    b.Navigation("details");
+                    b.Navigation("Details");
                 });
 #pragma warning restore 612, 618
         }

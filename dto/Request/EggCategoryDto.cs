@@ -5,25 +5,25 @@ namespace sipetok_api.dto.Request
     public class EggCategoryDto
     {
         [Required(ErrorMessage = "Price is required!")]
-        public decimal price { get; set; }
+        public decimal Price { get; set; }
 
         [Required(ErrorMessage = "Description is required!")]
-        public string description { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Name is required!")]
-        public string name { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
 
         // [Required(ErrorMessage = "Tenant ID is required!")]
-        public int tenant_id { get; set; }
-        
+        public int TenantId { get; set; }
+
         public EggCategoryDto() { }
 
-        public EggCategoryDto(decimal price, string description, string name, int tenant_id)
+        public EggCategoryDto(decimal Price, string Description, string Name, int TenantId)
         {
-            this.price = price;
-            this.description = description;
-            this.name = name;
-            this.tenant_id = tenant_id;
+            this.Price = Price;
+            this.Description = Description;
+            this.Name = Name;
+            this.TenantId = TenantId;
         }
     }
 }

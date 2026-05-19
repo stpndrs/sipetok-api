@@ -5,22 +5,22 @@ namespace sipetok_api.dto.Request
     public class EggDto
     {
         [Required(ErrorMessage = "Production date is required!")]
-        public DateTime production_date { get; set; }
+        public DateTime ProductionDate { get; set; }
 
         [Required(ErrorMessage = "Stock is required!")]
-        public double stock { get; set; }
-        public int tenant_id { get; set; }
+        public double Stock { get; set; }
+        public int TenantId { get; set; }
         [Required(ErrorMessage = "Category is required!")]
-        public int category_id { get; set; }
+        public int CategoryId { get; set; }
 
         public EggDto() { }
 
-        public EggDto(DateTime production_date, double stock, int tenant_id, int category_id)
+        public EggDto(DateTime ProductionDate, double Stock, int TenantId, int CategoryId)
         {
-            this.production_date = production_date;
-            this.stock = stock;
-            this.tenant_id = tenant_id;
-            this.category_id = category_id;
+            this.ProductionDate = ProductionDate;
+            this.Stock = Stock;
+            this.TenantId = TenantId;
+            this.CategoryId = CategoryId;
         }
     }
 }

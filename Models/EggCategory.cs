@@ -5,30 +5,30 @@ namespace sipetok_api.Models
 {
     public class EggCategory : BaseEntity
     {
-        public int id { get; set; }
+        public int Id { get; set; }
 
         // Gunakan decimal untuk harga
-        public decimal price { get; set; }
+        public decimal Price { get; set; }
 
         [MaxLength(255)]
-        public string description { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
 
         [Required, MaxLength(50)]
-        public string name { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
 
-        public int tenant_id { get; set; }
+        public int TenantId { get; set; }
 
-        [ForeignKey("tenant_id")]
-        public virtual Tenant? tenant { get; set; }
+        [ForeignKey("TenantId")]
+        public virtual Tenant? Tenant { get; set; }
 
         public EggCategory() { }
 
-        public EggCategory(int id, decimal price, string description, string name)
+        public EggCategory(int Id, decimal Price, string Description, string Name)
         {
-            this.id = id;
-            this.price = price;
-            this.description = description;
-            this.name = name;
+            this.Id = Id;
+            this.Price = Price;
+            this.Description = Description;
+            this.Name = Name;
         }
     }
 }

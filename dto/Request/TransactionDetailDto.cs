@@ -8,24 +8,24 @@ namespace sipetok_api.dto.Request
         // public int transaction_id { get; set; }
 
         [Required(ErrorMessage = "Category name is required!")]
-        public string category_name { get; set; } = string.Empty;
+        public string CategoryName { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Quantity is required!")]
-        public double quantity { get; set; }
-        
+        public double Quantity { get; set; }
+
         [Required(ErrorMessage = "Subtotal is required!")]
-        public decimal subtotal { get; set; }
-        public double price { get; set; }
+        public decimal Subtotal { get; set; }
+        public double Price { get; set; }
 
         public TransactionDetailDto() { }
 
-        public TransactionDetailDto(string category_name, double quantity, decimal subtotal)
+        public TransactionDetailDto(string CategoryName, double Quantity, decimal Subtotal)
         {
             // this.transaction_id = transaction_id;
-            this.category_name = category_name;
-            this.quantity = quantity;
-            this.price = price;
-            this.subtotal = subtotal;
+            this.CategoryName = CategoryName;
+            this.Quantity = Quantity;
+            this.Price = Price;
+            this.Subtotal = Subtotal;
         }
     }
 }

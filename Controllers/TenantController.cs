@@ -30,7 +30,7 @@ namespace sipetok_api.Controllers
         {
             try
             {
-                var allCustomer = _mapper.Map<List<TenantRespon>>(dbContext.Tenants.Include(c => c.user).ToList());
+                var allCustomer = _mapper.Map<List<TenantRespon>>(dbContext.Tenants.Include(c => c.User).ToList());
                 var respon = new ResponData<List<TenantRespon>>(true, allCustomer, "Berhasil mengambil semua data tenant");
 
                 return Ok(respon);
@@ -50,7 +50,7 @@ namespace sipetok_api.Controllers
         {
             try
             {
-                var tenant = _mapper.Map<TenantRespon>(dbContext.Tenants.Include(c => c.user).FirstOrDefault(c => c.id == id));
+                var tenant = _mapper.Map<TenantRespon>(dbContext.Tenants.Include(c => c.User).FirstOrDefault(c => c.Id == id));
 
                 if (tenant is null)
                 {
@@ -77,7 +77,7 @@ namespace sipetok_api.Controllers
             try
             {
                 int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
-                var tenant = _mapper.Map<TenantRespon>(dbContext.Tenants.Include(c => c.user).FirstOrDefault(c => c.user_id == userId));
+                var tenant = _mapper.Map<TenantRespon>(dbContext.Tenants.Include(c => c.User).FirstOrDefault(c => c.UserId == userId));
 
                 if (tenant is null)
                 {
@@ -102,23 +102,23 @@ namespace sipetok_api.Controllers
         {
             try
             {
-                if (tenantDto.user == null)
+                if (tenantDto.User == null)
                 {
                     return BadRequest(new ResponData<object?>(false, "User is required"));
                 }
-                if (string.IsNullOrWhiteSpace(tenantDto.user.password))
+                if (string.IsNullOrWhiteSpace(tenantDto.User.Password))
                 {
                     return BadRequest(new ResponData<object?>(false, "Password is required"));
                 }
 
-                var user = _mapper.Map<User>(tenantDto.user);
-                user.password = Bcrypt.BcryptPassword(user.password);
-                user.role = 2;
-                user.status = 1;
-                tenantDto.isValid = false;
+                var User = _mapper.Map<User>(tenantDto.User);
+                User.Password = Bcrypt.BcryptPassword(User.Password);
+                User.Role = 2;
+                User.Status = 1;
+                tenantDto.IsValid = false;
 
                 var tenant = _mapper.Map<Tenant>(tenantDto);
-                tenant.user = user;
+                tenant.User = User;
 
                 dbContext.Tenants.Add(tenant);
                 dbContext.SaveChanges();
@@ -152,18 +152,18 @@ namespace sipetok_api.Controllers
                 _mapper.Map(tenantDto, tenant);
                 tenant.UpdateTimestamps();
 
-                if (tenantDto.user != null)
+                if (tenantDto.User != null)
                 {
-                    var user = dbContext.Users.Find(tenant.user_id);
-                    if (user != null)
+                    var User = dbContext.Users.Find(tenant.UserId);
+                    if (User != null)
                     {
-                        _mapper.Map(tenantDto.user, user);
-                        if (!string.IsNullOrWhiteSpace(tenantDto.user.password))
+                        _mapper.Map(tenantDto.User, User);
+                        if (!string.IsNullOrWhiteSpace(tenantDto.User.Password))
                         {
-                            user.password = Bcrypt.BcryptPassword(tenantDto.user.password);
+                            User.Password = Bcrypt.BcryptPassword(tenantDto.User.Password);
                         }
 
-                        user.UpdateTimestamps();
+                        User.UpdateTimestamps();
                     }
                 }
 
@@ -189,7 +189,7 @@ namespace sipetok_api.Controllers
             try
             {
                 int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
-                var tenant = dbContext.Tenants.FirstOrDefault(t => t.user_id == userId);
+                var tenant = dbContext.Tenants.FirstOrDefault(t => t.UserId == userId);
 
                 if (tenant is null)
                 {
@@ -199,19 +199,19 @@ namespace sipetok_api.Controllers
                 _mapper.Map(tenantDto, tenant);
                 tenant.UpdateTimestamps();
 
-                if (tenantDto.user != null)
+                if (tenantDto.User != null)
                 {
-                    var user = dbContext.Users.Find(tenant.user_id);
-                    if (user != null)
+                    var User = dbContext.Users.Find(tenant.UserId);
+                    if (User != null)
                     {
-                        if (!string.IsNullOrWhiteSpace(tenantDto.user.password))
+                        if (!string.IsNullOrWhiteSpace(tenantDto.User.Password))
                         {
-                            user.password = Bcrypt.BcryptPassword(tenantDto.user.password);
+                            User.Password = Bcrypt.BcryptPassword(tenantDto.User.Password);
                         }
-                        _mapper.Map(tenantDto.user, user);
-                        user.role = 2;
-                        user.status = 1;
-                        user.UpdateTimestamps();
+                        _mapper.Map(tenantDto.User, User);
+                        User.Role = 2;
+                        User.Status = 1;
+                        User.UpdateTimestamps();
                     }
                 }
 
@@ -243,7 +243,7 @@ namespace sipetok_api.Controllers
                     return NotFound(new ResponData<object?>(false, $"Tenant data with id {id} not found"));
                 }
 
-                tenant.isValid = true;
+                tenant.IsValid = true;
                 dbContext.SaveChanges();
 
                 var respon = new ResponData<TenantRespon>(true, _mapper.Map<TenantRespon>(tenant), $"Successfully validated tenant data with id {id}");
@@ -272,12 +272,12 @@ namespace sipetok_api.Controllers
                     return NotFound(new ResponData<object?>(false, $"Tenant data with id {id} not found"));
                 }
 
-                if (tenant.user_id != 0)
+                if (tenant.UserId != 0)
                 {
-                    var user = dbContext.Users.Find(tenant.user_id);
-                    if (user != null)
+                    var User = dbContext.Users.Find(tenant.UserId);
+                    if (User != null)
                     {
-                        user.SoftDelete();
+                        User.SoftDelete();
                     }
                 }
 

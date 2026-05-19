@@ -5,33 +5,33 @@ namespace sipetok_api.Models
 {
     public class Tenant : BaseEntity
     {
-        public int id { get; set; }
+        public int Id { get; set; }
 
         [Required, MaxLength(100)]
-        public string name { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
 
         [MaxLength(255)]
-        public string address { get; set; } = string.Empty;
+        public string Address { get; set; } = string.Empty;
 
         [MaxLength(20)]
-        public string phoneNumber { get; set; } = string.Empty;
+        public string PhoneNumber { get; set; } = string.Empty;
 
-        public bool isValid {get; set;}
+        public bool IsValid { get; set; }
 
-        public int user_id { get; set; }
+        public int UserId { get; set; }
 
-        [ForeignKey("user_id")]
-        public virtual User? user { get; set; }
+        [ForeignKey("UserId")]
+        public virtual User? User { get; set; }
 
         public Tenant() { }
 
-        public Tenant(int id, string name, string address, string phoneNumber, int user_id)
+        public Tenant(int Id, string Name, string Address, string PhoneNumber, int UserId)
         {
-            this.id = id;
-            this.name = name;
-            this.address = address;
-            this.phoneNumber = phoneNumber;
-            this.user_id = user_id;
+            this.Id = Id;
+            this.Name = Name;
+            this.Address = Address;
+            this.PhoneNumber = PhoneNumber;
+            this.UserId = UserId;
         }
     }
 }

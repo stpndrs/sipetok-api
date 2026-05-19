@@ -30,7 +30,7 @@ namespace sipetok_api.Controllers
         {
             try
             {
-                var allOperational = _mapper.Map<List<OperationalRespon>>(dbContext.Operationals.Include(c => c.tenant).ToList());
+                var allOperational = _mapper.Map<List<OperationalRespon>>(dbContext.Operationals.Include(c => c.Tenant).ToList());
 
                 var respon = new ResponData<List<OperationalRespon>>(true, allOperational, "Successfully retrieved all Operational data");
 
@@ -51,7 +51,7 @@ namespace sipetok_api.Controllers
         {
             try
             {
-                var operational = _mapper.Map<OperationalRespon>(dbContext.Operationals.Include(c => c.tenant).FirstOrDefault(c => c.id == id));
+                var operational = _mapper.Map<OperationalRespon>(dbContext.Operationals.Include(c => c.Tenant).FirstOrDefault(c => c.Id == id));
 
                 if (operational == null)
                 {
@@ -78,7 +78,7 @@ namespace sipetok_api.Controllers
             try
             {
                 var operational = _mapper.Map<List<OperationalRespon>>(
-                    dbContext.Operationals.Include(o => o.tenant).Where(o => o.tenant_id == tenantId).ToList()
+                    dbContext.Operationals.Include(o => o.Tenant).Where(o => o.TenantId == tenantId).ToList()
                 );
 
                 if (operational == null)
@@ -109,18 +109,18 @@ namespace sipetok_api.Controllers
                 var operational = _mapper.Map<List<OperationalRespon>>
                 (
                     (from o in dbContext.Operationals
-                     join t in dbContext.Tenants on o.tenant_id equals t.id
-                     where t.user_id == userId
+                     join t in dbContext.Tenants on o.TenantId equals t.Id
+                     where t.UserId == userId
                      select o
                      ).ToList()
                 );
 
                 if (operational == null)
                 {
-                    return NotFound(new ResponData<object?>(false, $"Operational data with user id {userId} not found"));
+                    return NotFound(new ResponData<object?>(false, $"Operational data with User id {userId} not found"));
                 }
 
-                var respon = new ResponData<List<OperationalRespon>>(true, operational, $"Successfully retrieved operational data with user id {userId}");
+                var respon = new ResponData<List<OperationalRespon>>(true, operational, $"Successfully retrieved operational data with User id {userId}");
 
                 return Ok(respon);
             }
@@ -140,14 +140,14 @@ namespace sipetok_api.Controllers
             try
             {
                 int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
-                var tenant = _mapper.Map<TenantRespon>(dbContext.Tenants.Include(c => c.user).FirstOrDefault(c => c.user_id == userId));
+                var tenant = _mapper.Map<TenantRespon>(dbContext.Tenants.Include(c => c.User).FirstOrDefault(c => c.UserId == userId));
                 if (tenant is null)
                 {
                     return BadRequest(new ResponData<object?>(false, "Tenant not found"));
                 }
 
                 var operational = _mapper.Map<Operational>(operationalDto);
-                operational.tenant_id = tenant.id;
+                operational.TenantId = tenant.Id;
 
                 dbContext.Operationals.Add(operational);
                 dbContext.SaveChanges();
@@ -173,7 +173,7 @@ namespace sipetok_api.Controllers
             {
                 var operational = dbContext.Operationals.Find(id);
                 int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
-                var tenant = _mapper.Map<TenantRespon>(dbContext.Tenants.Include(c => c.user).FirstOrDefault(c => c.user_id == userId));
+                var tenant = _mapper.Map<TenantRespon>(dbContext.Tenants.Include(c => c.User).FirstOrDefault(c => c.UserId == userId));
 
                 if (tenant is null)
                 {
@@ -183,7 +183,7 @@ namespace sipetok_api.Controllers
                 {
                     return NotFound(new ResponData<object?>(false, $"Operational data with id {id} not found"));
                 }
-                if (operational.tenant_id != tenant.id)
+                if (operational.TenantId != tenant.Id)
                 {
                     return BadRequest(new ResponData<object?>(false, "You are not authorized to update this operational data"));
                 }
@@ -214,7 +214,7 @@ namespace sipetok_api.Controllers
             {
                 var operational = dbContext.Operationals.Find(id);
                 int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
-                var tenant = _mapper.Map<TenantRespon>(dbContext.Tenants.Include(c => c.user).FirstOrDefault(c => c.user_id == userId));
+                var tenant = _mapper.Map<TenantRespon>(dbContext.Tenants.Include(c => c.User).FirstOrDefault(c => c.UserId == userId));
 
                 if (tenant is null)
                 {
@@ -224,7 +224,7 @@ namespace sipetok_api.Controllers
                 {
                     return NotFound(new ResponData<object?>(false, $"Operational data with id {id} not found"));
                 }
-                if (operational.tenant_id != tenant.id)
+                if (operational.TenantId != tenant.Id)
                 {
                     return BadRequest(new ResponData<object?>(false, "You are not authorized to update this operational data"));
                 }

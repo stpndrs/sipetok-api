@@ -20,51 +20,51 @@ namespace sipetok_api.Data
 
             // 1. Relasi User -> Tenant (One-to-One atau One-to-Many)
             modelBuilder.Entity<Tenant>()
-                .HasOne(t => t.user)
+                .HasOne(t => t.User)
                 .WithMany()
-                .HasForeignKey(t => t.user_id)
+                .HasForeignKey(t => t.UserId)
                 .OnDelete(DeleteBehavior.Restrict); // Jangan hapus User jika Tenant dihapus
 
             // 2. Relasi User -> Customer
             modelBuilder.Entity<Customer>()
-                .HasOne(c => c.user)
+                .HasOne(c => c.User)
                 .WithMany()
-                .HasForeignKey(c => c.user_id)
+                .HasForeignKey(c => c.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             // 3. Relasi Tenant -> Egg (Stok Telur)
             modelBuilder.Entity<Egg>()
-                .HasOne(e => e.tenant)
+                .HasOne(e => e.Tenant)
                 .WithMany()
-                .HasForeignKey(e => e.tenant_id)
+                .HasForeignKey(e => e.TenantId)
                 .OnDelete(DeleteBehavior.Cascade); // Jika Tenant tutup, hapus stok telurnya
 
             // 4. Relasi EggCategory -> Egg
             modelBuilder.Entity<Egg>()
-                .HasOne(e => e.category)
+                .HasOne(e => e.Category)
                 .WithMany()
-                .HasForeignKey(e => e.category_id)
+                .HasForeignKey(e => e.CategoryId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             // 5. Relasi Tenant -> Transaction
             modelBuilder.Entity<Transaction>()
-                .HasOne(t => t.tenant)
+                .HasOne(t => t.Tenant)
                 .WithMany()
-                .HasForeignKey(t => t.tenant_id)
+                .HasForeignKey(t => t.TenantId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             // 7. Relasi Transaction -> TransactionDetail (Master-Detail)
             modelBuilder.Entity<TransactionDetail>()
-                .HasOne(td => td.transaction)
-                .WithMany(t => t.details)
-                .HasForeignKey(td => td.transaction_id)
+                .HasOne(td => td.Transaction)
+                .WithMany(t => t.Details)
+                .HasForeignKey(td => td.TransactionId)
                 .OnDelete(DeleteBehavior.Cascade); // Jika Transaksi dihapus, detailnya wajib hapus
 
             // 8. Relasi Tenant -> Operational
             modelBuilder.Entity<Operational>()
-                .HasOne(o => o.tenant)
+                .HasOne(o => o.Tenant)
                 .WithMany()
-                .HasForeignKey(o => o.tenant_id)
+                .HasForeignKey(o => o.TenantId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             // // Mengatur Role menjadi tipe data ENUM di MySQL
@@ -80,19 +80,19 @@ namespace sipetok_api.Data
             //     .HasColumnType("enum('ACTIVE', 'INACTIVE')");
 
             // Konfigurasi tambahan untuk tipe data Decimal (Uang)
-            modelBuilder.Entity<EggCategory>().Property(e => e.price).HasPrecision(18, 2);
-            modelBuilder.Entity<Transaction>().Property(t => t.payment_amount).HasPrecision(18, 2);
-            modelBuilder.Entity<Transaction>().Property(t => t.total_price).HasPrecision(18, 2);
-            modelBuilder.Entity<TransactionDetail>().Property(td => td.subtotal).HasPrecision(18, 2);
+            modelBuilder.Entity<EggCategory>().Property(e => e.Price).HasPrecision(18, 2);
+            modelBuilder.Entity<Transaction>().Property(t => t.PaymentAmount).HasPrecision(18, 2);
+            modelBuilder.Entity<Transaction>().Property(t => t.TotalPrice).HasPrecision(18, 2);
+            modelBuilder.Entity<TransactionDetail>().Property(td => td.Subtotal).HasPrecision(18, 2);
 
-            modelBuilder.Entity<User>().HasQueryFilter(u => u.deleted_at == null);
-            modelBuilder.Entity<Tenant>().HasQueryFilter(t => t.deleted_at == null);
-            modelBuilder.Entity<Customer>().HasQueryFilter(c => c.deleted_at == null);
-            modelBuilder.Entity<Egg>().HasQueryFilter(e => e.deleted_at == null);
-            modelBuilder.Entity<EggCategory>().HasQueryFilter(ec => ec.deleted_at == null);
-            modelBuilder.Entity<Transaction>().HasQueryFilter(t => t.deleted_at == null);
-            modelBuilder.Entity<TransactionDetail>().HasQueryFilter(td => td.deleted_at == null);
-            modelBuilder.Entity<Operational>().HasQueryFilter(o => o.deleted_at == null);
+            modelBuilder.Entity<User>().HasQueryFilter(u => u.DeletedAt == null);
+            modelBuilder.Entity<Tenant>().HasQueryFilter(t => t.DeletedAt == null);
+            modelBuilder.Entity<Customer>().HasQueryFilter(c => c.DeletedAt == null);
+            modelBuilder.Entity<Egg>().HasQueryFilter(e => e.DeletedAt == null);
+            modelBuilder.Entity<EggCategory>().HasQueryFilter(ec => ec.DeletedAt == null);
+            modelBuilder.Entity<Transaction>().HasQueryFilter(t => t.DeletedAt == null);
+            modelBuilder.Entity<TransactionDetail>().HasQueryFilter(td => td.DeletedAt == null);
+            modelBuilder.Entity<Operational>().HasQueryFilter(o => o.DeletedAt == null);
         }
         // public override int SaveChanges()
         // {

@@ -5,35 +5,35 @@ namespace sipetok_api.Models
 {
     public class Transaction : BaseEntity
     {
-        public int id { get; set; }
-        public DateTime date { get; set; }
-        public decimal payment_amount { get; set; }
-        public decimal total_price { get; set; }
+        public int Id { get; set; }
+        public DateTime Date { get; set; }
+        public decimal PaymentAmount { get; set; }
+        public decimal TotalPrice { get; set; }
         public PaymentState Status { get; set; } = PaymentState.WaitingForPayment;
         public OrderState OrderStatus { get; set; } = OrderState.OrderComeIn;
 
 
-        public int tenant_id { get; set; }
+        public int TenantId { get; set; }
 
-        [ForeignKey("tenant_id")]
-        public virtual Tenant? tenant { get; set; }
+        [ForeignKey("TenantId")]
+        public virtual Tenant? Tenant { get; set; }
 
-        public string customer_name { get; set; } = string.Empty;
-        public string customer_phone_number { get; set; } = string.Empty;
+        public string CustomerName { get; set; } = string.Empty;
+        public string CustomerPhoneNumber { get; set; } = string.Empty;
 
-        public virtual ICollection<TransactionDetail> details { get; set; } = new List<TransactionDetail>();
+        public virtual ICollection<TransactionDetail> Details { get; set; } = new List<TransactionDetail>();
 
         public Transaction() { }
 
-        public Transaction(int id, decimal payment_amount, decimal total_price, int tenant_id, string customer_name, string customer_phone_number)
+        public Transaction(int Id, decimal PaymentAmount, decimal TotalPrice, int TenantId, string CustomerName, string CustomerPhoneNumber)
         {
-            this.id = id;
-            this.date = DateTime.Now;
-            this.payment_amount = payment_amount;
-            this.total_price = total_price;
-            this.tenant_id = tenant_id;
-            this.customer_name = customer_name;
-            this.customer_phone_number = customer_phone_number;
+            this.Id = Id;
+            this.Date = DateTime.Now;
+            this.PaymentAmount = PaymentAmount;
+            this.TotalPrice = TotalPrice;
+            this.TenantId = TenantId;
+            this.CustomerName = CustomerName;
+            this.CustomerPhoneNumber = CustomerPhoneNumber;
         }
     }
 }
