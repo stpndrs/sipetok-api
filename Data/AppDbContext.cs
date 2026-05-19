@@ -67,6 +67,16 @@ namespace sipetok_api.Data
                 .HasForeignKey(o => o.TenantId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            // Unique email in user
+            modelBuilder.Entity<User>()
+                .HasIndex(u => u.Email)
+                .IsUnique();
+
+            // Unique username in user
+            modelBuilder.Entity<User>()
+                .HasIndex(u => u.Username)
+                .IsUnique();
+
             // // Mengatur Role menjadi tipe data ENUM di MySQL
             // modelBuilder.Entity<User>()
             //     .Property(u => u.role)

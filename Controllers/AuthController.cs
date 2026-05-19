@@ -58,6 +58,28 @@ namespace sipetok_api.Controllers
 
                 return Ok(respon);
             }
+            catch (DbUpdateException ex)
+            {
+                if (ex.InnerException != null && (ex.InnerException.Message.Contains("Duplicate") || ex.InnerException.Message.Contains("unique")))
+                {
+                    // 1. Buat dictionary error manual untuk menentukan field mana yang error
+                    var errorDetail = new Dictionary<string, string[]>
+                    {
+                        { "Account", new[] { "Email atau Username sudah terdaftar, silakan gunakan yang lain." } }
+                    };
+
+                    // 2. Masukkan ke dalam objek ResponValidation menggunakan konstruktornya
+                    var responUnique = new ResponValidation(errorDetail);
+
+                    return BadRequest(responUnique);
+                }
+                ResponData<object?> responDb = new ResponData<object?>
+                (
+                    false,
+                    "Terjadi kesalahan saat menyimpan data ke database."
+                );
+                return StatusCode(500, responDb);
+            }
             catch (Exception ex)
             {
                 ResponData<object?> respon = new ResponData<object?>

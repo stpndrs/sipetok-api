@@ -7,6 +7,7 @@ using sipetok_api.Models;
 using sipetok_api.Data;
 using sipetok_api.dto.Respon;
 using sipetok_api.dto;
+using Microsoft.EntityFrameworkCore;
 
 namespace sipetok_api.Controllers
 {
@@ -117,6 +118,28 @@ namespace sipetok_api.Controllers
                 var respon = new ResponData<UserRespon>(true, _mapper.Map<UserRespon>(user), "Successfully added user data");
 
                 return Ok(respon);
+            }
+            catch (DbUpdateException ex)
+            {
+                if (ex.InnerException != null && (ex.InnerException.Message.Contains("Duplicate") || ex.InnerException.Message.Contains("unique")))
+                {
+                    // 1. Buat dictionary error manual untuk menentukan field mana yang error
+                    var errorDetail = new Dictionary<string, string[]>
+                    {
+                        { "Account", new[] { "Email atau Username sudah terdaftar, silakan gunakan yang lain." } }
+                    };
+
+                    // 2. Masukkan ke dalam objek ResponValidation menggunakan konstruktornya
+                    var responUnique = new ResponValidation(errorDetail);
+
+                    return BadRequest(responUnique);
+                }
+                ResponData<object?> responDb = new ResponData<object?>
+                (
+                    false,
+                    "Terjadi kesalahan saat menyimpan data ke database."
+                );
+                return StatusCode(500, responDb);
             }
             catch (Exception ex)
             {
