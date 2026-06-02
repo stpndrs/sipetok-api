@@ -26,39 +26,72 @@ namespace sipetok_api.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "ADMIN, CUSTOMER")]
+        [Authorize(Roles = "TENANT, CUSTOMER")]
         public IActionResult GetAllEggs()
         {
             try
             {
-                var eggSummary = dbContext.Eggs
-                .Include(e => e.Category)
-                .Include(e => e.Tenant)
-                .GroupBy(e => e.CategoryId)
-                .Select(group => new EggAvailableRespon
+                if (User.IsInRole("CUSTOMER"))
                 {
-                    CategoryId = group.Key,
-                    TenantId = group.First().TenantId,
-                    Stock = group.Sum(e => e.Stock),
-                    Category = _mapper.Map<EggCategoryRespon>(group.First().Category)
-                })
-                .ToList();
+                    var rawEggSummary = dbContext.Eggs
+                    .GroupBy(e => new { e.CategoryId, e.TenantId })
+                    .Select(group => new
+                    {
+                        CategoryId = group.Key.CategoryId,
+                        TenantId = group.Key.TenantId,
+                        Stock = group.Sum(e => e.Stock),
 
-                var respon = new ResponData<List<EggAvailableRespon>>(true, eggSummary, "Successfully retrieved all egg data");
+                        CategoryName = group.Select(e => e.Category!.Name).FirstOrDefault(),
+                        TenantName = group.Select(e => e.Tenant!.Name).FirstOrDefault()
+                    })
+                    .ToList();
 
-                return Ok(respon);
+                    var eggSummary = rawEggSummary.Select(item => new EggAvailableRespon
+                    {
+                        CategoryId = item.CategoryId,
+                        TenantId = item.TenantId,
+                        Stock = item.Stock,
+                        Category = new EggCategoryRespon
+                        {
+                            Id = item.CategoryId,
+                            Name = item.CategoryName
+                        },
+                        Tenant = new TenantRespon
+                        {
+                            Id = item.TenantId,
+                            Name = item.TenantName
+                        }
+                    }).ToList();
+
+                    var respon = new ResponData<List<EggAvailableRespon>>(true, eggSummary, "Customer : Successfully retrieved all egg data");
+                    return Ok(respon);
+                }
+                else if (User.IsInRole("TENANT"))
+                {
+                    int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
+                    var Tenant = dbContext.Tenants.Include(c => c.User).FirstOrDefault(c => c.UserId == userId);
+
+                    var myegg = dbContext.Eggs.Where(e => e.TenantId == Tenant!.Id).Include(e => e.Category).ToList();
+
+
+                    var respon = new ResponData<List<EggRespon>>(true, _mapper.Map<List<EggRespon>>(myegg), $"Successfully retrieved total egg Stock");
+
+                    return Ok(respon);
+                }
+
+                return Forbid();
             }
             catch (Exception ex)
             {
-                var respon = new ResponData<object?>(false, ex.Message);
-
+                string detailError = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
+                var respon = new ResponData<object?>(false, detailError);
                 return StatusCode(500, respon);
             }
         }
 
         [HttpGet]
         [Route("{id:int}")]
-        [Authorize(Roles = "ADMIN")]
+        [Authorize(Roles = "TENANT")]
         public IActionResult GetEggById(int id)
         {
             try
@@ -80,79 +113,9 @@ namespace sipetok_api.Controllers
             }
         }
 
-        [HttpGet]
-        [Route("myeggs")]
-        [Authorize(Roles = "TENANT")]
-        public IActionResult GetMyEggs()
-        {
-            try
-            {
-                int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
-                var Tenant = dbContext.Tenants.Include(c => c.User).FirstOrDefault(c => c.UserId == userId);
-
-                if (Tenant is null)
-                {
-                    return BadRequest(new ResponData<object?>(false, "Data Tenant not found"));
-                }
-
-                var availableEggs = dbContext.Eggs
-                .Include(e => e.Category)
-                .Where(e => e.TenantId == Tenant.Id)
-                .GroupBy(e => e.CategoryId)
-                .Select(group => new EggAvailableRespon
-                {
-                    CategoryId = group.Key,
-                    TenantId = Tenant.Id,
-                    Stock = group.Sum(e => e.Stock),
-                    Category = _mapper.Map<EggCategoryRespon>(group.First().Category)
-                })
-                .ToList();
-
-                var respon = new ResponData<List<EggAvailableRespon>>(true, availableEggs, $"Successfully retrieved egg data with Tenant id {Tenant.Id}");
-
-                return Ok(respon);
-            }
-            catch (Exception ex)
-            {
-                var respon = new ResponData<object?>(false, ex.Message);
-
-                return StatusCode(500, respon);
-            }
-        }
-
-        [HttpGet]
-        [Route("getalleggs")]
-        [Authorize(Roles = "TENANT")]
-        public IActionResult GetAllMyHistoryEggs()
-        {
-            try
-            {
-                int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
-                var Tenant = dbContext.Tenants.Include(c => c.User).FirstOrDefault(c => c.UserId == userId);
-
-                if (Tenant is null)
-                {
-                    return BadRequest(new ResponData<object?>(false, "Data Tenant not found"));
-                }
-
-                var myegg = dbContext.Eggs.Where(e => e.TenantId == Tenant.Id).ToList();
-
-                var respon = new ResponData<List<EggRespon>>(true, _mapper.Map<List<EggRespon>>(myegg), $"Successfully retrieved total egg Stock for Tenant {Tenant.Id}");
-
-                return Ok(respon);
-            }
-            catch (Exception ex)
-            {
-                var respon = new ResponData<object?>(false, ex.Message);
-
-                return StatusCode(500, respon);
-            }
-        }
-
         [HttpPost]
-        [Route("addmyeggs")]
         [Authorize(Roles = "TENANT")]
-        public IActionResult AddMyEgg([FromBody] EggDto eggDto)
+        public IActionResult AddEgg([FromBody] EggDto eggDto)
         {
             try
             {
@@ -196,7 +159,7 @@ namespace sipetok_api.Controllers
         [HttpPut]
         [Route("{id:int}")]
         [Authorize(Roles = "TENANT")]
-        public IActionResult UpdateMyEgg(int id, [FromBody] EggDto eggDto)
+        public IActionResult UpdateEgg(int id, [FromBody] EggDto eggDto)
         {
             try
             {
