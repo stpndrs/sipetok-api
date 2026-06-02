@@ -34,19 +34,17 @@ namespace sipetok_api.Controllers
                 if (User.IsInRole("CUSTOMER"))
                 {
                     var rawEggSummary = dbContext.Eggs
-                        .Include(e => e.Category)
-                        .Include(e => e.Tenant)
-                        .GroupBy(e => new { e.CategoryId, e.TenantId })
-                        .Select(group => new
-                        {
-                            CategoryId = group.Key.CategoryId,
-                            TenantId = group.Key.TenantId,
-                            Stock = group.Sum(e => e.Stock),
+                    .GroupBy(e => new { e.CategoryId, e.TenantId })
+                    .Select(group => new
+                    {
+                        CategoryId = group.Key.CategoryId,
+                        TenantId = group.Key.TenantId,
+                        Stock = group.Sum(e => e.Stock),
 
-                            CategoryName = group.Max(e => e.Category!.Name),
-                            TenantName = group.Max(e => e.Tenant!.Name)
-                        })
-                        .ToList();
+                        CategoryName = group.Select(e => e.Category!.Name).FirstOrDefault(),
+                        TenantName = group.Select(e => e.Tenant!.Name).FirstOrDefault()
+                    })
+                    .ToList();
 
                     var eggSummary = rawEggSummary.Select(item => new EggAvailableRespon
                     {
