@@ -4,7 +4,7 @@ namespace sipetok_api.Respon
 {
     public class EggRespon
     {
-        public int Id {get; set;}
+        public int Id { get; set; }
         public DateTime ProductionDate { get; set; }
         public double Stock { get; set; }
         public int TenantId { get; set; }
@@ -13,13 +13,14 @@ namespace sipetok_api.Respon
 
         public EggRespon() { }
 
-        public EggRespon(int Id, DateTime ProductionDate, double Stock, int TenantId, int CategoryId)
+        public EggRespon(int Id, DateTime ProductionDate, double Stock, int TenantId, int CategoryId, EggCategoryRespon Category)
         {
             this.Id = Id;
             this.ProductionDate = ProductionDate;
             this.Stock = Stock;
             this.TenantId = TenantId;
             this.CategoryId = CategoryId;
+            this.Category = Category;
         }
     }
 }
