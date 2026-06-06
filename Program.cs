@@ -5,6 +5,7 @@ using sipetok_api;
 using sipetok_api.Data;
 using sipetok_api.dto.Respon;
 using sipetok_api.Services;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -79,6 +80,43 @@ builder.Services.AddAuthentication(options =>
         ValidIssuer = jwtSection["JWT_ISSUER"],
         ValidAudience = jwtSection["JWT_AUDIENCE"],
         IssuerSigningKey = new SymmetricSecurityKey(key)
+    };
+
+    options.Events = new JwtBearerEvents
+    {
+        // Menangani 403 Forbidden (Sudah Login tapi Role Tidak Sesuai)
+        OnForbidden = async context =>
+        {
+            context.Response.ContentType = "application/json";
+            context.Response.StatusCode = StatusCodes.Status403Forbidden;
+
+            var respon = new ResponData<object?>(false, "Forbidden: You do not have permission to access this resource.");
+
+            var jsonRespon = JsonSerializer.Serialize(respon, new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            });
+
+            await context.Response.WriteAsync(jsonRespon);
+        },
+
+        OnChallenge = async context =>
+        {
+            // Lewati penanganan bawaan ASP.NET agar tidak bentrok
+            context.HandleResponse();
+
+            context.Response.ContentType = "application/json";
+            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+
+            var respon = new ResponData<object?>(false, "Unauthorized: Access is denied due to invalid or missing credentials.");
+
+            var jsonRespon = JsonSerializer.Serialize(respon, new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            });
+
+            await context.Response.WriteAsync(jsonRespon);
+        }
     };
 });
 
