@@ -22,21 +22,21 @@ namespace sipetok_api.Models
         [MaxLength(100)]
         public string Email { get; set; } = string.Empty;
         public int Role { get; set; }
-        public int Status { get; set; }
+        public bool IsActive { get; set; }
 
         public User()
         {
 
         }
 
-        public User(int Id, string Username, string Password, string Email, int Role, int Status)
+        public User(int Id, string Username, string Password, string Email, int Role, bool IsActive)
         {
             this.Id = Id;
             this.Username = Username;
             this.Password = Password;
             this.Email = Email;
             this.Role = Role;
-            this.Status = Status;
+            this.IsActive = IsActive;
         }
     }
 }

@@ -41,7 +41,7 @@ namespace sipetok_api.Controllers
                     Email = req.Email,
                     Password = passwordHash,
                     Role = 3,
-                    Status = 1
+                    IsActive = true
                 };
 
                 await dbContext.SaveChangesAsync();
@@ -107,7 +107,7 @@ namespace sipetok_api.Controllers
                     ));
                 }
 
-                if (user.Status == 0)
+                if (!user.IsActive)
                 {
                     return BadRequest(new ResponData<object?>
                     (

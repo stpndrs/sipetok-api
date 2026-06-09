@@ -114,7 +114,7 @@ namespace sipetok_api.Controllers
                 var User = _mapper.Map<User>(tenantDto.User);
                 User.Password = Bcrypt.BcryptPassword(User.Password);
                 User.Role = 2;
-                User.Status = 1;
+                User.IsActive = true;
                 tenantDto.IsValid = false;
 
                 var tenant = _mapper.Map<Tenant>(tenantDto);
@@ -210,7 +210,7 @@ namespace sipetok_api.Controllers
                         }
                         _mapper.Map(tenantDto.User, User);
                         User.Role = 2;
-                        User.Status = 1;
+                        User.IsActive = true;
                         User.UpdateTimestamps();
                     }
                 }
