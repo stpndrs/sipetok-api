@@ -44,6 +44,7 @@ namespace sipetok_api.Controllers
                     IsActive = true
                 };
 
+                dbContext.Users.Add(user);
                 await dbContext.SaveChangesAsync();
                 string token = CreateToken(user);
 

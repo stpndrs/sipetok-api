@@ -10,7 +10,7 @@ using sipetok_api.Utils;
 
 namespace sipetok_api.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "TENANT")]
     [ApiController]
     [Route("api/transactions")]
     public class TransactionController : ControllerBase
@@ -33,8 +33,11 @@ namespace sipetok_api.Controllers
         {
             try
             {
+                int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
+
                 var data = dbContext.Transactions
                     .Include(t => t.Details)
+                    .Where(t => t.Tenant!.UserId == userId)
                     .ToList();
 
                 var result = _mapper.Map<List<TransactionRespon>>(data);
@@ -75,11 +78,11 @@ namespace sipetok_api.Controllers
         }
 
         [HttpPost("pay/{id:int}")]
-        public async Task<IActionResult> Pay(int id)
+        public async Task<IActionResult> Pay(int id, [FromBody] PaymentDto paymentDto)
         {
             try
             {
-                var success = await _paymentService.UpdateStatus(id, PaymentTrigger.Pay, _orderService, OrderTrigger.PaymentSucceeded);
+                var success = await _paymentService.UpdateStatus(id, PaymentTrigger.Pay, _orderService, OrderTrigger.PaymentSucceeded, paymentDto);
 
                 if (!success)
                 {
@@ -109,7 +112,7 @@ namespace sipetok_api.Controllers
         {
             try
             {
-                var success = await _paymentService.UpdateStatus(id, PaymentTrigger.Cancel, _orderService, OrderTrigger.CancelledByCustomer);
+                var success = await _paymentService.UpdateStatus(id, PaymentTrigger.Cancel, _orderService, OrderTrigger.CancelledByCustomer, null);
 
                 if (!success)
                 {
