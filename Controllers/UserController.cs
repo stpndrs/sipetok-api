@@ -170,6 +170,7 @@ namespace sipetok_api.Controllers
 
                 user.Username = userDto.Username;
                 user.Email = userDto.Email;
+                user.Role = userDto.Role;
                 user.Status = userDto.Status;
                 user.UpdateTimestamps();
 
