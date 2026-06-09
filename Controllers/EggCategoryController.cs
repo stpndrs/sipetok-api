@@ -7,6 +7,7 @@ using sipetok_api.Models;
 using sipetok_api.dto.Request;
 using sipetok_api.Data;
 using sipetok_api.dto.Respon;
+using sipetok_api.Respon;
 
 namespace sipetok_api.Controllers
 {
@@ -25,22 +26,57 @@ namespace sipetok_api.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "TENANT")]
+        [Authorize(Roles = "TENANT, CUSTOMER")]
         public async Task<IActionResult> GetAllEggCategory()
         {
             try
             {
-                int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
-                var eggCategories = await dbContext.Tenants
-                    .Where(t => t.UserId == userId)
-                    .SelectMany(t => dbContext.EggCategories.Where(ec => ec.TenantId == t.Id))
-                    .ToListAsync();
+                if (User.IsInRole("CUSTOMER"))
+                {
+                    var eggSummary = dbContext.EggCategories
+                        .Select(category => new EggAvailableRespon
+                        {
+                            TenantId = category.TenantId,
+                            Stock = category.Eggs.Sum(egg => egg.Stock),
 
-                var allEggCategory = _mapper.Map<List<EggCategoryRespon>>(eggCategories);
+                            CategoryId = category.Id,
 
-                var respon = new ResponData<List<EggCategoryRespon>>(true, allEggCategory, "Successfully retrieved my egg category data");
+                            Category = new EggCategoryRespon
+                            {
+                                Id = category.Id,
+                                Name = category.Name,
+                                Price = category.Price,
+                                Description = category.Description,
+                                TenantId = category.TenantId
+                            },
+                            Tenant = category.Tenant != null ? new TenantRespon
+                            {
+                                Id = category.TenantId,
+                                Name = category.Tenant.Name,
+                                Address = category.Tenant.Address,
+                                PhoneNumber = category.Tenant.PhoneNumber
+                            } : null
+                        })
+                        .ToList();
 
-                return Ok(respon);
+                    var respon = new ResponData<List<EggAvailableRespon>>(true, eggSummary, "Customer : Successfully retrieved all egg data");
+                    return Ok(respon);
+                }
+                else if (User.IsInRole("TENANT"))
+                {
+                    int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
+                    var eggCategories = await dbContext.Tenants
+                        .Where(t => t.UserId == userId)
+                        .SelectMany(t => dbContext.EggCategories.Where(ec => ec.TenantId == t.Id))
+                        .ToListAsync();
+
+                    var allEggCategory = _mapper.Map<List<EggCategoryRespon>>(eggCategories);
+
+                    var respon = new ResponData<List<EggCategoryRespon>>(true, allEggCategory, "Successfully retrieved my egg category data");
+
+                    return Ok(respon);
+                }
+                return Forbid();
             }
             catch (Exception ex)
             {

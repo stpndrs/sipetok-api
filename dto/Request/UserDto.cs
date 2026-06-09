@@ -18,16 +18,16 @@ namespace sipetok_api.dto.Request
         public int Role { get; set; }
 
         // [Required(ErrorMessage = "Status is required!")]
-        public int Status { get; set; }
-        public UserDto() {}
+        public bool IsActive { get; set; }
+        public UserDto() { }
 
-        public UserDto(string Username, string Password, string Email, int Role, int Status)
+        public UserDto(string Username, string Password, string Email, int Role, bool IsActive)
         {
             this.Username = Username;
             this.Password = Password;
             this.Email = Email;
             this.Role = Role;
-            this.Status = Status;
+            this.IsActive = IsActive;
         }
     }
 }

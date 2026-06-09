@@ -19,46 +19,6 @@ namespace sipetok_api.Migrations
                 .HasAnnotation("ProductVersion", "10.0.5")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
-            modelBuilder.Entity("sipetok_api.Models.Customer", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    b.Property<string>("Address")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("varchar(255)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("varchar(100)");
-
-                    b.Property<string>("PhoneNumber")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("varchar(20)");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Customers");
-                });
-
             modelBuilder.Entity("sipetok_api.Models.Egg", b =>
                 {
                     b.Property<int>("Id")
@@ -80,17 +40,12 @@ namespace sipetok_api.Migrations
                     b.Property<double>("Stock")
                         .HasColumnType("double");
 
-                    b.Property<int>("TenantId")
-                        .HasColumnType("int");
-
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime(6)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("CategoryId");
-
-                    b.HasIndex("TenantId");
 
                     b.ToTable("Eggs");
                 });
@@ -245,7 +200,7 @@ namespace sipetok_api.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int>("Status")
+                    b.Property<int>("PaymentStatus")
                         .HasColumnType("int");
 
                     b.Property<int>("TenantId")
@@ -271,10 +226,8 @@ namespace sipetok_api.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    b.Property<string>("CategoryName")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("varchar(50)");
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime(6)");
@@ -282,8 +235,9 @@ namespace sipetok_api.Migrations
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<double>("Price")
-                        .HasColumnType("double");
+                    b.Property<decimal>("PriceAtPurchase")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<double>("Quantity")
                         .HasColumnType("double");
@@ -299,6 +253,8 @@ namespace sipetok_api.Migrations
                         .HasColumnType("datetime(6)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CategoryId");
 
                     b.HasIndex("TransactionId");
 
@@ -322,15 +278,15 @@ namespace sipetok_api.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("varchar(100)");
 
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("tinyint(1)");
+
                     b.Property<string>("Password")
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("varchar(255)");
 
                     b.Property<int>("Role")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Status")
                         .HasColumnType("int");
 
                     b.Property<DateTime?>("UpdatedAt")
@@ -352,34 +308,15 @@ namespace sipetok_api.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("sipetok_api.Models.Customer", b =>
-                {
-                    b.HasOne("sipetok_api.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("sipetok_api.Models.Egg", b =>
                 {
                     b.HasOne("sipetok_api.Models.EggCategory", "Category")
-                        .WithMany()
+                        .WithMany("Eggs")
                         .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("sipetok_api.Models.Tenant", "Tenant")
-                        .WithMany()
-                        .HasForeignKey("TenantId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Category");
-
-                    b.Navigation("Tenant");
                 });
 
             modelBuilder.Entity("sipetok_api.Models.EggCategory", b =>
@@ -387,7 +324,7 @@ namespace sipetok_api.Migrations
                     b.HasOne("sipetok_api.Models.Tenant", "Tenant")
                         .WithMany()
                         .HasForeignKey("TenantId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Tenant");
@@ -409,7 +346,7 @@ namespace sipetok_api.Migrations
                     b.HasOne("sipetok_api.Models.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("User");
@@ -420,7 +357,7 @@ namespace sipetok_api.Migrations
                     b.HasOne("sipetok_api.Models.Tenant", "Tenant")
                         .WithMany()
                         .HasForeignKey("TenantId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Tenant");
@@ -428,13 +365,26 @@ namespace sipetok_api.Migrations
 
             modelBuilder.Entity("sipetok_api.Models.TransactionDetail", b =>
                 {
+                    b.HasOne("sipetok_api.Models.EggCategory", "Category")
+                        .WithMany()
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("sipetok_api.Models.Transaction", "Transaction")
                         .WithMany("Details")
                         .HasForeignKey("TransactionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("Category");
+
                     b.Navigation("Transaction");
+                });
+
+            modelBuilder.Entity("sipetok_api.Models.EggCategory", b =>
+                {
+                    b.Navigation("Eggs");
                 });
 
             modelBuilder.Entity("sipetok_api.Models.Transaction", b =>

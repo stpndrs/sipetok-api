@@ -11,21 +11,23 @@ namespace sipetok_api.Models
         [ForeignKey("TransactionId")]
         public virtual Transaction? Transaction { get; set; }
 
-        [MaxLength(50)]
-        public string CategoryName { get; set; } = string.Empty;
+        public int CategoryId { get; set; }
+
+        [ForeignKey("CategoryId")]
+        public virtual EggCategory? Category { get; set; }
         public double Quantity { get; set; }
-        public double Price { get; set; }
+        public decimal PriceAtPurchase { get; set; }
         public decimal Subtotal { get; set; } // Ubah ke decimal
 
         public TransactionDetail() { }
 
-        public TransactionDetail(int Id, int TransactionId, string CategoryName, double Quantity, double Price, decimal Subtotal)
+        public TransactionDetail(int Id, int TransactionId, int CategoryId, double Quantity, decimal PriceAtPurchase, decimal Subtotal)
         {
             this.Id = Id;
             this.TransactionId = TransactionId;
-            this.CategoryName = CategoryName;
+            this.CategoryId = CategoryId;
             this.Quantity = Quantity;
-            this.Price = Price;
+            this.PriceAtPurchase = PriceAtPurchase;
             this.Subtotal = Subtotal;
         }
     }

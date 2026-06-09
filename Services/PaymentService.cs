@@ -22,19 +22,22 @@ namespace sipetok_api.Services
             dbContext = context;
         }
 
+        // 1. ALUR PEMBUATAN TRANSAKSI AWAL (Belum Ada Pembayaran)
         public virtual async Task<Transaction> ProcessTransaction(TransactionDto dto)
         {
             using var transactionScope = await dbContext.Database.BeginTransactionAsync();
             try
             {
+                decimal totalPrice = 0;
+
                 var transaction = new Transaction
                 {
                     Date = dto.Date,
-                    PaymentAmount = dto.PaymentAmount,
-                    TotalPrice = dto.TotalPrice,
+                    PaymentAmount = 0, // Set awal 0 karena belum dibayar
+                    TotalPrice = 0,    // Akan dihitung otomatis dari detail di bawah
                     TenantId = dto.TenantId,
-                    Status = PaymentState.WaitingForPayment,
-                    OrderStatus = OrderState.OrderComeIn, // Awal: Orderan Masuk
+                    PaymentStatus = PaymentState.WaitingForPayment,
+                    OrderStatus = OrderState.OrderComeIn,
                     CustomerName = dto.CustomerName,
                     CustomerPhoneNumber = dto.CustomerPhoneNumber,
                 };
@@ -46,14 +49,29 @@ namespace sipetok_api.Services
                 {
                     foreach (var d in dto.Details)
                     {
+                        var eggCategory = await dbContext.EggCategories
+                            .FindAsync(d.CategoryId);
+
+                        if (eggCategory == null)
+                        {
+                            throw new Exception($"Kategori telur dengan ID {d.CategoryId} tidak ditemukan.");
+                        }
+
+                        decimal priceAtPurchase = eggCategory.Price;
+                        decimal subtotal = (decimal)d.Quantity * priceAtPurchase;
+                        totalPrice += subtotal;
+
                         dbContext.TransactionDetails.Add(new TransactionDetail
                         {
                             TransactionId = transaction.Id,
-                            CategoryName = d.CategoryName,
+                            CategoryId = d.CategoryId,
                             Quantity = d.Quantity,
-                            Subtotal = d.Subtotal
+                            Subtotal = subtotal,
+                            PriceAtPurchase = priceAtPurchase
                         });
                     }
+
+                    transaction.TotalPrice = totalPrice;
                     await dbContext.SaveChangesAsync();
                 }
 
@@ -67,8 +85,14 @@ namespace sipetok_api.Services
             }
         }
 
-        // Ditambahkan parameter OrderService dan OrderTrigger agar eksekusi se-grup (Atomic)
-        public virtual async Task<bool> UpdateStatus(int id, PaymentTrigger paymentTrigger, OrderService orderService, OrderTrigger orderTrigger)
+        // 2. ALUR UPDATE STATUS & PROSES PEMBAYARAN NYATA
+        // Sekarang menggunakan PaymentDto untuk menangkap payload uang yang dibayarkan
+        public virtual async Task<bool> UpdateStatus(
+            int id,
+            PaymentTrigger paymentTrigger,
+            OrderService orderService,
+            OrderTrigger orderTrigger,
+            PaymentDto? paymentDto = null)
         {
             using var dbTransaction = await dbContext.Database.BeginTransactionAsync();
 
@@ -80,41 +104,72 @@ namespace sipetok_api.Services
 
                 if (transaksi == null) return false;
 
-                // 1. Validasi & Transisi Status Pembayaran
-                if (_transitions.TryGetValue((transaksi.Status, paymentTrigger), out PaymentState nextPaymentState))
+                // Validasi & Transisi Status Pembayaran
+                if (_transitions.TryGetValue((transaksi.PaymentStatus, paymentTrigger), out PaymentState nextPaymentState))
                 {
-                    // 2. LOGIKA PENGURANGAN STOK (Hanya jika Pembayaran Sukses)
+                    // Jika aksi dipicu oleh tombol 'Pay', validasi isi nominal dari PaymentDto
+                    if (paymentTrigger == PaymentTrigger.Pay)
+                    {
+                        if (paymentDto == null || paymentDto.PaymentAmount <= 0)
+                        {
+                            throw new Exception("Jumlah pembayaran (Payment Amount) tidak valid atau tidak dikirim.");
+                        }
+
+                        if (paymentDto.PaymentAmount < transaksi.TotalPrice)
+                        {
+                            throw new Exception($"Uang yang dibayarkan (Rp {paymentDto.PaymentAmount}) kurang dari total tagihan (Rp {transaksi.TotalPrice}).");
+                        }
+
+                        // Isi PaymentAmount transaksi dengan nominal asli dari dto baru
+                        transaksi.PaymentAmount = paymentDto.PaymentAmount;
+                    }
+
+                    // LOGIKA PENGURANGAN STOK (FIFO - First In First Out)
                     if (nextPaymentState == PaymentState.Success)
                     {
                         foreach (var detail in transaksi.Details)
                         {
-                            // Mengambil data stok telur berdasarkan tenant
-                            var eggData = await dbContext.Eggs
-                                .FirstOrDefaultAsync(e => e.TenantId == transaksi.TenantId);
+                            var availableEggs = await dbContext.Eggs
+                                .Where(e => e.CategoryId == detail.CategoryId && e.Stock > 0)
+                                .OrderBy(e => e.ProductionDate)
+                                .ToListAsync();
 
-                            if (eggData == null)
-                                throw new Exception($"Data stok telur tidak ditemukan untuk Tenant ini.");
+                            double totalAvailableStock = availableEggs.Sum(e => e.Stock);
 
-                            if (eggData.Stock < detail.Quantity)
-                                throw new Exception($"Stok telur tidak mencukupi! Sisa stok saat ini: {eggData.Stock}, jumlah dibeli: {detail.Quantity}");
+                            if (totalAvailableStock < detail.Quantity)
+                            {
+                                throw new Exception($"Stok telur tidak mencukupi! Total stok tersedia: {totalAvailableStock}, jumlah dibeli: {detail.Quantity}");
+                            }
 
-                            // IMPLEMENTASI NYATA: Kurangi stok telur
-                            eggData.Stock -= detail.Quantity;
+                            double quantityToDeduct = detail.Quantity;
+                            foreach (var eggData in availableEggs)
+                            {
+                                if (quantityToDeduct <= 0) break;
+
+                                if (eggData.Stock >= quantityToDeduct)
+                                {
+                                    eggData.Stock -= quantityToDeduct;
+                                    quantityToDeduct = 0;
+                                }
+                                else
+                                {
+                                    quantityToDeduct -= eggData.Stock;
+                                    eggData.Stock = 0;
+                                }
+                            }
                         }
                     }
 
-                    // Set status pembayaran baru
-                    transaksi.Status = nextPaymentState;
+                    // Set status pembayaran ke state berikutnya (Success / Cancelled)
+                    transaksi.PaymentStatus = nextPaymentState;
 
-                    // 3. SINKRONISASI STATUS ORDER (OrderState)
-                    // Panggil OrderService untuk merubah state order (misal: OrderComeIn -> ReadyForPickup)
+                    // SINKRONISASI STATUS ORDER (OrderState)
                     var isOrderUpdated = orderService.UpdateOrderStatus(transaksi, orderTrigger);
                     if (!isOrderUpdated)
                     {
                         throw new Exception($"Transisi status pesanan tidak valid dari '{transaksi.OrderStatus}' dengan trigger '{orderTrigger}'.");
                     }
 
-                    // Simpan semua perubahan (Payment, Stok Egg, dan Order Status)
                     await dbContext.SaveChangesAsync();
                     await dbTransaction.CommitAsync();
                     return true;
@@ -124,7 +179,6 @@ namespace sipetok_api.Services
             }
             catch (Exception ex)
             {
-                // Jika stok kurang atau ada error lain, rollback total!
                 await dbTransaction.RollbackAsync();
                 throw new Exception(ex.Message);
             }

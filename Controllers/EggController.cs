@@ -26,60 +26,22 @@ namespace sipetok_api.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "TENANT, CUSTOMER")]
+        [Authorize(Roles = "CUSTOMER")]
         public IActionResult GetAllEggs()
         {
             try
             {
-                if (User.IsInRole("CUSTOMER"))
-                {
-                    var rawEggSummary = dbContext.Eggs
-                    .GroupBy(e => new { e.CategoryId, e.TenantId })
-                    .Select(group => new
-                    {
-                        CategoryId = group.Key.CategoryId,
-                        TenantId = group.Key.TenantId,
-                        Stock = group.Sum(e => e.Stock),
+                int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
+                var Tenant = dbContext.Tenants.Include(c => c.User).FirstOrDefault(c => c.UserId == userId);
 
-                        CategoryName = group.Select(e => e.Category!.Name).FirstOrDefault(),
-                        TenantName = group.Select(e => e.Tenant!.Name).FirstOrDefault()
-                    })
+                var eggs = dbContext.Eggs
+                    .Include(e => e.Category)
+                    .Where(e => e.Category != null && e.Category.TenantId == Tenant!.Id)
                     .ToList();
 
-                    var eggSummary = rawEggSummary.Select(item => new EggAvailableRespon
-                    {
-                        CategoryId = item.CategoryId,
-                        TenantId = item.TenantId,
-                        Stock = item.Stock,
-                        Category = new EggCategoryRespon
-                        {
-                            Id = item.CategoryId,
-                            Name = item.CategoryName
-                        },
-                        Tenant = new TenantRespon
-                        {
-                            Id = item.TenantId,
-                            Name = item.TenantName
-                        }
-                    }).ToList();
+                var respon = new ResponData<List<EggRespon>>(true, _mapper.Map<List<EggRespon>>(eggs), $"Successfully retrieved total egg Stock");
 
-                    var respon = new ResponData<List<EggAvailableRespon>>(true, eggSummary, "Customer : Successfully retrieved all egg data");
-                    return Ok(respon);
-                }
-                else if (User.IsInRole("TENANT"))
-                {
-                    int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
-                    var Tenant = dbContext.Tenants.Include(c => c.User).FirstOrDefault(c => c.UserId == userId);
-
-                    var myegg = dbContext.Eggs.Where(e => e.TenantId == Tenant!.Id).Include(e => e.Category).ToList();
-
-
-                    var respon = new ResponData<List<EggRespon>>(true, _mapper.Map<List<EggRespon>>(myegg), $"Successfully retrieved total egg Stock");
-
-                    return Ok(respon);
-                }
-
-                return Forbid();
+                return Ok(respon);
             }
             catch (Exception ex)
             {
@@ -96,7 +58,7 @@ namespace sipetok_api.Controllers
         {
             try
             {
-                var egg = _mapper.Map<EggRespon>(dbContext.Eggs.Include(e => e.Tenant).Include(e => e.Category).FirstOrDefault(e => e.Id == id));
+                var egg = _mapper.Map<EggRespon>(dbContext.Eggs.Include(e => e.Category).FirstOrDefault(e => e.Id == id));
 
                 if (egg is null)
                 {
@@ -138,7 +100,6 @@ namespace sipetok_api.Controllers
 
                 var egg = _mapper.Map<Egg>(eggDto);
 
-                egg.TenantId = Tenant.Id;
                 egg.CategoryId = eggCategory.Id;
 
                 dbContext.Eggs.Add(egg);
@@ -166,7 +127,6 @@ namespace sipetok_api.Controllers
                 int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
 
                 var egg = dbContext.Eggs
-                    .Include(e => e.Tenant)
                     .FirstOrDefault(e => e.Id == id);
 
                 if (egg == null)
@@ -174,10 +134,6 @@ namespace sipetok_api.Controllers
                     return NotFound(new ResponData<object?>(false, "Data egg not found"));
                 }
 
-                if (egg.Tenant == null || egg.Tenant.UserId != userId)
-                {
-                    return BadRequest(new ResponData<object?>(false, "Egg data does not have Tenant information"));
-                }
                 egg.ProductionDate = eggDto.ProductionDate;
                 egg.CategoryId = eggDto.CategoryId;
                 egg.Stock = eggDto.Stock;
@@ -206,16 +162,11 @@ namespace sipetok_api.Controllers
             {
                 var userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
                 var egg = dbContext.Eggs
-                    .Include(e => e.Tenant)
                     .FirstOrDefault(e => e.Id == id);
 
                 if (egg is null)
                 {
                     return NotFound(new ResponData<object?>(false, $"Egg data with id {id} not found"));
-                }
-                if (egg.Tenant == null || egg.Tenant.UserId != userId)
-                {
-                    return BadRequest(new ResponData<object?>(false, "Egg data does not have Tenant information"));
                 }
 
                 egg.SoftDelete();

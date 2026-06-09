@@ -41,18 +41,10 @@ namespace sipetok_api.Controllers
                     Email = req.Email,
                     Password = passwordHash,
                     Role = 3,
-                    Status = 1
+                    IsActive = true
                 };
 
-                var customer = new Customer
-                {
-                    Name = req.Name,
-                    User = user,
-                    Address = "",
-                    PhoneNumber = ""
-                };
-
-                await dbContext.Customers.AddAsync(customer);
+                dbContext.Users.Add(user);
                 await dbContext.SaveChangesAsync();
                 string token = CreateToken(user);
 
@@ -116,7 +108,7 @@ namespace sipetok_api.Controllers
                     ));
                 }
 
-                if (user.Status == 0)
+                if (!user.IsActive)
                 {
                     return BadRequest(new ResponData<object?>
                     (

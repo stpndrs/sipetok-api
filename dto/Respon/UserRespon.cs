@@ -5,14 +5,14 @@ namespace sipetok_api.dto
 {
     public class UserRespon
     {
-        public int Id {get; set;}
+        public int Id { get; set; }
         public string Username { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public TabelDriven Role { get; set; } = null!;
-        public TabelDriven Status { get; set; } = null!;
-        public UserRespon() {}
+        public TabelDriven IsActive { get; set; } = null!;
+        public UserRespon() { }
 
-        public UserRespon(int Id, string Username, string Email, int Role, int Status)
+        public UserRespon(int Id, string Username, string Email, int Role, int IsActive)
         {
             var roleLogic = new AccountRoleTableDriven();
             var statusLogic = new AccountStatusTableDriven();
@@ -20,7 +20,7 @@ namespace sipetok_api.dto
             this.Username = Username;
             this.Email = Email;
             this.Role = new TabelDriven(Role, roleLogic.GetRoleName(Role));
-            this.Status = new TabelDriven(Status, statusLogic.GetStatusName(Status));
+            this.IsActive = new TabelDriven(IsActive, statusLogic.GetStatusName(IsActive));
         }
     }
 }

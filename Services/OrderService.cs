@@ -12,7 +12,7 @@ namespace sipetok_api.Services
             { (OrderState.ReadyForPickup, OrderTrigger.PickedUp), OrderState.Completed },
             { (OrderState.OrderComeIn, OrderTrigger.CancelledByCustomer), OrderState.Cancelled }
         };
-       
+
         public bool UpdateOrderStatus(Transaction transaction, OrderTrigger trigger)
         {
             try
@@ -24,7 +24,7 @@ namespace sipetok_api.Services
 
                 if (transaction.OrderStatus == OrderState.OrderComeIn &&
                     trigger == OrderTrigger.PaymentSucceeded &&
-                    transaction.Status != PaymentState.Success)
+                    transaction.PaymentStatus != PaymentState.Success)
                 {
                     return false;
                 }
