@@ -44,15 +44,6 @@ namespace sipetok_api.Controllers
                     Status = 1
                 };
 
-                var customer = new Customer
-                {
-                    Name = req.Name,
-                    User = user,
-                    Address = "",
-                    PhoneNumber = ""
-                };
-
-                await dbContext.Customers.AddAsync(customer);
                 await dbContext.SaveChangesAsync();
                 string token = CreateToken(user);
 

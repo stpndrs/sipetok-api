@@ -14,7 +14,6 @@ namespace sipetok_api
         public MappingProfile()
         {
             CreateMap<UserDto, User>();
-            CreateMap<CustomerDto, Customer>();
             CreateMap<TenantDto, Tenant>();
             CreateMap<OperationalDto, Operational>();
             CreateMap<EggDto, Egg>();
@@ -24,7 +23,6 @@ namespace sipetok_api
             CreateMap<TransactionDetailDto, TransactionDetail>();
 
             CreateMap<User, UserRespon>();
-            CreateMap<Customer, CustomerRespon>();
             CreateMap<Tenant, TenantRespon>();
             CreateMap<Operational, OperationalRespon>();
             CreateMap<Egg, EggRespon>();

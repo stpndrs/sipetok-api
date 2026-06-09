@@ -7,7 +7,6 @@ namespace sipetok_api.Data
     {
         public DbSet<User> Users { get; set; }
         public DbSet<Tenant> Tenants { get; set; }
-        public DbSet<Customer> Customers { get; set; }
         public DbSet<EggCategory> EggCategories { get; set; }
         public DbSet<Egg> Eggs { get; set; }
         public DbSet<Transaction> Transactions { get; set; }
@@ -24,13 +23,6 @@ namespace sipetok_api.Data
                 .WithMany()
                 .HasForeignKey(t => t.UserId)
                 .OnDelete(DeleteBehavior.Restrict); // Jangan hapus User jika Tenant dihapus
-
-            // 2. Relasi User -> Customer
-            modelBuilder.Entity<Customer>()
-                .HasOne(c => c.User)
-                .WithMany()
-                .HasForeignKey(c => c.UserId)
-                .OnDelete(DeleteBehavior.Restrict);
 
             // 3. Relasi Tenant -> Egg (Stok Telur)
             modelBuilder.Entity<Egg>()
@@ -97,7 +89,6 @@ namespace sipetok_api.Data
 
             modelBuilder.Entity<User>().HasQueryFilter(u => u.DeletedAt == null);
             modelBuilder.Entity<Tenant>().HasQueryFilter(t => t.DeletedAt == null);
-            modelBuilder.Entity<Customer>().HasQueryFilter(c => c.DeletedAt == null);
             modelBuilder.Entity<Egg>().HasQueryFilter(e => e.DeletedAt == null);
             modelBuilder.Entity<EggCategory>().HasQueryFilter(ec => ec.DeletedAt == null);
             modelBuilder.Entity<Transaction>().HasQueryFilter(t => t.DeletedAt == null);
