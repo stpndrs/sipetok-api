@@ -4,20 +4,20 @@ namespace sipetok_api.dto.Respon
     {
         public int Id { get; set; }
         public int TransactionId { get; set; }
-        public string CategoryName { get; set; } = string.Empty;
+        public string Category { get; set; }
         public double Quantity { get; set; }
-        public double Price { get; set; }
+        public double PriceAtPurchase { get; set; }
         public decimal Subtotal { get; set; } // Ubah ke decimal
 
-        public TransactionDetailRespon() { }
+        // public TransactionDetailRespon() { }
 
-        public TransactionDetailRespon(int Id, int TransactionId, string CategoryName, double Quantity, double Price, decimal Subtotal)
+        public TransactionDetailRespon(int Id, int TransactionId, EggCategoryRespon Category, double Quantity, double PriceAtPurchase, decimal Subtotal)
         {
             this.Id = Id;
             this.TransactionId = TransactionId;
-            this.CategoryName = CategoryName;
+            this.Category = Category.Name;
             this.Quantity = Quantity;
-            this.Price = Price;
+            this.PriceAtPurchase = PriceAtPurchase;
             this.Subtotal = Subtotal;
         }
     }
