@@ -1,12 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
-using AutoMapper;
-
 using sipetok_api.dto.Request;
-using sipetok_api.Models;
-using sipetok_api.Data;
 using sipetok_api.dto.Respon;
+using sipetok_api.Controllers.Products;
+using sipetok_api.Controllers.Factories;
+using sipetok_api.Models;
 
 namespace sipetok_api.Controllers
 {
@@ -15,145 +13,64 @@ namespace sipetok_api.Controllers
     [ApiController]
     public class OperationalController : ControllerBase
     {
-        private readonly AppDbContext dbContext;
-        private readonly IMapper _mapper;
+        private readonly OperationalFactory _factory;
 
-        public OperationalController(AppDbContext context, IMapper mapper)
+        public OperationalController(OperationalFactory factory)
         {
-            dbContext = context;
-            _mapper = mapper;
+            _factory = factory;
         }
 
         [HttpGet]
-        public IActionResult GetAllOperationals()
+        public async Task<IActionResult> GetAllOperationals()
         {
-            try
-            {
-                int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
-
-                var operationals = dbContext.Operationals
-                    .Include(o => o.Tenant)
-                    .Where(o => o.Tenant!.UserId == userId)
-                    .ToList();
-
-                var dataRespon = _mapper.Map<List<OperationalRespon>>(operationals);
-                return Ok(new ResponData<List<OperationalRespon>>(true, dataRespon, "Successfully retrieved all your operational data"));
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new ResponData<object?>(false, ex.Message));
-            }
+            int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
+            var handler = (GetData)_factory.CreateMethod("get");
+            return await handler.ActionAsync<Operational, OperationalRespon>("op_all_tenant", userId: userId);
         }
 
         [HttpGet("{id:int}")]
-        public IActionResult GetOperationalById(int id)
+        public async Task<IActionResult> GetOperationalById(int id)
         {
-            try
-            {
-                int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
-
-                var operational = dbContext.Operationals
-                    .Include(c => c.Tenant)
-                    .FirstOrDefault(c => c.Id == id);
-
-                // Jika data tidak ada, atau ada tapi milik tenant lain
-                if (operational == null || operational.Tenant!.UserId != userId)
-                {
-                    return NotFound(new ResponData<object?>(false, $"Operational data with id {id} not found"));
-                }
-
-                var dataRespon = _mapper.Map<OperationalRespon>(operational);
-                return Ok(new ResponData<OperationalRespon>(true, dataRespon, $"Successfully retrieved operational data"));
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new ResponData<object?>(false, ex.Message));
-            }
+            int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
+            var handler = (GetData)_factory.CreateMethod("get");
+            return await handler.ActionAsync<Operational, OperationalRespon>("op_byid", id: id, userId: userId);
         }
 
         [HttpPost]
-        public IActionResult CreateOperational([FromBody] OperationalDto operationalDto)
+        public async Task<IActionResult> CreateOperational([FromBody] OperationalDto operationalDto)
         {
-            try
-            {
-                int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
-                var tenant = dbContext.Tenants.FirstOrDefault(c => c.UserId == userId);
+            int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
+            var handler = (SaveData)_factory.CreateMethod("save");
 
-                if (tenant is null)
-                {
-                    return BadRequest(new ResponData<object?>(false, "Tenant profile not found"));
-                }
-
-                var operational = _mapper.Map<Operational>(operationalDto);
-                operational.TenantId = tenant.Id; // Otomatis diset dari sistem, bukan dari body request
-
-                dbContext.Operationals.Add(operational);
-                dbContext.SaveChanges();
-
-                var dataRespon = _mapper.Map<OperationalRespon>(operational);
-                return Ok(new ResponData<OperationalRespon>(true, dataRespon, "Successfully added operational data"));
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new ResponData<object?>(false, ex.Message));
-            }
+            return await handler.ActionAsync<Operational, OperationalDto, OperationalRespon>(
+                subAction: "add_op",
+                data: operationalDto,
+                httpMethod: "POST",
+                userId: userId
+            );
         }
 
         [HttpPut("{id:int}")]
-        public IActionResult UpdateOperational(int id, [FromBody] OperationalDto operationalDto)
+        public async Task<IActionResult> UpdateOperational(int id, [FromBody] OperationalDto operationalDto)
         {
-            try
-            {
-                int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
+            int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
+            var handler = (SaveData)_factory.CreateMethod("save");
 
-                var operational = dbContext.Operationals
-                    .Include(o => o.Tenant)
-                    .FirstOrDefault(o => o.Id == id);
-
-                if (operational is null || operational.Tenant!.UserId != userId)
-                {
-                    return NotFound(new ResponData<object?>(false, $"Operational data with id {id} not found"));
-                }
-
-                _mapper.Map(operationalDto, operational);
-                operational.UpdateTimestamps();
-
-                dbContext.SaveChanges();
-
-                var dataRespon = _mapper.Map<OperationalRespon>(operational);
-                return Ok(new ResponData<OperationalRespon>(true, dataRespon, "Successfully updated operational data"));
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new ResponData<object?>(false, ex.Message));
-            }
+            return await handler.ActionAsync<Operational, OperationalDto, OperationalRespon>(
+                subAction: "update_op",
+                data: operationalDto,
+                httpMethod: "PUT",
+                id: id,
+                userId: userId
+            );
         }
 
         [HttpDelete("{id:int}")]
-        public IActionResult DeleteOperational(int id)
+        public async Task<IActionResult> DeleteOperational(int id)
         {
-            try
-            {
-                int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
-
-                var operational = dbContext.Operationals
-                    .Include(o => o.Tenant)
-                    .FirstOrDefault(o => o.Id == id);
-
-                if (operational is null || operational.Tenant!.UserId != userId)
-                {
-                    return NotFound(new ResponData<object?>(false, $"Operational data with id {id} not found"));
-                }
-
-                operational.SoftDelete();
-                dbContext.SaveChanges();
-
-                return Ok(new ResponData<object?>(true, "Successfully deleted operational data"));
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new ResponData<object?>(false, ex.Message));
-            }
+            int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
+            var handler = (DeleteData)_factory.CreateMethod("delete");
+            return await handler.ActionAsync<Operational>("delete_op", id: id, userId: userId);
         }
     }
 }

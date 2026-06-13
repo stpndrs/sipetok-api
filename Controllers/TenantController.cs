@@ -1,12 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
-using AutoMapper;
-
-using sipetok_api.Models;
 using sipetok_api.dto.Request;
-using sipetok_api.Data;
 using sipetok_api.dto.Respon;
+using sipetok_api.Controllers.Products;
+using sipetok_api.Controllers.Factories;
+using sipetok_api.Models;
 
 namespace sipetok_api.Controllers
 {
@@ -15,285 +13,103 @@ namespace sipetok_api.Controllers
     [ApiController]
     public class TenantController : ControllerBase
     {
-        private readonly AppDbContext dbContext;
-        private readonly IMapper _mapper;
+        private readonly TenantFactory _factory;
 
-        public TenantController(AppDbContext context, IMapper mapper)
+        public TenantController(TenantFactory factory)
         {
-            dbContext = context;
-            _mapper = mapper;
+            _factory = factory;
         }
 
         [HttpGet]
         [Authorize(Roles = "ADMIN")]
-        public IActionResult GetAllTenant()
+        public async Task<IActionResult> GetAllTenant()
         {
-            try
-            {
-                var allCustomer = _mapper.Map<List<TenantRespon>>(dbContext.Tenants.Include(c => c.User).ToList());
-                var respon = new ResponData<List<TenantRespon>>(true, allCustomer, "Berhasil mengambil semua data tenant");
-
-                return Ok(respon);
-            }
-            catch (Exception ex)
-            {
-                var respon = new ResponData<object?>(false, ex.Message);
-
-                return StatusCode(500, respon);
-            }
+            var handler = (GetData)_factory.CreateMethod("get");
+            return await handler.ActionAsync<Tenant, TenantRespon>("tenant_all");
         }
 
         [HttpGet]
         [Route("{id:int}")]
         [Authorize(Roles = "ADMIN")]
-        public IActionResult GetTenantById(int id)
+        public async Task<IActionResult> GetTenantById(int id)
         {
-            try
-            {
-                var tenant = _mapper.Map<TenantRespon>(dbContext.Tenants.Include(c => c.User).FirstOrDefault(c => c.Id == id));
-
-                if (tenant is null)
-                {
-                    return NotFound(new ResponData<object?>(false, $"Tenant data with id {id} not found"));
-                }
-
-                var respon = new ResponData<TenantRespon>(true, tenant, $"Successfully retrieved tenant data with id {id}");
-
-                return Ok(respon);
-            }
-            catch (Exception ex)
-            {
-                var respon = new ResponData<object?>(false, ex.Message);
-
-                return StatusCode(500, respon);
-            }
+            var handler = (GetData)_factory.CreateMethod("get");
+            return await handler.ActionAsync<Tenant, TenantRespon>("tenant_byid", id: id);
         }
 
         [HttpGet]
         [Route("myprofile")]
         [Authorize(Roles = "TENANT")]
-        public IActionResult GetMyProfile()
+        public async Task<IActionResult> GetMyProfile()
         {
-            try
-            {
-                int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
-                var tenant = _mapper.Map<TenantRespon>(dbContext.Tenants.Include(c => c.User).FirstOrDefault(c => c.UserId == userId));
-
-                if (tenant is null)
-                {
-                    return NotFound(new ResponData<object?>(false, $"Tenant data with id {userId} not found"));
-                }
-
-                var respon = new ResponData<TenantRespon>(true, tenant, $"Successfully retrieved tenant data with id {userId}");
-
-                return Ok(respon);
-            }
-            catch (Exception ex)
-            {
-                var respon = new ResponData<object?>(false, ex.Message);
-
-                return StatusCode(500, respon);
-            }
+            int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
+            var handler = (GetData)_factory.CreateMethod("get");
+            return await handler.ActionAsync<Tenant, TenantRespon>("tenant_myprofile", userId: userId);
         }
 
         [HttpPost]
         [Authorize(Roles = "ADMIN")]
-        public IActionResult AddTenant([FromBody] TenantDto tenantDto)
+        public async Task<IActionResult> AddTenant([FromBody] TenantDto tenantDto)
         {
-            try
-            {
-                if (tenantDto.User == null)
-                {
-                    return BadRequest(new ResponData<object?>(false, "User is required"));
-                }
-                if (string.IsNullOrWhiteSpace(tenantDto.User.Password))
-                {
-                    return BadRequest(new ResponData<object?>(false, "Password is required"));
-                }
-
-                var User = _mapper.Map<User>(tenantDto.User);
-                User.Password = Bcrypt.BcryptPassword(User.Password);
-                User.Role = 2;
-                User.IsActive = true;
-                tenantDto.IsValid = false;
-
-                var tenant = _mapper.Map<Tenant>(tenantDto);
-                tenant.User = User;
-
-                dbContext.Tenants.Add(tenant);
-                dbContext.SaveChanges();
-
-                var respon = new ResponData<TenantRespon>(true, _mapper.Map<TenantRespon>(tenant), "Successfully added tenant data");
-
-                return Ok(respon);
-            }
-            catch (Exception ex)
-            {
-                var respon = new ResponData<object?>(false, ex.Message);
-
-                return BadRequest(respon);
-            }
+            var handler = (SaveData)_factory.CreateMethod("save");
+            return await handler.ActionAsync<Tenant, TenantDto, TenantRespon>(
+                subAction: "add_tenant",
+                data: tenantDto,
+                httpMethod: "POST"
+            );
         }
 
         [HttpPut]
         [Route("{id:int}")]
         [Authorize(Roles = "ADMIN")]
-        public IActionResult UpdateTenant(int id, [FromBody] TenantDto tenantDto)
+        public async Task<IActionResult> UpdateTenant(int id, [FromBody] TenantDto tenantDto)
         {
-            try
-            {
-                var tenant = dbContext.Tenants.Find(id);
-
-                if (tenant is null)
-                {
-                    return NotFound(new ResponData<object?>(false, $"Tenant data with id {id} not found"));
-                }
-
-                _mapper.Map(tenantDto, tenant);
-                tenant.UpdateTimestamps();
-
-                if (tenantDto.User != null)
-                {
-                    var User = dbContext.Users.Find(tenant.UserId);
-                    if (User != null)
-                    {
-                        _mapper.Map(tenantDto.User, User);
-                        if (!string.IsNullOrWhiteSpace(tenantDto.User.Password))
-                        {
-                            User.Password = Bcrypt.BcryptPassword(tenantDto.User.Password);
-                        }
-
-                        User.UpdateTimestamps();
-                    }
-                }
-
-                dbContext.SaveChanges();
-
-                var respon = new ResponData<TenantRespon>(true, _mapper.Map<TenantRespon>(tenant), $"Successfully updated tenant data with id {id}");
-
-                return Ok(respon);
-            }
-            catch (Exception ex)
-            {
-                var respon = new ResponData<object?>(false, ex.Message);
-
-                return BadRequest(respon);
-            }
+            var handler = (SaveData)_factory.CreateMethod("save");
+            return await handler.ActionAsync<Tenant, TenantDto, TenantRespon>(
+                subAction: "update_tenant",
+                data: tenantDto,
+                httpMethod: "PUT",
+                id: id
+            );
         }
 
         [HttpPut]
         [Route("updatemyprofile")]
         [Authorize(Roles = "TENANT")]
-        public IActionResult UpdateMyProfile([FromBody] TenantDto tenantDto)
+        public async Task<IActionResult> UpdateMyProfile([FromBody] TenantDto tenantDto)
         {
-            try
-            {
-                int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
-                var tenant = dbContext.Tenants.FirstOrDefault(t => t.UserId == userId);
-
-                if (tenant is null)
-                {
-                    return NotFound(new ResponData<object?>(false, $"Tenant data with id {userId} not found"));
-                }
-
-                _mapper.Map(tenantDto, tenant);
-                tenant.UpdateTimestamps();
-
-                if (tenantDto.User != null)
-                {
-                    var User = dbContext.Users.Find(tenant.UserId);
-                    if (User != null)
-                    {
-                        if (!string.IsNullOrWhiteSpace(tenantDto.User.Password))
-                        {
-                            User.Password = Bcrypt.BcryptPassword(tenantDto.User.Password);
-                        }
-                        _mapper.Map(tenantDto.User, User);
-                        User.Role = 2;
-                        User.IsActive = true;
-                        User.UpdateTimestamps();
-                    }
-                }
-
-                dbContext.SaveChanges();
-
-                var respon = new ResponData<TenantRespon>(true, _mapper.Map<TenantRespon>(tenant), $"Successfully updated tenant data with id {userId}");
-
-                return Ok(respon);
-            }
-            catch (Exception ex)
-            {
-                var respon = new ResponData<object?>(false, ex.Message);
-
-                return BadRequest(respon);
-            }
+            int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
+            var handler = (SaveData)_factory.CreateMethod("save");
+            return await handler.ActionAsync<Tenant, TenantDto, TenantRespon>(
+                subAction: "update_myprofile",
+                data: tenantDto,
+                httpMethod: "PUT",
+                userId: userId
+            );
         }
 
         [HttpPost]
         [Route("validate/{id:int}")]
         [Authorize(Roles = "ADMIN")]
-        public IActionResult Validation(int id)
+        public async Task<IActionResult> Validation(int id)
         {
-            try
-            {
-                var tenant = dbContext.Tenants.Find(id);
-
-                if (tenant is null)
-                {
-                    return NotFound(new ResponData<object?>(false, $"Tenant data with id {id} not found"));
-                }
-
-                tenant.IsValid = true;
-                dbContext.SaveChanges();
-
-                var respon = new ResponData<TenantRespon>(true, _mapper.Map<TenantRespon>(tenant), $"Successfully validated tenant data with id {id}");
-
-                return Ok(respon);
-            }
-            catch (Exception ex)
-            {
-                var respon = new ResponData<object?>(false, ex.Message);
-
-                return BadRequest(respon);
-            }
+            var handler = (SaveData)_factory.CreateMethod("save");
+            // Karena tidak mengirim object body, kita isi data dengan object kosong / dummy
+            return await handler.ActionAsync<Tenant, object, TenantRespon>(
+                subAction: "validate_tenant",
+                data: new object(),
+                httpMethod: "POST",
+                id: id
+            );
         }
 
         [HttpDelete]
         [Route("{id:int}")]
         [Authorize(Roles = "ADMIN")]
-        public IActionResult DeleteTenant(int id)
+        public async Task<IActionResult> DeleteTenant(int id)
         {
-            try
-            {
-                var tenant = dbContext.Tenants.Find(id);
-
-                if (tenant is null)
-                {
-                    return NotFound(new ResponData<object?>(false, $"Tenant data with id {id} not found"));
-                }
-
-                if (tenant.UserId != 0)
-                {
-                    var User = dbContext.Users.Find(tenant.UserId);
-                    if (User != null)
-                    {
-                        User.SoftDelete();
-                    }
-                }
-
-                tenant.SoftDelete();
-                dbContext.SaveChanges();
-
-                var respon = new ResponData<object?>(true, "Successfully deleted tenant data");
-
-                return Ok(respon);
-            }
-            catch (Exception ex)
-            {
-                var respon = new ResponData<object?>(false, ex.Message);
-
-                return BadRequest(respon);
-            }
+            var handler = (DeleteData)_factory.CreateMethod("delete");
+            return await handler.ActionAsync<Tenant>("delete_tenant", id: id);
         }
     }
 }

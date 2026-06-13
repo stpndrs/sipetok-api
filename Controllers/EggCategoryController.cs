@@ -1,12 +1,10 @@
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.EntityFrameworkCore;
-using AutoMapper;
-
-using sipetok_api.Models;
+using Microsoft.AspNetCore.Mvc;
+using sipetok_api.Controllers.Factories;
+using sipetok_api.Controllers.Products;
 using sipetok_api.dto.Request;
-using sipetok_api.Data;
 using sipetok_api.dto.Respon;
+using sipetok_api.Models;
 using sipetok_api.Respon;
 
 namespace sipetok_api.Controllers
@@ -16,212 +14,92 @@ namespace sipetok_api.Controllers
     [ApiController]
     public class EggCategoryController : ControllerBase
     {
-        private readonly AppDbContext dbContext;
-        private readonly IMapper _mapper;
+        private readonly EggCategoryFactory _factory;
 
-        public EggCategoryController(AppDbContext context, IMapper mapper)
+        // Inject EggCategoryFactory langsung ke dalam Controller
+        public EggCategoryController(EggCategoryFactory factory)
         {
-            dbContext = context;
-            _mapper = mapper;
+            _factory = factory;
         }
 
         [HttpGet]
         [Authorize(Roles = "TENANT, CUSTOMER")]
         public async Task<IActionResult> GetAllEggCategory()
         {
-            try
+            int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
+
+            // Panggil factory untuk mendapatkan objek GetData
+            var handler = (GetData)_factory.CreateMethod("get");
+
+            if (User.IsInRole("CUSTOMER"))
             {
-                if (User.IsInRole("CUSTOMER"))
-                {
-                    var eggSummary = dbContext.EggCategories
-                        .Select(category => new EggAvailableRespon
-                        {
-                            TenantId = category.TenantId,
-                            Stock = category.Eggs.Sum(egg => egg.Stock),
-
-                            CategoryId = category.Id,
-
-                            Category = new EggCategoryRespon
-                            {
-                                Id = category.Id,
-                                Name = category.Name,
-                                Price = category.Price,
-                                Description = category.Description,
-                                TenantId = category.TenantId
-                            },
-                            Tenant = category.Tenant != null ? new TenantRespon
-                            {
-                                Id = category.TenantId,
-                                Name = category.Tenant.Name,
-                                Address = category.Tenant.Address,
-                                PhoneNumber = category.Tenant.PhoneNumber
-                            } : null
-                        })
-                        .ToList();
-
-                    var respon = new ResponData<List<EggAvailableRespon>>(true, eggSummary, "Customer : Successfully retrieved all egg data");
-                    return Ok(respon);
-                }
-                else if (User.IsInRole("TENANT"))
-                {
-                    int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
-                    var eggCategories = await dbContext.Tenants
-                        .Where(t => t.UserId == userId)
-                        .SelectMany(t => dbContext.EggCategories.Where(ec => ec.TenantId == t.Id))
-                        .ToListAsync();
-
-                    var allEggCategory = _mapper.Map<List<EggCategoryRespon>>(eggCategories);
-
-                    var respon = new ResponData<List<EggCategoryRespon>>(true, allEggCategory, "Successfully retrieved my egg category data");
-
-                    return Ok(respon);
-                }
-                return Forbid();
+                return await handler.ActionAsync<EggCategory, EggAvailableRespon>("customer_all", userId: userId);
             }
-            catch (Exception ex)
+            else if (User.IsInRole("TENANT"))
             {
-                var respon = new ResponData<object?>(false, ex.Message);
-
-                return StatusCode(500, respon);
+                return await handler.ActionAsync<EggCategory, EggCategoryRespon>("tenant_all", userId: userId);
             }
+            return Forbid();
         }
 
         [HttpGet]
         [Route("{id:int}")]
         [Authorize(Roles = "TENANT")]
-        public IActionResult GetEggCategoryById(int id)
+        public async Task<IActionResult> GetEggCategoryById(int id)
         {
-            try
-            {
-                var eggCategory = _mapper.Map<EggCategoryRespon>(dbContext.EggCategories.Find(id));
-
-                if (eggCategory is null)
-                {
-                    return NotFound(new ResponData<object?>(false, $"Egg category data with id {id} not found"));
-                }
-
-                var respon = new ResponData<EggCategoryRespon>(true, eggCategory, $"Successfully retrieved egg category data with id {id}");
-
-                return Ok(respon);
-            }
-            catch (Exception ex)
-            {
-                var respon = new ResponData<object?>(false, ex.Message);
-
-                return StatusCode(500, respon);
-            }
+            var handler = (GetData)_factory.CreateMethod("get");
+            return await handler.ActionAsync<EggCategory, EggCategoryRespon>("byid", id: id);
         }
 
         [HttpPost]
         [Authorize(Roles = "TENANT")]
-        public IActionResult AddEggCategory([FromBody] EggCategoryDto eggCategoryDto)
+        public async Task<IActionResult> AddEggCategory([FromBody] EggCategoryDto eggCategoryDto)
         {
-            try
-            {
-                int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
-                var tenant = dbContext.Tenants.Include(c => c.User).FirstOrDefault(c => c.UserId == userId);
-                if (tenant is null || tenant.UserId != userId)
-                {
-                    return BadRequest(new ResponData<object?>(false, "Egg category data does not have tenant information"));
-                }
+            int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
 
-                var eggCategory = _mapper.Map<EggCategory>(eggCategoryDto);
-                eggCategory.TenantId = tenant.Id;
-                dbContext.EggCategories.Add(eggCategory);
-                dbContext.SaveChanges();
+            // Panggil factory untuk mendapatkan objek SaveData
+            var handler = (SaveData)_factory.CreateMethod("save");
 
-                var respon = new ResponData<EggCategoryRespon>(true, _mapper.Map<EggCategoryRespon>(eggCategory), "Successfully added my egg category data");
-
-                return Ok(respon);
-            }
-            catch (Exception ex)
-            {
-                var respon = new ResponData<object?>(false, ex.Message);
-
-                return BadRequest(respon);
-            }
+            return await handler.ActionAsync<EggCategory, EggCategoryDto, EggCategoryRespon>(
+                subAction: "add_category",
+                data: eggCategoryDto,
+                httpMethod: "POST",
+                userId: userId
+            );
         }
 
-        [Authorize(Roles = "TENANT")]
         [HttpPut]
         [Route("{id:int}")]
-        public IActionResult UpdateEggCategory(int id, [FromBody] EggCategoryDto eggCategoryDto)
+        [Authorize(Roles = "TENANT")]
+        public async Task<IActionResult> UpdateEggCategory(int id, [FromBody] EggCategoryDto eggCategoryDto)
         {
-            try
-            {
-                int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
-                var tenant = dbContext.Tenants.Include(c => c.User).FirstOrDefault(c => c.UserId == userId);
-                var eggCategory = dbContext.EggCategories.Find(id);
+            int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
+            var handler = (SaveData)_factory.CreateMethod("save");
 
-                if (eggCategory is null)
-                {
-                    return NotFound(new ResponData<object?>(false, $"Egg category data with id {id} not found"));
-                }
-                if (tenant is null)
-                {
-                    return BadRequest(new ResponData<object?>(false, "Tenant not found"));
-                }
-                if (eggCategory.TenantId != tenant.Id)
-                {
-                    return BadRequest(new ResponData<object?>(false, "You are not authorized to update this egg category data"));
-                }
-
-                eggCategory.Name = eggCategoryDto.Name;
-                eggCategory.Price = eggCategoryDto.Price;
-                eggCategory.Description = eggCategoryDto.Description;
-                eggCategory.UpdateTimestamps();
-
-                dbContext.SaveChanges();
-
-                var respon = new ResponData<EggCategoryRespon>(true, _mapper.Map<EggCategoryRespon>(eggCategory), "Successfully updated egg category data");
-
-                return Ok(respon);
-            }
-            catch (Exception ex)
-            {
-                var respon = new ResponData<object?>(false, ex.Message);
-
-                return BadRequest(respon);
-            }
+            return await handler.ActionAsync<EggCategory, EggCategoryDto, EggCategoryRespon>(
+                subAction: "update_category",
+                data: eggCategoryDto,
+                httpMethod: "PUT",
+                id: id,
+                userId: userId
+            );
         }
 
         [HttpDelete]
         [Route("{id:int}")]
         [Authorize(Roles = "TENANT")]
-        public IActionResult DeleteEggCategory(int id)
+        public async Task<IActionResult> DeleteEggCategory(int id)
         {
-            try
-            {
-                int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
-                var tenant = dbContext.Tenants.Include(c => c.User).FirstOrDefault(c => c.UserId == userId);
-                var eggCategory = dbContext.EggCategories.Find(id);
+            int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
 
-                if (eggCategory is null)
-                {
-                    return NotFound(new ResponData<object?>(false, $"Egg category data with id {id} not found"));
-                }
-                if (tenant is null)
-                {
-                    return BadRequest(new ResponData<object?>(false, "Tenant not found"));
-                }
-                if (eggCategory.TenantId != tenant.Id)
-                {
-                    return BadRequest(new ResponData<object?>(false, "You are not authorized to delete this egg category data"));
-                }
+            // Panggil factory untuk mendapatkan objek DeleteData
+            var handler = (DeleteData)_factory.CreateMethod("delete");
 
-                eggCategory.SoftDelete();
-                dbContext.SaveChanges();
-
-                var respon = new ResponData<object?>(true, "Successfully deleted egg category data");
-
-                return Ok(respon);
-            }
-            catch (Exception ex)
-            {
-                var respon = new ResponData<object?>(false, ex.Message);
-
-                return BadRequest(respon);
-            }
+            return await handler.ActionAsync<EggCategory>(
+                subAction: "delete_category",
+                id: id,
+                userId: userId
+            );
         }
     }
 }
