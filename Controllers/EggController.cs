@@ -23,7 +23,7 @@ namespace sipetok_api.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "CUSTOMER")]
+        [Authorize(Roles = "TENANT")]
         public async Task<IActionResult> GetAllEggs()
         {
             int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
