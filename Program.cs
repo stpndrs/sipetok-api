@@ -57,9 +57,15 @@ builder.Services.AddApplicationServices();
 builder.Services.AddOpenApi();
 
 // 3. Database Connection
+
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-builder.Services.AddDbContext<AppDbContext>(options =>
+var connection = builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseMySQL(connectionString));
+Console.WriteLine("test koneksi" + connection);
+var connection2 = builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseMySQL(connectionString));
+Console.WriteLine("test2" + connection2);
+Console.WriteLine(connection2 == connection);
 
 // 4. AutoMapper
 builder.Services.AddAutoMapper(typeof(MappingProfile));

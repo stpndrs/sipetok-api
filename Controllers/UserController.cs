@@ -1,13 +1,14 @@
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
 using AutoMapper;
-
-using sipetok_api.dto.Request;
-using sipetok_api.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using sipetok_api.Controllers.Factories;
+using sipetok_api.Controllers.Products;
 using sipetok_api.Data;
-using sipetok_api.dto.Respon;
 using sipetok_api.dto;
-using Microsoft.EntityFrameworkCore;
+using sipetok_api.dto.Request;
+using sipetok_api.dto.Respon;
+using sipetok_api.Models;
+using System.Threading.Tasks;
 
 namespace sipetok_api.Controllers
 {
@@ -16,276 +17,60 @@ namespace sipetok_api.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-        private readonly AppDbContext dbContext;
-        private readonly IMapper _mapper;
+        private readonly UserFactory _factory;
 
         public UserController(AppDbContext context, IMapper mapper)
         {
-            dbContext = context;
-            _mapper = mapper;
+            _factory = new UserFactory(context, mapper);
         }
 
         [HttpGet]
         [Authorize(Roles = "ADMIN")]
-        public IActionResult GetAllUsers()
+        public async Task<IActionResult> GetAllUsers()
         {
-            try
-            {
-                var allUser = _mapper.Map<List<UserRespon>>(dbContext.Users.ToList());
-                var respon = new ResponData<List<UserRespon>>(true, allUser, "Successfully retrieves all user data");
-
-                return Ok(respon);
-            }
-            catch (Exception ex)
-            {
-                var respon = new ResponData<object?>(false, ex.Message);
-
-                return StatusCode(500, respon);
-            }
+            var worker = (GetData)_factory.CreateMethod("get");
+            return await worker.ActionAsync<User, UserRespon>("getall");
         }
 
-        [HttpGet]
-        [Route("{id:int}")]
+        [HttpGet("{id:int}")]
         [Authorize(Roles = "ADMIN")]
-        public IActionResult GetUserById(int id)
+        public async Task<IActionResult> GetUserById(int id)
         {
-            try
-            {
-                var userEntity = dbContext.Users.Find(id);
-
-                if (userEntity is null)
-                {
-                    return NotFound(new ResponData<object?>(false, $"User data with id {id} not found"));
-                }
-
-                var userRespon = _mapper.Map<UserRespon>(userEntity);
-                var respon = new ResponData<UserRespon>(true, userRespon, $"Successfully retrieved user data with id {id}");
-
-                return Ok(respon);
-            }
-            catch (Exception ex)
-            {
-                var respon = new ResponData<object?>(false, ex.Message);
-
-                return StatusCode(500, respon);
-            }
+            var worker = (GetData)_factory.CreateMethod("get");
+            return await worker.ActionAsync<User, UserRespon>("byid", id);
         }
 
-        [HttpGet]
-        [Route("myaccount")]
-        [Authorize(Roles = "ADMIN")]
-        public IActionResult GetMyAccount()
+        [HttpGet("myaccount")]
+        public async Task<IActionResult> GetMyAccount()
         {
-            try
-            {
-                int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
-                var userEntity = dbContext.Users.Find(userId);
-
-                if (userEntity is null)
-                {
-                    return NotFound(new ResponData<object?>(false, $"User data with id {userId} not found"));
-                }
-
-                var userRespon = _mapper.Map<UserRespon>(userEntity);
-                var respon = new ResponData<UserRespon>(true, userRespon, $"Successfully retrieved user data with id {userId}");
-
-                return Ok(respon);
-            }
-            catch (Exception ex)
-            {
-                var respon = new ResponData<object?>(false, ex.Message);
-
-                return StatusCode(500, respon);
-            }
+            int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
+            var worker = (GetData)_factory.CreateMethod("get");
+            // Asumsikan kita buat action "get_by_id" di GetData untuk userId
+            return await worker.ActionAsync<User, UserRespon>("byid", userId);
         }
 
         [HttpPost]
         [Authorize(Roles = "ADMIN")]
-        public IActionResult AddUser([FromBody] UserDto userDto)
+        public async Task<IActionResult> AddUser([FromBody] UserDto userDto)
         {
-            try
-            {
-                var user = _mapper.Map<User>(userDto);
-                if (string.IsNullOrWhiteSpace(user.Password))
-                {
-                    return BadRequest(new ResponData<object?>(false, "Password is required"));
-                }
-                user.Password = Bcrypt.BcryptPassword(user.Password);
-
-                dbContext.Users.Add(user);
-                dbContext.SaveChanges();
-
-                var respon = new ResponData<UserRespon>(true, _mapper.Map<UserRespon>(user), "Successfully added user data");
-
-                return Ok(respon);
-            }
-            catch (DbUpdateException ex)
-            {
-                if (ex.InnerException != null && (ex.InnerException.Message.Contains("Duplicate") || ex.InnerException.Message.Contains("unique")))
-                {
-                    // 1. Buat dictionary error manual untuk menentukan field mana yang error
-                    var errorDetail = new Dictionary<string, string[]>
-                    {
-                        { "Account", new[] { "Email atau Username sudah terdaftar, silakan gunakan yang lain." } }
-                    };
-
-                    // 2. Masukkan ke dalam objek ResponValidation menggunakan konstruktornya
-                    var responUnique = new ResponValidation(errorDetail);
-
-                    return BadRequest(responUnique);
-                }
-                ResponData<object?> responDb = new ResponData<object?>
-                (
-                    false,
-                    "Terjadi kesalahan saat menyimpan data ke database."
-                );
-                return StatusCode(500, responDb);
-            }
-            catch (Exception ex)
-            {
-                var respon = new ResponData<object?>(false, ex.Message);
-
-                return BadRequest(respon);
-            }
+            var worker = (SaveData)_factory.CreateMethod("save");
+            return await worker.ActionAsync<User, UserDto, UserRespon>("add_user", userDto, "POST");
         }
 
-        [HttpPut]
-        [Route("{id:int}")]
+        [HttpPut("{id:int}")]
         [Authorize(Roles = "ADMIN")]
-        public IActionResult UpdateUser(int id, [FromBody] UserDto userDto)
+        public async Task<IActionResult> UpdateUser(int id, [FromBody] UserDto userDto)
         {
-            try
-            {
-                var user = dbContext.Users.Find(id);
-
-                if (user is null)
-                {
-                    return NotFound(new ResponData<object?>(false, $"User data with id {id} not found"));
-                }
-
-                if (!string.IsNullOrWhiteSpace(userDto.Password))
-                {
-                    user.Password = Bcrypt.BcryptPassword(userDto.Password);
-                }
-
-                user.Username = userDto.Username;
-                user.Email = userDto.Email;
-                user.Role = userDto.Role;
-                user.IsActive = userDto.IsActive;
-                user.UpdateTimestamps();
-
-                dbContext.SaveChanges();
-
-                var respon = new ResponData<UserRespon>(true, _mapper.Map<UserRespon>(user), $"Successfully updated user data with id {id}");
-
-                return Ok(respon);
-            }
-            catch (Exception ex)
-            {
-                var respon = new ResponData<object?>(false, ex.Message);
-
-                return BadRequest(respon);
-            }
+            var worker = (SaveData)_factory.CreateMethod("save");
+            return await worker.ActionAsync<User, UserDto, UserRespon>("update_user", userDto, "PUT", id);
         }
 
-        [HttpPut]
-        [Route("updatemyaccount")]
-        public IActionResult UpdateMyAccount([FromBody] UserDto userDto)
-        {
-            try
-            {
-                int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
-                var user = dbContext.Users.Find(userId);
-
-                if (user is null)
-                {
-                    return NotFound(new ResponData<object?>(false, $"User data with id {userId} not found"));
-                }
-
-                if (!string.IsNullOrWhiteSpace(userDto.Password))
-                {
-                    user.Password = Bcrypt.BcryptPassword(userDto.Password);
-                }
-
-                user.Username = userDto.Username;
-                user.Email = userDto.Email;
-                user.UpdateTimestamps();
-
-                dbContext.SaveChanges();
-
-                var respon = new ResponData<UserRespon>(true, _mapper.Map<UserRespon>(user), $"Successfully updated user data with id {userId}");
-
-                return Ok(respon);
-            }
-            catch (Exception ex)
-            {
-                var respon = new ResponData<object?>(false, ex.Message);
-
-                return BadRequest(respon);
-            }
-        }
-
-        [HttpPut]
-        [Route("changepassword/{userId:int}")]
-        public IActionResult ChangePassword(int userId, [FromBody] ChangePasswordDto changePasswordDto)
-        {
-            try
-            {
-                var user = dbContext.Users.Find(userId);
-
-                if (user is null)
-                {
-                    return NotFound(new ResponData<object?>(false, $"User data with id {userId} not found"));
-                }
-
-                if (BCrypt.Net.BCrypt.Verify(changePasswordDto.PasswordOld, user.Password))
-                {
-                    return BadRequest(new ResponData<object?>(false, "Old Password is incorrect"));
-                }
-                user.Password = Bcrypt.BcryptPassword(changePasswordDto.Password);
-                user.UpdateTimestamps();
-
-                dbContext.SaveChanges();
-
-                var respon = new ResponData<object?>(true, "Password changed successfully");
-
-                return Ok(respon);
-            }
-            catch (Exception ex)
-            {
-                var respon = new ResponData<object?>(false, ex.Message);
-
-                return BadRequest(respon);
-            }
-        }
-
-        [HttpDelete]
-        [Route("{id:int}")]
+        [HttpDelete("{id:int}")]
         [Authorize(Roles = "ADMIN")]
-        public IActionResult DeleteUser(int id)
+        public async Task<IActionResult> DeleteUser(int id)
         {
-            try
-            {
-                var user = dbContext.Users.Find(id);
-
-                if (user is null)
-                {
-                    return NotFound(new ResponData<object?>(false, $"User data with id {id} not found"));
-                }
-
-                user.SoftDelete();
-                dbContext.SaveChanges();
-
-                var respon = new ResponData<object?>(true, "Successfully deleted user data");
-
-                return Ok(respon);
-            }
-            catch (Exception ex)
-            {
-                var respon = new ResponData<object?>(false, ex.Message);
-
-                return BadRequest(respon);
-            }
+            var worker = (DeleteData)_factory.CreateMethod("delete");
+            return await worker.ActionAsync<User>("delete_user", id);
         }
     }
 }
