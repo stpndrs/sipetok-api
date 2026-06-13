@@ -6,6 +6,7 @@ namespace sipetok_api.dto.Respon
         public string Message { get; set; } = string.Empty;
         public T? Data { get; set; }
 
+        public ResponData() { }
         public ResponData(bool success, string message)
         {
             this.Success = success;

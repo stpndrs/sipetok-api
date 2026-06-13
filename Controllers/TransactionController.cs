@@ -1,8 +1,7 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using sipetok_api.Data;
+using sipetok_api.Controllers.Factories;
+using sipetok_api.Controllers.Products;
 using sipetok_api.dto.Request;
 using sipetok_api.dto.Respon;
 using sipetok_api.Services;
@@ -11,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using sipetok_api.Models;
 
 namespace sipetok_api.Controllers
 {
@@ -19,154 +19,71 @@ namespace sipetok_api.Controllers
     [Route("api/transactions")]
     public class TransactionController : ControllerBase
     {
-        private readonly AppDbContext dbContext;
-        private readonly PaymentService _paymentService;
-        private readonly OrderService _orderService;
-        private readonly IMapper _mapper;
+        private readonly TransactionFactory _factory;
 
-        public TransactionController(AppDbContext context, PaymentService paymentService, OrderService orderService, IMapper mapper)
+        public TransactionController(TransactionFactory factory)
         {
-            dbContext = context;
-            _mapper = mapper;
-            _paymentService = paymentService;
-            _orderService = orderService;
+            _factory = factory;
         }
 
         [HttpGet]
-        public IActionResult GetAll()
+        public async Task<IActionResult> GetAll()
         {
-            try
-            {
-                int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
+            int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
+            var handler = (GetData)_factory.CreateMethod("get");
 
-                var data = dbContext.Transactions
-                    .Include(t => t.Details).ThenInclude(d => d.Category)
-                    .Where(t => t.Tenant!.UserId == userId)
-                    .ToList();
-
-                var result = _mapper.Map<List<TransactionRespon>>(data);
-
-                var respon = new ResponData<List<TransactionRespon>>(true, result, "Berhasil mengambil semua data transaksi");
-
-                return Ok(respon);
-            }
-            catch (Exception ex)
-            {
-                var respon = new ResponData<object?>(false, ex.Message);
-                return StatusCode(500, respon);
-            }
+            return await handler.ActionAsync<Transaction, TransactionRespon>("tx_all_tenant", userId: userId);
         }
 
         [HttpPost]
-        public async Task<IActionResult> Store(TransactionDto transactionDto)
+        public async Task<IActionResult> Store([FromBody] TransactionDto transactionDto)
         {
-            try
-            {
-                var transaction = await _paymentService.ProcessTransaction(transactionDto);
+            var handler = (SaveData)_factory.CreateMethod("save");
 
-                var completeData = dbContext.Transactions
-                    .Include(t => t.Details)
-                    .FirstOrDefault(t => t.Id == transaction.Id);
-
-                var respon = new ResponData<TransactionRespon>(true, _mapper.Map<TransactionRespon>(completeData), "Berhasil menambahkan transaksi (Orderan Masuk & Menunggu Pembayaran)");
-
-                return Ok(respon);
-            }
-            catch (Exception ex)
-            {
-                var respon = new ResponData<object?>(false, ex.Message);
-                return BadRequest(respon);
-            }
+            return await handler.ActionAsync<Transaction, TransactionDto, TransactionRespon>(
+                subAction: "tx_store",
+                data: transactionDto,
+                httpMethod: "POST"
+            );
         }
 
         [HttpPost("pay/{id:int}")]
         public async Task<IActionResult> Pay(int id, [FromBody] PaymentDto paymentDto)
         {
-            try
-            {
-                var success = await _paymentService.UpdateStatus(id, PaymentTrigger.Pay, paymentDto);
+            var handler = (SaveData)_factory.CreateMethod("save");
 
-                if (!success)
-                {
-                    return BadRequest(new ResponData<object?>(false, "Gagal memproses pembayaran. Pastikan ID benar atau status saat ini valid."));
-                }
-
-                var transaction = await dbContext.Transactions
-                    .Include(t => t.Details)
-                    .FirstOrDefaultAsync(t => t.Id == id);
-
-                var result = _mapper.Map<TransactionRespon>(transaction);
-
-                var respon = new ResponData<TransactionRespon>(true, result, "Pembayaran sukses dicatat, stok telur berhasil dikurangi, dan pesanan SIAP DIAMBIL.");
-
-                return Ok(respon);
-            }
-            catch (Exception ex)
-            {
-                var respon = new ResponData<object?>(false, ex.Message);
-                return BadRequest(respon);
-            }
+            return await handler.ActionAsync<Transaction, PaymentDto, TransactionRespon>(
+                subAction: "tx_pay",
+                data: paymentDto,
+                httpMethod: "POST",
+                id: id
+            );
         }
 
         [HttpPost("cancel/{id:int}")]
         public async Task<IActionResult> Cancel(int id)
         {
-            try
-            {
-                var success = await _paymentService.UpdateStatus(id, PaymentTrigger.Cancel, null);
+            var handler = (SaveData)_factory.CreateMethod("save");
 
-                if (!success)
-                {
-                    return BadRequest(new ResponData<object?>(false, "Transaksi tidak ditemukan atau tidak dapat dibatalkan pada status saat ini."));
-                }
-
-                var transaction = await dbContext.Transactions
-                    .Include(t => t.Details)
-                    .FirstOrDefaultAsync(t => t.Id == id);
-
-                var respon = new ResponData<TransactionRespon>(true, _mapper.Map<TransactionRespon>(transaction), "Transaksi dan pesanan telah berhasil dibatalkan.");
-
-                return Ok(respon);
-            }
-            catch (Exception ex)
-            {
-                var respon = new ResponData<object?>(false, ex.Message);
-                return BadRequest(respon);
-            }
+            return await handler.ActionAsync<Transaction, object, TransactionRespon>(
+                subAction: "tx_cancel",
+                data: new object(),
+                httpMethod: "POST",
+                id: id
+            );
         }
 
         [HttpPost("complete/{id:int}")]
         public async Task<IActionResult> CompleteOrder(int id)
         {
-            try
-            {
-                var transaction = await dbContext.Transactions
-                    .Include(t => t.Details)
-                    .FirstOrDefaultAsync(t => t.Id == id);
+            var handler = (SaveData)_factory.CreateMethod("save");
 
-                if (transaction == null)
-                {
-                    return NotFound(new ResponData<object?>(false, "Transaksi tidak ditemukan."));
-                }
-
-                var isUpdated = _orderService.UpdateOrderStatus(transaction, OrderTrigger.PickedUp);
-
-                if (!isUpdated)
-                {
-                    return BadRequest(new ResponData<object?>(false, "Gagal menyelesaikan pesanan. Pastikan status pesanan saat ini adalah 'ReadyForPickup' (Siap Diambil)."));
-                }
-
-                await dbContext.SaveChangesAsync();
-
-                var respon = new ResponData<TransactionRespon>(true, _mapper.Map<TransactionRespon>(transaction), "Pesanan selesai! Telur telah diambil oleh pelanggan.");
-
-                return Ok(respon);
-            }
-            catch (Exception ex)
-            {
-                var respon = new ResponData<object?>(false, ex.Message);
-                return StatusCode(500, respon);
-            }
+            return await handler.ActionAsync<Transaction, object, TransactionRespon>(
+                subAction: "tx_complete",
+                data: new object(),
+                httpMethod: "POST",
+                id: id
+            );
         }
     }
 }
