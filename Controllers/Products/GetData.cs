@@ -36,6 +36,8 @@ namespace sipetok_api.Controllers.Products
 
                     // --- Spesifik Modul ---
                     "get_my_tenant" => await HandleGetMyTenantAsync<TResponse>(userId),
+
+                    "get_tx_by_id" => await HandleGetTransactionByIdAsync<TResponse>(id, userId),
                     "tx_all_tenant" => await HandleGetTransactionsByTenantAsync<TResponse>(userId),
 
                     _ => new BadRequestObjectResult(new ResponData<object>(false, $"Sub-action '{subAction}' tidak dikenali."))
@@ -81,6 +83,24 @@ namespace sipetok_api.Controllers.Products
                 .ToListAsync();
 
             return new OkObjectResult(new ResponData<List<TResponse>>(true, _mapper.Map<List<TResponse>>(data), "Berhasil mengambil transaksi tenant"));
+        }
+        
+        private async Task<IActionResult> HandleGetTransactionByIdAsync<TResponse>(int? id, int? userId)
+        {
+            var transaction = await _dbContext.Transactions
+                .Include(t => t.Details)
+                    .ThenInclude(d => d.Category)
+                .FirstOrDefaultAsync(t => t.Id == (id ?? 0));
+
+            if (transaction == null)
+                return new NotFoundObjectResult(new ResponData<object>(false, "Transaksi tidak ditemukan"));
+
+            // Opsional: Validasi apakah user ini pemilik tenant yang bersangkutan
+            // Jika tidak ingin validasi kepemilikan, hapus blok if di bawah
+            if (transaction.Tenant!.UserId != (userId ?? 0))
+                return new ObjectResult(new ResponData<object>(false, "Akses ditolak")) { StatusCode = 403 };
+
+            return new OkObjectResult(new ResponData<TResponse>(true, _mapper.Map<TResponse>(transaction), "Berhasil mengambil data transaksi"));
         }
         #endregion
     }

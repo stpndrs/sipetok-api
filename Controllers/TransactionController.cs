@@ -34,6 +34,15 @@ namespace sipetok_api.Controllers
 
             return await handler.ActionAsync<Transaction, TransactionRespon>("tx_all_tenant", userId: userId);
         }
+        [HttpGet("{id:int}")]
+        public async Task<IActionResult> GetTransactionById(int id)
+        {
+            int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
+            var worker = (GetData)_factory.CreateMethod("get");
+
+            // Panggil dengan subAction "get_tx_by_id"
+            return await worker.ActionAsync<Transaction, TransactionRespon>("get_tx_by_id", id, userId);
+        }
 
         [HttpPost]
         public async Task<IActionResult> Store([FromBody] TransactionDto transactionDto)

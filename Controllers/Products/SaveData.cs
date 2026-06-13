@@ -177,7 +177,7 @@ namespace sipetok_api.Controllers.Products
         {
             if (data is not PaymentDto paymentDto) return InvalidDtoResponse();
 
-            var success = await _paymentService!.UpdateStatus(id ?? 0, PaymentTrigger.Pay, _orderService!, OrderTrigger.PaymentSucceeded, paymentDto);
+            var success = await _paymentService!.UpdateStatus(id ?? 0, PaymentTrigger.Pay, paymentDto);
             if (!success) return new BadRequestObjectResult(new ResponData<object>(false, "Gagal memproses pembayaran. Pastikan ID benar atau status saat ini valid."));
 
             var transaction = await _dbContext.Transactions
@@ -189,7 +189,7 @@ namespace sipetok_api.Controllers.Products
 
         private async Task<IActionResult> HandleTxCancelAsync<TResponse>(int? id)
         {
-            var success = await _paymentService!.UpdateStatus(id ?? 0, PaymentTrigger.Cancel, _orderService!, OrderTrigger.CancelledByCustomer, null);
+            var success = await _paymentService!.UpdateStatus(id ?? 0, PaymentTrigger.Cancel, null);
             if (!success) return new BadRequestObjectResult(new ResponData<object>(false, "Transaksi tidak ditemukan atau tidak dapat dibatalkan pada status saat ini."));
 
             var transaction = await _dbContext.Transactions
