@@ -7,6 +7,10 @@ using sipetok_api.dto.Request;
 using sipetok_api.dto.Respon;
 using sipetok_api.Services;
 using sipetok_api.Utils;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace sipetok_api.Controllers
 {
@@ -49,7 +53,6 @@ namespace sipetok_api.Controllers
             catch (Exception ex)
             {
                 var respon = new ResponData<object?>(false, ex.Message);
-
                 return StatusCode(500, respon);
             }
         }
@@ -72,7 +75,6 @@ namespace sipetok_api.Controllers
             catch (Exception ex)
             {
                 var respon = new ResponData<object?>(false, ex.Message);
-
                 return BadRequest(respon);
             }
         }
@@ -82,7 +84,7 @@ namespace sipetok_api.Controllers
         {
             try
             {
-                var success = await _paymentService.UpdateStatus(id, PaymentTrigger.Pay, _orderService, OrderTrigger.PaymentSucceeded, paymentDto);
+                var success = await _paymentService.UpdateStatus(id, PaymentTrigger.Pay, paymentDto);
 
                 if (!success)
                 {
@@ -102,7 +104,6 @@ namespace sipetok_api.Controllers
             catch (Exception ex)
             {
                 var respon = new ResponData<object?>(false, ex.Message);
-
                 return BadRequest(respon);
             }
         }
@@ -112,7 +113,7 @@ namespace sipetok_api.Controllers
         {
             try
             {
-                var success = await _paymentService.UpdateStatus(id, PaymentTrigger.Cancel, _orderService, OrderTrigger.CancelledByCustomer, null);
+                var success = await _paymentService.UpdateStatus(id, PaymentTrigger.Cancel, null);
 
                 if (!success)
                 {
@@ -130,7 +131,6 @@ namespace sipetok_api.Controllers
             catch (Exception ex)
             {
                 var respon = new ResponData<object?>(false, ex.Message);
-
                 return BadRequest(respon);
             }
         }
@@ -165,7 +165,6 @@ namespace sipetok_api.Controllers
             catch (Exception ex)
             {
                 var respon = new ResponData<object?>(false, ex.Message);
-
                 return StatusCode(500, respon);
             }
         }
