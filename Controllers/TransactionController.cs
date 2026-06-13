@@ -36,7 +36,7 @@ namespace sipetok_api.Controllers
                 int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
 
                 var data = dbContext.Transactions
-                    .Include(t => t.Details)
+                    .Include(t => t.Details).ThenInclude(d => d.Category)
                     .Where(t => t.Tenant!.UserId == userId)
                     .ToList();
 
