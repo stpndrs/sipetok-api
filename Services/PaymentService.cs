@@ -3,12 +3,17 @@ using sipetok_api.Data;
 using sipetok_api.dto.Request;
 using sipetok_api.Models;
 using sipetok_api.Utils;
+using sipetok_api.Observers;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace sipetok_api.Services
 {
-    public class PaymentService
+    public class PaymentService : IPaymentSubject
     {
         private readonly AppDbContext dbContext;
+        private readonly List<IPaymentObserver> _observers = new List<IPaymentObserver>();
 
         private static readonly Dictionary<(PaymentState, PaymentTrigger), PaymentState> _transitions =
             new Dictionary<(PaymentState, PaymentTrigger), PaymentState>
@@ -17,24 +22,52 @@ namespace sipetok_api.Services
             { (PaymentState.WaitingForPayment, PaymentTrigger.Cancel), PaymentState.Cancelled },
         };
 
-        public PaymentService(AppDbContext context)
+        public PaymentService(AppDbContext context, OrderService orderService)
         {
             dbContext = context;
+
+            var stockObserver = new StockObserver(dbContext);
+            this.Attach(stockObserver);
+            this.Attach(orderService);
         }
 
-        // 1. ALUR PEMBUATAN TRANSAKSI AWAL (Belum Ada Pembayaran)
+        public void Attach(IPaymentObserver observer)
+        {
+            this._observers.Add(observer);
+        }
+
+        public void Detach(IPaymentObserver observer)
+        {
+            this._observers.Remove(observer);
+        }
+
+        public async Task NotifyPaymentSuccess(Transaction transaction)
+        {
+            foreach (var observer in _observers)
+            {
+                await observer.OnPaymentSuccess(transaction);
+            }
+        }
+
+        public async Task NotifyPaymentCancelled(Transaction transaction)
+        {
+            foreach (var observer in _observers)
+            {
+                await observer.OnPaymentCancelled(transaction);
+            }
+        }
+
         public virtual async Task<Transaction> ProcessTransaction(TransactionDto dto)
         {
             using var transactionScope = await dbContext.Database.BeginTransactionAsync();
             try
             {
                 decimal totalPrice = 0;
-
                 var transaction = new Transaction
                 {
                     Date = dto.Date,
-                    PaymentAmount = 0, // Set awal 0 karena belum dibayar
-                    TotalPrice = 0,    // Akan dihitung otomatis dari detail di bawah
+                    PaymentAmount = 0,
+                    TotalPrice = 0,
                     TenantId = dto.TenantId,
                     PaymentStatus = PaymentState.WaitingForPayment,
                     OrderStatus = OrderState.OrderComeIn,
@@ -49,13 +82,8 @@ namespace sipetok_api.Services
                 {
                     foreach (var d in dto.Details)
                     {
-                        var eggCategory = await dbContext.EggCategories
-                            .FindAsync(d.CategoryId);
-
-                        if (eggCategory == null)
-                        {
-                            throw new Exception($"Kategori telur dengan ID {d.CategoryId} tidak ditemukan.");
-                        }
+                        var eggCategory = await dbContext.EggCategories.FindAsync(d.CategoryId);
+                        if (eggCategory == null) throw new Exception($"Kategori telur dengan ID {d.CategoryId} tidak ditemukan.");
 
                         decimal priceAtPurchase = eggCategory.Price;
                         decimal subtotal = (decimal)d.Quantity * priceAtPurchase;
@@ -70,11 +98,9 @@ namespace sipetok_api.Services
                             PriceAtPurchase = priceAtPurchase
                         });
                     }
-
                     transaction.TotalPrice = totalPrice;
                     await dbContext.SaveChangesAsync();
                 }
-
                 await transactionScope.CommitAsync();
                 return transaction;
             }
@@ -85,13 +111,9 @@ namespace sipetok_api.Services
             }
         }
 
-        // 2. ALUR UPDATE STATUS & PROSES PEMBAYARAN NYATA
-        // Sekarang menggunakan PaymentDto untuk menangkap payload uang yang dibayarkan
         public virtual async Task<bool> UpdateStatus(
             int id,
             PaymentTrigger paymentTrigger,
-            OrderService orderService,
-            OrderTrigger orderTrigger,
             PaymentDto? paymentDto = null)
         {
             using var dbTransaction = await dbContext.Database.BeginTransactionAsync();
@@ -104,70 +126,28 @@ namespace sipetok_api.Services
 
                 if (transaksi == null) return false;
 
-                // Validasi & Transisi Status Pembayaran
                 if (_transitions.TryGetValue((transaksi.PaymentStatus, paymentTrigger), out PaymentState nextPaymentState))
                 {
-                    // Jika aksi dipicu oleh tombol 'Pay', validasi isi nominal dari PaymentDto
                     if (paymentTrigger == PaymentTrigger.Pay)
                     {
                         if (paymentDto == null || paymentDto.PaymentAmount <= 0)
-                        {
                             throw new Exception("Jumlah pembayaran (Payment Amount) tidak valid atau tidak dikirim.");
-                        }
 
                         if (paymentDto.PaymentAmount < transaksi.TotalPrice)
-                        {
                             throw new Exception($"Uang yang dibayarkan (Rp {paymentDto.PaymentAmount}) kurang dari total tagihan (Rp {transaksi.TotalPrice}).");
-                        }
 
-                        // Isi PaymentAmount transaksi dengan nominal asli dari dto baru
                         transaksi.PaymentAmount = paymentDto.PaymentAmount;
                     }
 
-                    // LOGIKA PENGURANGAN STOK (FIFO - First In First Out)
-                    if (nextPaymentState == PaymentState.Success)
-                    {
-                        foreach (var detail in transaksi.Details)
-                        {
-                            var availableEggs = await dbContext.Eggs
-                                .Where(e => e.CategoryId == detail.CategoryId && e.Stock > 0)
-                                .OrderBy(e => e.ProductionDate)
-                                .ToListAsync();
-
-                            double totalAvailableStock = availableEggs.Sum(e => e.Stock);
-
-                            if (totalAvailableStock < detail.Quantity)
-                            {
-                                throw new Exception($"Stok telur tidak mencukupi! Total stok tersedia: {totalAvailableStock}, jumlah dibeli: {detail.Quantity}");
-                            }
-
-                            double quantityToDeduct = detail.Quantity;
-                            foreach (var eggData in availableEggs)
-                            {
-                                if (quantityToDeduct <= 0) break;
-
-                                if (eggData.Stock >= quantityToDeduct)
-                                {
-                                    eggData.Stock -= quantityToDeduct;
-                                    quantityToDeduct = 0;
-                                }
-                                else
-                                {
-                                    quantityToDeduct -= eggData.Stock;
-                                    eggData.Stock = 0;
-                                }
-                            }
-                        }
-                    }
-
-                    // Set status pembayaran ke state berikutnya (Success / Cancelled)
                     transaksi.PaymentStatus = nextPaymentState;
 
-                    // SINKRONISASI STATUS ORDER (OrderState)
-                    var isOrderUpdated = orderService.UpdateOrderStatus(transaksi, orderTrigger);
-                    if (!isOrderUpdated)
+                    if (nextPaymentState == PaymentState.Success)
                     {
-                        throw new Exception($"Transisi status pesanan tidak valid dari '{transaksi.OrderStatus}' dengan trigger '{orderTrigger}'.");
+                        await NotifyPaymentSuccess(transaksi);
+                    }
+                    else if (nextPaymentState == PaymentState.Cancelled)
+                    {
+                        await NotifyPaymentCancelled(transaksi);
                     }
 
                     await dbContext.SaveChangesAsync();
