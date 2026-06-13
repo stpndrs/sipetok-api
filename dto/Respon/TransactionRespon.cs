@@ -11,14 +11,14 @@ namespace sipetok_api.dto.Respon
         public int TenantId { get; set; }
         public string CustomerName { get; set; } = string.Empty;
         public string CustomerPhoneNumber { get; set; } = string.Empty;
-        public PaymentState Status { get; set; } = PaymentState.WaitingForPayment;
+        public PaymentState PaymentStatus { get; set; } = PaymentState.WaitingForPayment;
         public OrderState OrderStatus { get; set; } = OrderState.OrderComeIn;
 
         public virtual ICollection<TransactionDetailRespon> Details { get; set; } = new List<TransactionDetailRespon>();
 
         public TransactionRespon() { }
 
-        public TransactionRespon(int Id, decimal PaymentAmount, decimal TotalPrice, int TenantId, int customer_id, string CustomerName, string CustomerPhoneNumber)
+        public TransactionRespon(int Id, decimal PaymentAmount, decimal TotalPrice, int TenantId, string CustomerName, string CustomerPhoneNumber, int PaymentStatus, int OrderStatus)
         {
             this.Id = Id;
             this.Date = DateTime.Now;
@@ -27,6 +27,8 @@ namespace sipetok_api.dto.Respon
             this.TenantId = TenantId;
             this.CustomerName = CustomerName;
             this.CustomerPhoneNumber = CustomerPhoneNumber;
+            this.PaymentStatus = (PaymentState)PaymentStatus;
+            this.OrderStatus = (OrderState)OrderStatus;
         }
     }
 }
