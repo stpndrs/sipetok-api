@@ -26,7 +26,7 @@ namespace sipetok_api.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "CUSTOMER")]
+        [Authorize(Roles = "TENANT")]
         public IActionResult GetAllEggs()
         {
             try
