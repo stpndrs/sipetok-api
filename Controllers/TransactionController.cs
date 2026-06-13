@@ -54,11 +54,46 @@ namespace sipetok_api.Controllers
             }
         }
 
+        [HttpGet]
+        [Route("{id:int}")]
+        public async Task<IActionResult> GetTransactionById(int id)
+        {
+            try
+            {
+                var data = dbContext.Transactions
+                            .Include(t => t.Details)
+                                .ThenInclude(d => d.Category)
+                            .FirstOrDefault(t => t.Id == id);
+
+                var result = _mapper.Map<TransactionRespon>(data);
+
+                var respon = new ResponData<TransactionRespon>(true, result, "Berhasil mengambil data transaksi");
+
+                return Ok(respon);
+            }
+            catch (Exception ex)
+            {
+                var respon = new ResponData<object?>(false, ex.Message);
+
+                return BadRequest(respon);
+            }
+        }
+
         [HttpPost]
         public async Task<IActionResult> Store(TransactionDto transactionDto)
         {
             try
             {
+                int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
+                var tenant = dbContext.Tenants
+                    .FirstOrDefault(t => t.UserId == userId);
+
+                if (tenant == null)
+                {
+                    return BadRequest(new ResponData<object?>(false, "Data tenant tidak ditemukan."));
+                }
+
+                transactionDto.TenantId = tenant.Id;
                 var transaction = await _paymentService.ProcessTransaction(transactionDto);
 
                 var completeData = dbContext.Transactions
