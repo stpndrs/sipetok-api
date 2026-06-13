@@ -76,7 +76,7 @@ namespace sipetok_api.Controllers.Products
         private async Task<IActionResult> HandleGetTransactionsByTenantAsync<TResponse>(int? userId)
         {
             var data = await _dbContext.Transactions
-                .Include(t => t.Details)
+                .Include(t => t.Details).ThenInclude(d => d.Category)
                 .Where(t => t.Tenant!.UserId == (userId ?? 0))
                 .ToListAsync();
 
