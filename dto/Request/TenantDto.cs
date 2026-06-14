@@ -15,11 +15,12 @@ namespace sipetok_api.dto.Request
         public virtual UserDto? User { get; set; }
         public TenantDto() { }
 
-        public TenantDto(string Name, string Address, string PhoneNumber)
+        public TenantDto(string Name, string Address, string PhoneNumber, bool IsValid)
         {
             this.Name = Name;
             this.Address = Address;
             this.PhoneNumber = PhoneNumber;
+            this.IsValid = IsValid;
         }
     }
 }
