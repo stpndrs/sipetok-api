@@ -19,7 +19,6 @@ var keyString = jwtSection["JWT_KEY"];
 
 if (string.IsNullOrEmpty(keyString))
 {
-    // Mencegah aplikasi jalan tanpa kunci rahasia
     throw new Exception("JWT Key is missing in appsettings.json! Check configProperties:JWT:JWT_KEY");
 }
 
@@ -50,25 +49,28 @@ builder.Services.AddControllers()
         };
     });
 
-// untuk panggil config service
+// Panggil konfigurasi service bawaan aplikasi
 builder.Services.AddApplicationServices();
+
+// PERBAIKAN: Registrasi TenantFactory untuk mengatasi error 'Unable to resolve service' sebelumnya
+builder.Services.AddScoped<sipetok_api.Controllers.Factories.TenantFactory>();
+builder.Services.AddScoped<sipetok_api.Controllers.Factories.EggFactory>();
+builder.Services.AddScoped<sipetok_api.Controllers.Factories.EggCategoryFactory>();
+builder.Services.AddScoped<sipetok_api.Controllers.Factories.TransactionFactory>();
+builder.Services.AddScoped<sipetok_api.Controllers.Factories.OperationalFactory>();
+builder.Services.AddScoped<sipetok_api.Controllers.Factories.UserFactory>();
 
 // 2. OpenAPI / Swagger
 builder.Services.AddOpenApi();
 
-// 3. Database Connection
-
+// 3. Database Connection (Cukup bersihkan dan panggil 1 kali saja)
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-var connection = builder.Services.AddDbContext<AppDbContext>(options =>
+builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseMySQL(connectionString));
-Console.WriteLine("test koneksi" + connection);
-var connection2 = builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseMySQL(connectionString));
-Console.WriteLine("test2" + connection2);
-Console.WriteLine(connection2 == connection);
 
 // 4. AutoMapper
 builder.Services.AddAutoMapper(typeof(MappingProfile));
+
 // --- 5. AUTHENTICATION & AUTHORIZATION ---
 builder.Services.AddAuthentication(options =>
 {
@@ -90,7 +92,6 @@ builder.Services.AddAuthentication(options =>
 
     options.Events = new JwtBearerEvents
     {
-        // Menangani 403 Forbidden (Sudah Login tapi Role Tidak Sesuai)
         OnForbidden = async context =>
         {
             context.Response.ContentType = "application/json";
@@ -108,7 +109,6 @@ builder.Services.AddAuthentication(options =>
 
         OnChallenge = async context =>
         {
-            // Lewati penanganan bawaan ASP.NET agar tidak bentrok
             context.HandleResponse();
 
             context.Response.ContentType = "application/json";
@@ -128,7 +128,6 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization(options =>
 {
-    // Policy untuk mengecek apakah user aktif
     options.AddPolicy("ActiveUser", policy =>
         policy.RequireClaim("status", "active"));
 });
@@ -136,14 +135,17 @@ builder.Services.AddAuthorization(options =>
 // --- 6. BUILD APP ---
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
 
 app.UseHttpsRedirection();
+
+// PERBAIKAN UTAMA: Wajib jalankan UseAuthentication() SEBELUM UseAuthorization()
+app.UseAuthentication(); 
 app.UseAuthorization();
+
 app.MapControllers();
 
 app.Run();

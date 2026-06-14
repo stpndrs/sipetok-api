@@ -25,7 +25,7 @@ namespace sipetok_api.Controllers
         public async Task<IActionResult> GetAllTenant()
         {
             var handler = (GetData)_factory.CreateMethod("get");
-            return await handler.ActionAsync<Tenant, TenantRespon>("tenant_all");
+            return await handler.ActionAsync<Tenant, TenantRespon>("getall");
         }
 
         [HttpGet]
