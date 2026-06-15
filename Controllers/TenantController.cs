@@ -52,7 +52,7 @@ namespace sipetok_api.Controllers
         public async Task<IActionResult> AddTenant([FromBody] TenantDto tenantDto)
         {
             var handler = (SaveData)_factory.CreateMethod("save");
-            return await handler.ActionAsync<Tenant, TenantDto, TenantRespon>(
+            return await handler.ActionAsync<Tenant, TenantRespon>(
                 subAction: "add_tenant",
                 data: tenantDto,
                 httpMethod: "POST"
@@ -65,7 +65,7 @@ namespace sipetok_api.Controllers
         public async Task<IActionResult> UpdateTenant(int id, [FromBody] TenantDto tenantDto)
         {
             var handler = (SaveData)_factory.CreateMethod("save");
-            return await handler.ActionAsync<Tenant, TenantDto, TenantRespon>(
+            return await handler.ActionAsync<Tenant, TenantRespon>(
                 subAction: "update_tenant",
                 data: tenantDto,
                 httpMethod: "PUT",
@@ -80,7 +80,7 @@ namespace sipetok_api.Controllers
         {
             int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
             var handler = (SaveData)_factory.CreateMethod("save");
-            return await handler.ActionAsync<Tenant, TenantDto, TenantRespon>(
+            return await handler.ActionAsync<Tenant, TenantRespon>(
                 subAction: "update_myprofile",
                 data: tenantDto,
                 httpMethod: "PUT",
@@ -95,7 +95,7 @@ namespace sipetok_api.Controllers
         {
             var handler = (SaveData)_factory.CreateMethod("save");
             // Karena tidak mengirim object body, kita isi data dengan object kosong / dummy
-            return await handler.ActionAsync<Tenant, object, TenantRespon>(
+            return await handler.ActionAsync<Tenant, TenantRespon>(
                 subAction: "validate_tenant",
                 data: new object(),
                 httpMethod: "POST",
@@ -109,7 +109,7 @@ namespace sipetok_api.Controllers
         public async Task<IActionResult> DeleteTenant(int id)
         {
             var handler = (DeleteData)_factory.CreateMethod("delete");
-            return await handler.ActionAsync<Tenant>("delete_tenant", id: id);
+            return await handler.ActionAsync<Tenant, TenantRespon>("delete_tenant", id: id);
         }
     }
 }

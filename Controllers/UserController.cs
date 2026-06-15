@@ -54,7 +54,7 @@ namespace sipetok_api.Controllers
         public async Task<IActionResult> AddUser([FromBody] UserDto userDto)
         {
             var worker = (SaveData)_factory.CreateMethod("save");
-            return await worker.ActionAsync<User, UserDto, UserRespon>("add_user", userDto, "POST");
+            return await worker.ActionAsync<User, UserRespon>("add_user", userDto, "POST");
         }
 
         [HttpPut("{id:int}")]
@@ -62,7 +62,7 @@ namespace sipetok_api.Controllers
         public async Task<IActionResult> UpdateUser(int id, [FromBody] UserDto userDto)
         {
             var worker = (SaveData)_factory.CreateMethod("save");
-            return await worker.ActionAsync<User, UserDto, UserRespon>("update_user", userDto, "PUT", id);
+            return await worker.ActionAsync<User, UserRespon>("update_user", userDto, "PUT", id);
         }
 
         [HttpDelete("{id:int}")]
@@ -70,7 +70,7 @@ namespace sipetok_api.Controllers
         public async Task<IActionResult> DeleteUser(int id)
         {
             var worker = (DeleteData)_factory.CreateMethod("delete");
-            return await worker.ActionAsync<User>("delete_user", id);
+            return await worker.ActionAsync<User, UserRespon>("delete_user", id);
         }
     }
 }

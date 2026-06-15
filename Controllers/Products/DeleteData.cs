@@ -4,11 +4,12 @@ using sipetok_api.Data;
 using sipetok_api.dto.Respon;
 using sipetok_api.Models;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace sipetok_api.Controllers.Products
 {
-    public class DeleteData
+    public class DeleteData : IMethod // 1. Daftarkan Interface IMethod di sini
     {
         private readonly AppDbContext _dbContext;
 
@@ -17,13 +18,27 @@ namespace sipetok_api.Controllers.Products
             _dbContext = dbContext;
         }
 
-        public async Task<IActionResult> ActionAsync<TEntity>(string subAction, int? id = null, int? userId = null) where TEntity : class
+        // =========================================================================
+        // 1. INTERFACE: KHUSUS TERIMA DATA (GET) -> Di-throw karena bukan tugas Delete
+        // =========================================================================
+        public Task<IActionResult> ActionAsync<TEntity, TResponse>(
+            string subAction, int? id = null, int? userId = null) where TEntity : class
+        {
+            throw new NotImplementedException("Operasi TERIMA data (GET) tidak didukung di DeleteData.");
+        }
+
+        // =========================================================================
+        // 2. INTERFACE: KHUSUS HAPUS/KIRIM DATA (Menggunakan TResponse sebagai object)
+        // =========================================================================
+        public async Task<IActionResult> ActionAsync<TEntity, TResponse>(
+            string subAction, object data, string httpMethod, int? id = null, int? userId = null) where TEntity : class
         {
             try
             {
                 string entityName = typeof(TEntity).Name;
                 string action = subAction?.ToLower()?.Trim() ?? string.Empty;
 
+                // Memproses routing utama penghapusan data milikmu
                 return action switch
                 {
                     // --- SOFT DELETE HANDLERS ---

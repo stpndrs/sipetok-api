@@ -60,7 +60,7 @@ namespace sipetok_api.Controllers
             // Panggil factory untuk mendapatkan objek SaveData
             var handler = (SaveData)_factory.CreateMethod("save");
 
-            return await handler.ActionAsync<EggCategory, EggCategoryDto, EggCategoryRespon>(
+            return await handler.ActionAsync<EggCategory, EggCategoryRespon>(
                 subAction: "add_category",
                 data: eggCategoryDto,
                 httpMethod: "POST",
@@ -76,7 +76,7 @@ namespace sipetok_api.Controllers
             int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
             var handler = (SaveData)_factory.CreateMethod("save");
 
-            return await handler.ActionAsync<EggCategory, EggCategoryDto, EggCategoryRespon>(
+            return await handler.ActionAsync<EggCategory, EggCategoryRespon>(
                 subAction: "update_category",
                 data: eggCategoryDto,
                 httpMethod: "PUT",
@@ -95,7 +95,7 @@ namespace sipetok_api.Controllers
             // Panggil factory untuk mendapatkan objek DeleteData
             var handler = (DeleteData)_factory.CreateMethod("delete");
 
-            return await handler.ActionAsync<EggCategory>(
+            return await handler.ActionAsync<EggCategory, EggCategoryRespon>(
                 subAction: "delete_category",
                 id: id,
                 userId: userId

@@ -49,7 +49,7 @@ namespace sipetok_api.Controllers
             int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
             var handler = (SaveData)_factory.CreateMethod("save");
 
-            return await handler.ActionAsync<Egg, EggDto, EggRespon>(
+            return await handler.ActionAsync<Egg, EggRespon>(
                 subAction: "add_egg",
                 data: eggDto,
                 httpMethod: "POST",
@@ -64,7 +64,7 @@ namespace sipetok_api.Controllers
         {
             var handler = (SaveData)_factory.CreateMethod("save");
 
-            return await handler.ActionAsync<Egg, EggDto, EggRespon>(
+            return await handler.ActionAsync<Egg, EggRespon>(
                 subAction: "update_egg",
                 data: eggDto,
                 httpMethod: "PUT",
@@ -78,7 +78,7 @@ namespace sipetok_api.Controllers
         public async Task<IActionResult> DeleteEgg(int id)
         {
             var handler = (DeleteData)_factory.CreateMethod("delete");
-            return await handler.ActionAsync<Egg>("delete_egg", id: id);
+            return await handler.ActionAsync<Egg, EggRespon>("delete_egg", id: id);
         }
     }
 }

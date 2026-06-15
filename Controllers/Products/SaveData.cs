@@ -9,7 +9,6 @@ using sipetok_api.dto.Respon;
 using sipetok_api.Models;
 using sipetok_api.Services;
 using sipetok_api.Utils;
-using sipetok_api.Services; // Pastikan namespace AccountRoleTableDriven ada di sini
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
@@ -20,21 +19,20 @@ using System.Threading.Tasks;
 
 namespace sipetok_api.Controllers.Products
 {
-    public class SaveData
+    public class SaveData : IMethod
     {
         private readonly AppDbContext _dbContext;
         private readonly IMapper _mapper;
-        private readonly IConfiguration? _config; // Ditambahkan untuk JWT Auth
+        private readonly IConfiguration? _config;
         private readonly PaymentService? _paymentService;
         private readonly OrderService? _orderService;
 
-        // Constructor dibuat fleksibel dengan parameter opsional
         public SaveData(
             AppDbContext dbContext,
             IMapper mapper,
             PaymentService? paymentService = null,
             OrderService? orderService = null,
-            IConfiguration? config = null) // Tambahan parameter konfigurasi JWT
+            IConfiguration? config = null)
         {
             _dbContext = dbContext;
             _mapper = mapper;
@@ -43,8 +41,16 @@ namespace sipetok_api.Controllers.Products
             _config = config;
         }
 
-        public async Task<IActionResult> ActionAsync<TEntity, TRequest, TResponse>(
-            string subAction, TRequest data, string httpMethod, int? id = null, int? userId = null) where TEntity : class
+        // 1. INTERFACE: KHUSUS TERIMA DATA (Ditangani oleh GetData.cs)
+        public Task<IActionResult> ActionAsync<TEntity, TResponse>(
+            string subAction, int? id = null, int? userId = null) where TEntity : class
+        {
+            throw new NotImplementedException("Operasi TERIMA data (GET) tidak didukung di SaveData. Gunakan GetData.");
+        }
+
+        // 2. INTERFACE: KHUSUS KIRIM DATA (POST / PUT)
+        public async Task<IActionResult> ActionAsync<TEntity, TResponse>(
+            string subAction, object data, string httpMethod, int? id = null, int? userId = null) where TEntity : class
         {
             try
             {
@@ -52,7 +58,7 @@ namespace sipetok_api.Controllers.Products
                 string action = subAction.ToLower().Trim();
                 string method = httpMethod.ToUpper().Trim();
 
-                // Router Utama menggunakan Switch Expression (Pure API Logic)
+                //router Utama mengarahkan berdasarkan method dan subAction, lalu delegasi ke handler spesifik untuk setiap kombinasi yang sudah didefinisikan. Jika tidak ada kombinasi yang cocok, fallback ke handler generic untuk POST atau PUT.
                 return method switch
                 {
                     "POST" => action switch
@@ -93,32 +99,20 @@ namespace sipetok_api.Controllers.Products
             }
         }
 
-        #region AUTH ACTION HANDLERS
+        
         private async Task<IActionResult> HandleRegisterAsync<TResponse>(object? data)
         {
-            if (data is not RegisterDto req) return InvalidDtoResponse();
+            if (data is not User user) return InvalidDtoResponse();
 
             try
             {
-                string passwordHash = Bcrypt.BcryptPassword(req.Password);
-                var user = new User
-                {
-                    Username = req.Username,
-                    Email = req.Email,
-                    Password = passwordHash,
-                    Role = 3, // Default Customer
-                    IsActive = true
-                };
-
                 await _dbContext.Users.AddAsync(user);
                 await _dbContext.SaveChangesAsync();
 
                 string token = CreateToken(user);
                 var authRespon = new AuthRespon(token);
 
-                // Map hasil akhir sesuai dengan TResponse yang diminta Controller (AuthRespon)
                 var mappedResult = _mapper.Map<TResponse>(authRespon);
-
                 return new OkObjectResult(new ResponData<TResponse>(true, mappedResult, "Register berhasil"));
             }
             catch (DbUpdateException ex)
@@ -126,9 +120,9 @@ namespace sipetok_api.Controllers.Products
                 if (ex.InnerException != null && (ex.InnerException.Message.Contains("Duplicate") || ex.InnerException.Message.Contains("unique")))
                 {
                     var errorDetail = new Dictionary<string, string[]>
-                    {
-                        { "Account", new[] { "Email atau Username sudah terdaftar, silakan gunakan yang lain." } }
-                    };
+            {
+                { "Account", new[] { "Email atau Username sudah terdaftar, silakan gunakan yang lain." } }
+            };
                     return new BadRequestObjectResult(new ResponValidation(errorDetail));
                 }
                 return new ObjectResult(new ResponData<object>(false, "Terjadi kesalahan saat menyimpan data ke database.")) { StatusCode = 500 };
@@ -137,30 +131,16 @@ namespace sipetok_api.Controllers.Products
 
         private async Task<IActionResult> HandleLoginAsync<TResponse>(object? data)
         {
-            if (data is not LoginDto req) return InvalidDtoResponse();
+            if (data is not User user) return InvalidDtoResponse();
 
-            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Username == req.Username);
-
-            if (user == null || !Bcrypt.VerifyPassword(req.Password, user.Password))
-            {
-                return new BadRequestObjectResult(new ResponData<object>(false, "Wrong Username or Password"));
-            }
-
-            if (!user.IsActive)
-            {
-                return new BadRequestObjectResult(new ResponData<object>(false, "Your account has been deactivated"));
-            }
-
+            // Tugas SaveData tinggal generate token dan mapping respons
             string token = CreateToken(user);
             var authRespon = new AuthRespon(token);
 
             var mappedResult = _mapper.Map<TResponse>(authRespon);
-
             return new OkObjectResult(new ResponData<TResponse>(true, mappedResult, "Login berhasil"));
         }
-        #endregion
-
-        #region POST HANDLERS (TRANSACTION STATE ENGINE & CRUD)
+        
         private async Task<IActionResult> HandleTxStoreAsync<TResponse>(object data)
         {
             if (data is not TransactionDto transactionDto) return InvalidDtoResponse();
@@ -301,9 +281,7 @@ namespace sipetok_api.Controllers.Products
             await _dbContext.SaveChangesAsync();
             return new OkObjectResult(new ResponData<TResponse>(true, _mapper.Map<TResponse>(entity), $"Successfully created new {entityName} data"));
         }
-        #endregion
-
-        #region PUT HANDLERS
+        
         private async Task<IActionResult> HandleUpdateOperationalAsync<TResponse>(int? id, object data, int? userId)
         {
             if (data is not OperationalDto editOpDto) return InvalidDtoResponse();
@@ -423,9 +401,7 @@ namespace sipetok_api.Controllers.Products
 
             return new OkObjectResult(new ResponData<TResponse>(true, _mapper.Map<TResponse>(existingRecord), $"Successfully updated {entityName} data with id {id}"));
         }
-        #endregion
-
-        #region TOKEN GENERATOR UTILITY
+        
         private string CreateToken(User user)
         {
             if (_config == null) throw new InvalidOperationException("IConfiguration belum dikonfigurasi di SaveData.");
@@ -456,9 +432,7 @@ namespace sipetok_api.Controllers.Products
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
-        #endregion
-
-        #region HELPER UTILITIES
+        
         private async Task<int> GetTenantIdByUserIdAsync(int? userId)
         {
             return await _dbContext.Tenants
@@ -476,6 +450,6 @@ namespace sipetok_api.Controllers.Products
         {
             return new BadRequestObjectResult(new ResponData<object>(false, "Format payload Request DTO tidak valid atau tidak cocok."));
         }
-        #endregion
+        
     }
 }
