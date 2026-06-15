@@ -30,7 +30,7 @@ namespace sipetok_api.Controllers
             var handler = (GetData)_factory.CreateMethod("get");
 
             // Memanggil sub-action khusus untuk mengambil stock telur berdasarkan Tenant si user
-            return await handler.ActionAsync<Egg, EggRespon>("getall", userId: userId);
+            return await handler.ActionAsync<Egg, EggRespon>("egg_all_tenant", userId: userId);
         }
 
         [HttpGet]
