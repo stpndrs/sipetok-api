@@ -25,7 +25,7 @@ namespace sipetok_api.Controllers
         {
             int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
             var handler = (GetData)_factory.CreateMethod("get");
-            return await handler.ActionAsync<Operational, OperationalRespon>("getall", userId: userId);
+            return await handler.ActionAsync<Operational, OperationalRespon>("get_all_op", userId: userId);
         }
 
         [HttpGet("{id:int}")]

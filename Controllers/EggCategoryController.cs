@@ -37,7 +37,7 @@ namespace sipetok_api.Controllers
             }
             else if (User.IsInRole("TENANT"))
             {
-                return await handler.ActionAsync<EggCategory, EggCategoryRespon>("getall", userId: userId);
+                return await handler.ActionAsync<EggCategory, EggCategoryRespon>("category_all_tenant", userId: userId);
             }
             return Forbid();
         }

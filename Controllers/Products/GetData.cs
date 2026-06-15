@@ -36,9 +36,13 @@ namespace sipetok_api.Controllers.Products
 
                     // --- Spesifik Modul ---
                     "get_my_tenant" => await HandleGetMyTenantAsync<TResponse>(userId),
+                    "get_my_user" => await HandleGetMyUserAsync<TResponse>(userId),
 
                     "get_tx_by_id" => await HandleGetTransactionByIdAsync<TResponse>(id, userId),
                     "tx_all_tenant" => await HandleGetTransactionsByTenantAsync<TResponse>(userId),
+                    "op_all_tenant" => await HandleGetAllOperationalByTenantAsync<TResponse>(userId),
+                    "category_all_tenant" => await HandleGetAllCategoryByTenantAsync<TResponse>(userId),
+                    "egg_all_tenant" => await HandleGetAllEggByTenantAsync<TResponse>(userId),
 
                     _ => new BadRequestObjectResult(new ResponData<object>(false, $"Sub-action '{subAction}' tidak dikenali."))
                 };
@@ -64,6 +68,36 @@ namespace sipetok_api.Controllers.Products
             return new OkObjectResult(new ResponData<TResponse>(true, _mapper.Map<TResponse>(record), $"Berhasil mengambil {entityName}"));
         }
 
+        private async Task<IActionResult> HandleGetAllOperationalByTenantAsync<TResponse>(int? userId)
+        {
+            var data = await _dbContext.Operationals
+                .Include(o => o.Tenant)
+                .Where(o => o.Tenant!.UserId == (userId ?? 0))
+                .ToListAsync();
+
+            return new OkObjectResult(new ResponData<List<TResponse>>(true, _mapper.Map<List<TResponse>>(data), "Berhasil mengambil data operasional tenant"));
+        }
+
+        private async Task<IActionResult> HandleGetAllCategoryByTenantAsync<TResponse>(int? userId)
+        {
+            var data = await _dbContext.EggCategories
+                .Include(c => c.Tenant)
+                .Where(c => c.Tenant!.UserId == (userId ?? 0))
+                .ToListAsync();
+
+            return new OkObjectResult(new ResponData<List<TResponse>>(true, _mapper.Map<List<TResponse>>(data), "Berhasil mengambil data kategori telur tenant"));
+        }
+
+        private async Task<IActionResult> HandleGetAllEggByTenantAsync<TResponse>(int? userId)
+        {
+            var data = await _dbContext.Eggs
+                .Include(e => e.Category).ThenInclude(c => c!.Tenant)
+                .Where(e => e.Category!.Tenant!.UserId == (userId ?? 0))
+                .ToListAsync();
+
+            return new OkObjectResult(new ResponData<List<TResponse>>(true, _mapper.Map<List<TResponse>>(data), "Berhasil mengambil data telur tenant"));
+        }
+
         private async Task<IActionResult> HandleGetMyTenantAsync<TResponse>(int? userId)
         {
             var tenant = await _dbContext.Tenants
@@ -73,6 +107,14 @@ namespace sipetok_api.Controllers.Products
             if (tenant is null) return new NotFoundObjectResult(new ResponData<object>(false, "Profil Tenant tidak ditemukan"));
 
             return new OkObjectResult(new ResponData<TResponse>(true, _mapper.Map<TResponse>(tenant), "Berhasil mengambil profil tenant"));
+        }
+
+        private async Task<IActionResult> HandleGetMyUserAsync<TResponse>(int? userId)
+        {
+            var user = await _dbContext.Users.FindAsync(userId ?? 0);
+            if (user is null) return new NotFoundObjectResult(new ResponData<object>(false, "Profil user not found"));
+
+            return new OkObjectResult(new ResponData<TResponse>(true, _mapper.Map<TResponse>(user), "Successfully retrieved user profile"));
         }
 
         private async Task<IActionResult> HandleGetTransactionsByTenantAsync<TResponse>(int? userId)
@@ -95,8 +137,6 @@ namespace sipetok_api.Controllers.Products
             if (transaction == null)
                 return new NotFoundObjectResult(new ResponData<object>(false, "Transaksi tidak ditemukan"));
 
-            // Opsional: Validasi apakah user ini pemilik tenant yang bersangkutan
-            // Jika tidak ingin validasi kepemilikan, hapus blok if di bawah
             if (transaction.Tenant!.UserId != (userId ?? 0))
                 return new ObjectResult(new ResponData<object>(false, "Akses ditolak")) { StatusCode = 403 };
 
