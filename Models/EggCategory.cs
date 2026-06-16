@@ -21,7 +21,7 @@ namespace sipetok_api.Models
         [ForeignKey("TenantId")]
         public virtual Tenant? Tenant { get; set; }
 
-        public virtual ICollection<Egg> Eggs { get; set; } = new List<Egg>();
+        public virtual ICollection<EggInventory> EggInventories { get; set; } = new List<EggInventory>();
 
         public EggCategory() { }
 

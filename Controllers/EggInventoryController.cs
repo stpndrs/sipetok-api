@@ -12,12 +12,12 @@ namespace sipetok_api.Controllers
     [Authorize]
     [Route("api/eggs")]
     [ApiController]
-    public class EggController : ControllerBase
+    public class EggInventoryController : ControllerBase
     {
         private readonly ModuleFactory _factory;
 
         // Constructor sudah diperbaiki untuk menyuntikkan EggFactory
-        public EggController(EggFactory factory)
+        public EggInventoryController(EggFactory factory)
         {
             _factory = factory;
         }
@@ -30,7 +30,7 @@ namespace sipetok_api.Controllers
             IMethod handler = _factory.CreateMethod("get");
 
             // Memanggil sub-action khusus untuk mengambil stock telur berdasarkan Tenant si user
-            return await handler.ActionAsync<Egg, EggRespon>("egg_all_tenant", userId: userId);
+            return await handler.ActionAsync<EggInventory, EggRespon>("egg_all_tenant", userId: userId);
         }
 
         [HttpGet]
@@ -40,7 +40,7 @@ namespace sipetok_api.Controllers
         {
             int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
             IMethod handler = _factory.CreateMethod("get");
-            return await handler.ActionAsync<Egg, EggRespon>("get_egg_by_id", id: id, userId: userId);
+            return await handler.ActionAsync<EggInventory, EggRespon>("get_egg_by_id", id: id, userId: userId);
         }
 
         [HttpPost]
@@ -50,7 +50,7 @@ namespace sipetok_api.Controllers
             int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
             IMethod handler = _factory.CreateMethod("save");
 
-            return await handler.ActionAsync<Egg, EggRespon>(
+            return await handler.ActionAsync<EggInventory, EggRespon>(
                 subAction: "add_egg",
                 data: eggDto,
                 httpMethod: "POST",
@@ -65,7 +65,7 @@ namespace sipetok_api.Controllers
         {
             IMethod handler = _factory.CreateMethod("save");
 
-            return await handler.ActionAsync<Egg, EggRespon>(
+            return await handler.ActionAsync<EggInventory, EggRespon>(
                 subAction: "update_egg",
                 data: eggDto,
                 httpMethod: "PUT",
@@ -79,7 +79,7 @@ namespace sipetok_api.Controllers
         public async Task<IActionResult> DeleteEgg(int id)
         {
             IMethod handler = _factory.CreateMethod("delete");
-            return await handler.ActionAsync<Egg, EggRespon>("delete_egg", id: id);
+            return await handler.ActionAsync<EggInventory, EggRespon>("delete_egg", id: id);
         }
     }
 }

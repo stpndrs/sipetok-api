@@ -107,7 +107,7 @@ namespace sipetok_api.Controllers.Products
 
         private async Task<IActionResult> HandleGetAllEggByTenantAsync<TResponse>(int? userId)
         {
-            var data = await _dbContext.Eggs
+            var data = await _dbContext.EggInventories
                 .Include(e => e.Category).ThenInclude(c => c!.Tenant)
                 .Where(e => e.Category!.Tenant!.UserId == (userId ?? 0))
                 .ToListAsync();
@@ -178,7 +178,7 @@ namespace sipetok_api.Controllers.Products
 
         private async Task<IActionResult> HandleGetEggByIdAsync<TResponse>(int? id, int? userId)
         {
-            var egg = await _dbContext.Eggs
+            var egg = await _dbContext.EggInventories
                 .Include(e => e.Category).ThenInclude(c => c!.Tenant)
                 .FirstOrDefaultAsync(e => e.Id == (id ?? 0));
 
