@@ -91,13 +91,13 @@ namespace sipetok_api.Controllers
         [Authorize(Roles = "TENANT")]
         public async Task<IActionResult> DeleteEggCategory(int id)
         {
-            int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
-
-            // Panggil factory untuk mendapatkan objek DeleteData
+            var userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
             IMethod handler = _factory.CreateMethod("delete");
 
             return await handler.ActionAsync<EggCategory, EggCategoryResponseDto>(
                 subAction: "delete_category",
+                data: null,
+                httpMethod: "DELETE",
                 id: id,
                 userId: userId
             );

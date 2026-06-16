@@ -109,7 +109,15 @@ namespace sipetok_api.Controllers
         public async Task<IActionResult> DeleteTenant(int id)
         {
             IMethod handler = _factory.CreateMethod("delete");
-            return await handler.ActionAsync<Tenant, TenantRespon>("delete_tenant", id: id);
+            var userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
+            
+            return await handler.ActionAsync<Tenant, TenantRespon>(
+                subAction: "delete_tenant",
+                data: null,
+                httpMethod: "DELETE",
+                id: id,
+                userId: userId
+            );
         }
     }
 }
