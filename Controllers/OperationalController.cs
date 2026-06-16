@@ -33,7 +33,7 @@ namespace sipetok_api.Controllers
         {
             int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
             var handler = (GetData)_factory.CreateMethod("get");
-            return await handler.ActionAsync<Operational, OperationalRespon>("op_byid", id: id, userId: userId);
+            return await handler.ActionAsync<Operational, OperationalRespon>("get_op_by_id", id: id, userId: userId);
         }
 
         [HttpPost]
