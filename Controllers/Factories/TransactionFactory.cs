@@ -5,7 +5,7 @@ using sipetok_api.Services;
 
 namespace sipetok_api.Controllers.Factories
 {
-    public class TransactionFactory
+    public class TransactionFactory : ModuleFactory
     {
         private readonly AppDbContext _dbContext;
         private readonly IMapper _mapper;
@@ -20,7 +20,7 @@ namespace sipetok_api.Controllers.Factories
             _orderService = orderService;
         }
 
-        public object CreateMethod(string actionType)
+        public IMethod CreateMethod(string actionType)
         {
             // Menghindari NullReferenceException dan meratakan teks ke huruf kecil
             string action = actionType?.ToLower()?.Trim() ?? string.Empty;

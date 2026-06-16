@@ -4,7 +4,7 @@ using sipetok_api.Controllers.Products;
 
 namespace sipetok_api.Controllers.Factories
 {
-    public class TenantFactory
+    public class TenantFactory : ModuleFactory
     {
         private readonly AppDbContext _dbContext;
         private readonly IMapper _mapper;
@@ -15,7 +15,7 @@ namespace sipetok_api.Controllers.Factories
             _mapper = mapper;
         }
 
-        public object CreateMethod(string actionType)
+        public IMethod CreateMethod(string actionType)
         {
             switch (actionType.ToLower())
             {

@@ -13,7 +13,7 @@ namespace sipetok_api.Controllers
     [ApiController]
     public class TenantController : ControllerBase
     {
-        private readonly TenantFactory _factory;
+        private readonly ModuleFactory _factory;
 
         public TenantController(TenantFactory factory)
         {
@@ -24,7 +24,7 @@ namespace sipetok_api.Controllers
         [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> GetAllTenant()
         {
-            var handler = (GetData)_factory.CreateMethod("get");
+            IMethod handler = _factory.CreateMethod("get");
             return await handler.ActionAsync<Tenant, TenantRespon>("getall");
         }
 
@@ -33,7 +33,7 @@ namespace sipetok_api.Controllers
         [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> GetTenantById(int id)
         {
-            var handler = (GetData)_factory.CreateMethod("get");
+            IMethod handler = _factory.CreateMethod("get");
             return await handler.ActionAsync<Tenant, TenantRespon>("tenant_byid", id: id);
         }
 
@@ -43,7 +43,7 @@ namespace sipetok_api.Controllers
         public async Task<IActionResult> GetMyProfile()
         {
             int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
-            var handler = (GetData)_factory.CreateMethod("get");
+            IMethod handler = _factory.CreateMethod("get");
             return await handler.ActionAsync<Tenant, TenantRespon>("tenant_myprofile", userId: userId);
         }
 
@@ -51,7 +51,7 @@ namespace sipetok_api.Controllers
         [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> AddTenant([FromBody] TenantDto tenantDto)
         {
-            var handler = (SaveData)_factory.CreateMethod("save");
+            IMethod handler = _factory.CreateMethod("save");
             return await handler.ActionAsync<Tenant, TenantRespon>(
                 subAction: "add_tenant",
                 data: tenantDto,
@@ -64,7 +64,7 @@ namespace sipetok_api.Controllers
         [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> UpdateTenant(int id, [FromBody] TenantDto tenantDto)
         {
-            var handler = (SaveData)_factory.CreateMethod("save");
+            IMethod handler = _factory.CreateMethod("save");
             return await handler.ActionAsync<Tenant, TenantRespon>(
                 subAction: "update_tenant",
                 data: tenantDto,
@@ -79,7 +79,7 @@ namespace sipetok_api.Controllers
         public async Task<IActionResult> UpdateMyProfile([FromBody] TenantDto tenantDto)
         {
             int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
-            var handler = (SaveData)_factory.CreateMethod("save");
+            IMethod handler = _factory.CreateMethod("save");
             return await handler.ActionAsync<Tenant, TenantRespon>(
                 subAction: "update_myprofile",
                 data: tenantDto,
@@ -93,7 +93,7 @@ namespace sipetok_api.Controllers
         [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> Validation(int id)
         {
-            var handler = (SaveData)_factory.CreateMethod("save");
+            IMethod handler = _factory.CreateMethod("save");
             // Karena tidak mengirim object body, kita isi data dengan object kosong / dummy
             return await handler.ActionAsync<Tenant, TenantRespon>(
                 subAction: "validate_tenant",
@@ -108,7 +108,7 @@ namespace sipetok_api.Controllers
         [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> DeleteTenant(int id)
         {
-            var handler = (DeleteData)_factory.CreateMethod("delete");
+            IMethod handler = _factory.CreateMethod("delete");
             return await handler.ActionAsync<Tenant, TenantRespon>("delete_tenant", id: id);
         }
     }

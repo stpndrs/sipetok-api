@@ -17,7 +17,7 @@ namespace sipetok_api.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-        private readonly UserFactory _factory;
+        private readonly ModuleFactory _factory;
 
         public UserController(AppDbContext context, IMapper mapper)
         {
@@ -28,7 +28,7 @@ namespace sipetok_api.Controllers
         [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> GetAllUsers()
         {
-            var worker = (GetData)_factory.CreateMethod("get");
+            IMethod worker = _factory.CreateMethod("get");
             return await worker.ActionAsync<User, UserRespon>("getall");
         }
 
@@ -36,7 +36,7 @@ namespace sipetok_api.Controllers
         [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> GetUserById(int id)
         {
-            var worker = (GetData)_factory.CreateMethod("get");
+            IMethod worker = _factory.CreateMethod("get");
             return await worker.ActionAsync<User, UserRespon>("byid", id);
         }
 
@@ -44,7 +44,7 @@ namespace sipetok_api.Controllers
         public async Task<IActionResult> GetMyAccount()
         {
             int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
-            var worker = (GetData)_factory.CreateMethod("get");
+            IMethod worker = _factory.CreateMethod("get");
             // Asumsikan kita buat action "get_by_id" di GetData untuk userId
             return await worker.ActionAsync<User, UserRespon>("byid", userId);
         }
@@ -53,7 +53,7 @@ namespace sipetok_api.Controllers
         [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> AddUser([FromBody] UserDto userDto)
         {
-            var worker = (SaveData)_factory.CreateMethod("save");
+            IMethod worker = _factory.CreateMethod("save");
             return await worker.ActionAsync<User, UserRespon>("add_user", userDto, "POST");
         }
 
@@ -61,7 +61,7 @@ namespace sipetok_api.Controllers
         [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> UpdateUser(int id, [FromBody] UserDto userDto)
         {
-            var worker = (SaveData)_factory.CreateMethod("save");
+            IMethod worker = _factory.CreateMethod("save");
             return await worker.ActionAsync<User, UserRespon>("update_user", userDto, "PUT", id);
         }
 
@@ -69,7 +69,7 @@ namespace sipetok_api.Controllers
         [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> DeleteUser(int id)
         {
-            var worker = (DeleteData)_factory.CreateMethod("delete");
+            IMethod worker = _factory.CreateMethod("delete");
             return await worker.ActionAsync<User, UserRespon>("delete_user", id);
         }
     }

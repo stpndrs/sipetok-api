@@ -14,7 +14,7 @@ namespace sipetok_api.Controllers
     [ApiController]
     public class EggController : ControllerBase
     {
-        private readonly EggFactory _factory;
+        private readonly ModuleFactory _factory;
 
         // Constructor sudah diperbaiki untuk menyuntikkan EggFactory
         public EggController(EggFactory factory)
@@ -27,7 +27,7 @@ namespace sipetok_api.Controllers
         public async Task<IActionResult> GetAllEggs()
         {
             int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
-            var handler = (GetData)_factory.CreateMethod("get");
+            IMethod handler = _factory.CreateMethod("get");
 
             // Memanggil sub-action khusus untuk mengambil stock telur berdasarkan Tenant si user
             return await handler.ActionAsync<Egg, EggRespon>("egg_all_tenant", userId: userId);
@@ -39,7 +39,7 @@ namespace sipetok_api.Controllers
         public async Task<IActionResult> GetEggById(int id)
         {
             int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
-            var handler = (GetData)_factory.CreateMethod("get");
+            IMethod handler = _factory.CreateMethod("get");
             return await handler.ActionAsync<Egg, EggRespon>("get_egg_by_id", id: id, userId: userId);
         }
 
@@ -48,7 +48,7 @@ namespace sipetok_api.Controllers
         public async Task<IActionResult> AddEgg([FromBody] EggDto eggDto)
         {
             int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
-            var handler = (SaveData)_factory.CreateMethod("save");
+            IMethod handler = _factory.CreateMethod("save");
 
             return await handler.ActionAsync<Egg, EggRespon>(
                 subAction: "add_egg",
@@ -63,7 +63,7 @@ namespace sipetok_api.Controllers
         [Authorize(Roles = "TENANT")]
         public async Task<IActionResult> UpdateEgg(int id, [FromBody] EggDto eggDto)
         {
-            var handler = (SaveData)_factory.CreateMethod("save");
+            IMethod handler = _factory.CreateMethod("save");
 
             return await handler.ActionAsync<Egg, EggRespon>(
                 subAction: "update_egg",
@@ -78,7 +78,7 @@ namespace sipetok_api.Controllers
         [Authorize(Roles = "TENANT")]
         public async Task<IActionResult> DeleteEgg(int id)
         {
-            var handler = (DeleteData)_factory.CreateMethod("delete");
+            IMethod handler = _factory.CreateMethod("delete");
             return await handler.ActionAsync<Egg, EggRespon>("delete_egg", id: id);
         }
     }

@@ -13,7 +13,7 @@ namespace sipetok_api.Controllers
     [ApiController]
     public class OperationalController : ControllerBase
     {
-        private readonly OperationalFactory _factory;
+        private readonly ModuleFactory _factory;
 
         public OperationalController(OperationalFactory factory)
         {
@@ -24,7 +24,7 @@ namespace sipetok_api.Controllers
         public async Task<IActionResult> GetAllOperationals()
         {
             int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
-            var handler = (GetData)_factory.CreateMethod("get");
+            IMethod handler = _factory.CreateMethod("get");
             return await handler.ActionAsync<Operational, OperationalRespon>("op_all_tenant", userId: userId);
         }
 
@@ -32,7 +32,7 @@ namespace sipetok_api.Controllers
         public async Task<IActionResult> GetOperationalById(int id)
         {
             int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
-            var handler = (GetData)_factory.CreateMethod("get");
+            IMethod handler = _factory.CreateMethod("get");
             return await handler.ActionAsync<Operational, OperationalRespon>("get_op_by_id", id: id, userId: userId);
         }
 
@@ -40,7 +40,7 @@ namespace sipetok_api.Controllers
         public async Task<IActionResult> CreateOperational([FromBody] OperationalDto operationalDto)
         {
             int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
-            var handler = (SaveData)_factory.CreateMethod("save");
+            IMethod handler = _factory.CreateMethod("save");
 
             return await handler.ActionAsync<Operational, OperationalRespon>(
                 subAction: "add_op",
@@ -54,7 +54,7 @@ namespace sipetok_api.Controllers
         public async Task<IActionResult> UpdateOperational(int id, [FromBody] OperationalDto operationalDto)
         {
             int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
-            var handler = (SaveData)_factory.CreateMethod("save");
+            IMethod handler = _factory.CreateMethod("save");
 
             return await handler.ActionAsync<Operational, OperationalRespon>(
                 subAction: "update_op",
@@ -69,7 +69,7 @@ namespace sipetok_api.Controllers
         public async Task<IActionResult> DeleteOperational(int id)
         {
             int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
-            var handler = (DeleteData)_factory.CreateMethod("delete");
+            IMethod handler = _factory.CreateMethod("delete");
             return await handler.ActionAsync<Operational, OperationalRespon>("delete_op", id: id, userId: userId);
         }
     }
