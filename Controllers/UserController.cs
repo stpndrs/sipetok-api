@@ -17,7 +17,7 @@ namespace sipetok_api.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-        private readonly ModuleFactory _factory;
+        private readonly StevanModuleFactory _factory;
 
         public UserController(AppDbContext context, IMapper mapper)
         {
@@ -28,49 +28,66 @@ namespace sipetok_api.Controllers
         [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> GetAllUsers()
         {
-            IMethod worker = _factory.CreateMethod("get");
-            return await worker.ActionAsync<User, UserRespon>("getall");
+            var worker = _factory.CreateMethod("get");
+            User userModel = new User();
+            UserResponseDto response = new UserResponseDto();
+
+            return await worker.ActionAsync<User, UserResponseDto>(userModel, response);
         }
 
         [HttpGet("{id:int}")]
         [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> GetUserById(int id)
         {
-            IMethod worker = _factory.CreateMethod("get");
-            return await worker.ActionAsync<User, UserRespon>("byid", id);
+            IStevanMethod worker = _factory.CreateMethod("get");
+            User userModel = new User();
+            UserResponseDto response = new UserResponseDto();
+            return await worker.ActionAsync<User, UserResponseDto>(userModel, response, id);
         }
 
         [HttpGet("myaccount")]
         public async Task<IActionResult> GetMyAccount()
         {
             int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
-            IMethod worker = _factory.CreateMethod("get");
-            // Asumsikan kita buat action "get_by_id" di GetData untuk userId
-            return await worker.ActionAsync<User, UserResponseDto>("byid", userId);
+
+            IStevanMethod worker = _factory.CreateMethod("get");
+            User userModel = new User();
+            UserResponseDto response = new UserResponseDto();
+
+            return await worker.ActionAsync<User, UserResponseDto>(userModel, response, null, userId);
         }
 
         [HttpPost]
         [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> AddUser([FromBody] UserRequestDto request)
         {
-            IMethod worker = _factory.CreateMethod("save");
-            return await worker.ActionAsync<User, UserRespon>("add_user", userDto, "POST");
+            IStevanMethod worker = _factory.CreateMethod("save");
+            User userModel = new User();
+            UserResponseDto response = new UserResponseDto();
+
+            return await worker.ActionAsync<User, UserResponseDto, UserRequestDto>(userModel, response, request, "POST");
         }
 
         [HttpPut("{id:int}")]
         [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> UpdateUser(int id, [FromBody] UserRequestDto request)
         {
-            IMethod worker = _factory.CreateMethod("save");
-            return await worker.ActionAsync<User, UserRespon>("update_user", userDto, "PUT", id);
+            IStevanMethod worker = _factory.CreateMethod("save");
+            User userModel = new User();
+            UserResponseDto response = new UserResponseDto();
+
+            return await worker.ActionAsync<User, UserResponseDto, UserRequestDto>(userModel, response, request, "PUT", id);
         }
 
         [HttpDelete("{id:int}")]
         [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> DeleteUser(int id)
         {
-            IMethod worker = _factory.CreateMethod("delete");
-            return await worker.ActionAsync<User, UserRespon>("delete_user", id);
+            IStevanMethod worker = _factory.CreateMethod("save");
+            User userModel = new User();
+            UserResponseDto response = new UserResponseDto();
+
+            return await worker.ActionAsync<User, UserResponseDto, object>(userModel, response, null, "DELETE", id);
         }
     }
 }
