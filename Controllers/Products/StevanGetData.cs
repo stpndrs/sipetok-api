@@ -1,9 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using sipetok_api.Data;
 using sipetok_api.dto.Respon;
-using sipetok_api.Models;
 using sipetok_api.Repositories;
 using sipetok_api.Repositories.Interfaces;
 using System;
@@ -25,23 +23,17 @@ namespace sipetok_api.Controllers.Products
         }
 
         public async Task<IActionResult> ActionAsync<TModel, TResponse>(
-    TModel model, TResponse response, int? id = null, int? userId = null, string[]? includes = null) where TModel : class
+            TModel model, TResponse response, int? id = null, int? userId = null, string[]? searchQuery = null, string[]? includes = null) where TModel : class
         {
             try
             {
-                IQueryable<TModel> query = _dbContext.Set<TModel>();
+                var repository = new GenericRepository<TModel>(_dbContext);
 
-                if (includes != null && includes.Length > 0)
-                {
-                    foreach (var include in includes)
-                    {
-                        query = query.Include(include);
-                    }
-                }
-
+                var entities = await repository.GetWithFiltersAsync(searchQuery, includes);
+                Console.WriteLine("Data Count: " + entities.Count());
                 if (id != null)
                 {
-                    var entity = await query.FirstOrDefaultAsync(e => EF.Property<int>(e, "Id") == id.Value);
+                    var entity = entities.FirstOrDefault(e => Microsoft.EntityFrameworkCore.EF.Property<int>(e, "Id") == id.Value);
 
                     if (entity is null)
                     {
@@ -53,7 +45,7 @@ namespace sipetok_api.Controllers.Products
                 }
                 else if (userId != null)
                 {
-                    var entity = await query.FirstOrDefaultAsync(e => EF.Property<int>(e, "Id") == userId.Value);
+                    var entity = entities.FirstOrDefault(e => Microsoft.EntityFrameworkCore.EF.Property<int>(e, "Id") == userId.Value);
 
                     if (entity is null)
                     {
@@ -61,14 +53,12 @@ namespace sipetok_api.Controllers.Products
                     }
 
                     var mappedResponse = _mapper.Map<TResponse>(entity);
-                    return new OkObjectResult(new ResponData<TResponse>(true, mappedResponse, $"Successfully retrieved data with id {id}"));
+                    return new OkObjectResult(new ResponData<TResponse>(true, mappedResponse, $"Successfully retrieved data with userId {userId}"));
                 }
                 else
                 {
-                    var entities = await query.ToListAsync();
-
-                    var mappedResponseList = _mapper.Map<List<TResponse>>(entities);
-                    return new OkObjectResult(new ResponData<List<TResponse>>(true, mappedResponseList, "Successfully retrieves all data"));
+                    var mappedResponseList = _mapper.Map<List<TResponse>>(entities.ToList());
+                    return new OkObjectResult(new ResponData<List<TResponse>>(true, mappedResponseList, "Successfully retrieves data"));
                 }
             }
             catch (Exception ex)
@@ -78,7 +68,7 @@ namespace sipetok_api.Controllers.Products
         }
 
         public async Task<IActionResult> ActionAsync<TModel, TResponse, TRequest>(
-            TModel model, TResponse response, TRequest request, string httpMethod, int? id = null, int? userId = null) where TModel : class
+            TModel model, TResponse response, TRequest request, string httpMethod, int? id = null, int? userId = null, string[]? searchQuery = null) where TModel : class
         {
             throw new NotImplementedException("Operasi KIRIM data (POST/PUT) tidak didukung di StevanGetData. Gunakan SaveData.");
         }

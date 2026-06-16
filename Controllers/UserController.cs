@@ -17,11 +17,12 @@ namespace sipetok_api.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
+        private readonly IConfiguration appConfig;
         private readonly StevanModuleFactory _factory;
 
-        public UserController(AppDbContext context, IMapper mapper)
+        public UserController(AppDbContext context, IConfiguration config, IMapper mapper)
         {
-            _factory = new UserFactory(context, mapper);
+            _factory = new UserFactory(context, appConfig, mapper);
         }
 
         [HttpGet]
@@ -65,6 +66,9 @@ namespace sipetok_api.Controllers
             User userModel = new User();
             UserResponseDto response = new UserResponseDto();
 
+            string hashedPassword = Bcrypt.HashPassword(request.Password);
+            request.Password = hashedPassword;
+
             return await worker.ActionAsync<User, UserResponseDto, UserRequestDto>(userModel, response, request, "POST");
         }
 
@@ -75,6 +79,12 @@ namespace sipetok_api.Controllers
             IStevanMethod worker = _factory.CreateMethod("save");
             User userModel = new User();
             UserResponseDto response = new UserResponseDto();
+
+            if (request.Password != null)
+            {
+                string hashedPassword = Bcrypt.HashPassword(request.Password);
+                request.Password = hashedPassword;
+            }
 
             return await worker.ActionAsync<User, UserResponseDto, UserRequestDto>(userModel, response, request, "PUT", id);
         }

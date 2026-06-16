@@ -1,9 +1,10 @@
 using sipetok_api.Models;
+using System.Threading.Tasks;
 
 namespace sipetok_api.Repositories.Interfaces
 {
     public interface IUserRepository : IGenericRepository<User>
     {
-        // Jika nanti butuh query spesifik untuk User (misal: GetByEmail), tulis di sini.
+        // Task<User?> GetUserByUsernameAsync(string username);
     }
 }
