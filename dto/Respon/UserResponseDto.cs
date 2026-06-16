@@ -3,16 +3,16 @@ using sipetok_api.Utils;
 
 namespace sipetok_api.dto
 {
-    public class UserRespon
+    public class UserResponseDto
     {
         public int Id { get; set; }
         public string Username { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public TabelDriven Role { get; set; } = null!;
         public TabelDriven IsActive { get; set; } = null!;
-        public UserRespon() { }
+        public UserResponseDto() { }
 
-        public UserRespon(int Id, string Username, string Email, int Role, int IsActive)
+        public UserResponseDto(int Id, string Username, string Email, int Role, int IsActive)
         {
             var roleLogic = new AccountRoleTableDriven();
             var statusLogic = new AccountStatusTableDriven();

@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace sipetok_api.dto.Request
 {
-    public class RegisterDto
+    public class RegisterRequestDto
     {
         [Required(ErrorMessage = "Name is required!")]
         public string Name { get; set; } = string.Empty;

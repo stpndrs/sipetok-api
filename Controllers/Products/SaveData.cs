@@ -99,7 +99,7 @@ namespace sipetok_api.Controllers.Products
             }
         }
 
-        
+
         private async Task<IActionResult> HandleRegisterAsync<TResponse>(object? data)
         {
             if (data is not User user) return InvalidDtoResponse();
@@ -110,9 +110,9 @@ namespace sipetok_api.Controllers.Products
                 await _dbContext.SaveChangesAsync();
 
                 string token = CreateToken(user);
-                var authRespon = new AuthRespon(token);
+                var AuthResponseDto = new AuthResponseDto(token);
 
-                var mappedResult = _mapper.Map<TResponse>(authRespon);
+                var mappedResult = _mapper.Map<TResponse>(AuthResponseDto);
                 return new OkObjectResult(new ResponData<TResponse>(true, mappedResult, "Register berhasil"));
             }
             catch (DbUpdateException ex)
@@ -135,12 +135,12 @@ namespace sipetok_api.Controllers.Products
 
             // Tugas SaveData tinggal generate token dan mapping respons
             string token = CreateToken(user);
-            var authRespon = new AuthRespon(token);
+            var AuthResponseDto = new AuthResponseDto(token);
 
-            var mappedResult = _mapper.Map<TResponse>(authRespon);
+            var mappedResult = _mapper.Map<TResponse>(AuthResponseDto);
             return new OkObjectResult(new ResponData<TResponse>(true, mappedResult, "Login berhasil"));
         }
-        
+
         private async Task<IActionResult> HandleTxStoreAsync<TResponse>(object data)
         {
             if (data is not TransactionDto transactionDto) return InvalidDtoResponse();
@@ -250,7 +250,7 @@ namespace sipetok_api.Controllers.Products
             if (string.IsNullOrWhiteSpace(tenantDto.User.Password)) return new BadRequestObjectResult(new ResponData<object>(false, "Password is required"));
 
             var userEntity = _mapper.Map<User>(tenantDto.User);
-            userEntity.Password = Bcrypt.BcryptPassword(userEntity.Password);
+            userEntity.Password = Bcrypt.HashPassword(userEntity.Password);
             userEntity.Role = 2;
             userEntity.IsActive = true;
             tenantDto.IsValid = false;
@@ -281,7 +281,7 @@ namespace sipetok_api.Controllers.Products
             await _dbContext.SaveChangesAsync();
             return new OkObjectResult(new ResponData<TResponse>(true, _mapper.Map<TResponse>(entity), $"Successfully created new {entityName} data"));
         }
-        
+
         private async Task<IActionResult> HandleUpdateOperationalAsync<TResponse>(int? id, object data, int? userId)
         {
             if (data is not OperationalDto editOpDto) return InvalidDtoResponse();
@@ -338,7 +338,7 @@ namespace sipetok_api.Controllers.Products
                     _mapper.Map(editTenantDto.User, userEntity);
                     if (!string.IsNullOrWhiteSpace(editTenantDto.User.Password))
                     {
-                        userEntity.Password = Bcrypt.BcryptPassword(editTenantDto.User.Password);
+                        userEntity.Password = Bcrypt.HashPassword(editTenantDto.User.Password);
                     }
                     userEntity.UpdateTimestamps();
                     _dbContext.Users.Update(userEntity);
@@ -366,7 +366,7 @@ namespace sipetok_api.Controllers.Products
                 {
                     if (!string.IsNullOrWhiteSpace(profileDto.User.Password))
                     {
-                        userEntity.Password = Bcrypt.BcryptPassword(profileDto.User.Password);
+                        userEntity.Password = Bcrypt.HashPassword(profileDto.User.Password);
                     }
                     _mapper.Map(profileDto.User, userEntity);
                     userEntity.Role = 2;
@@ -401,7 +401,7 @@ namespace sipetok_api.Controllers.Products
 
             return new OkObjectResult(new ResponData<TResponse>(true, _mapper.Map<TResponse>(existingRecord), $"Successfully updated {entityName} data with id {id}"));
         }
-        
+
         private string CreateToken(User user)
         {
             if (_config == null) throw new InvalidOperationException("IConfiguration belum dikonfigurasi di SaveData.");
@@ -432,7 +432,7 @@ namespace sipetok_api.Controllers.Products
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
-        
+
         private async Task<int> GetTenantIdByUserIdAsync(int? userId)
         {
             return await _dbContext.Tenants
@@ -450,6 +450,6 @@ namespace sipetok_api.Controllers.Products
         {
             return new BadRequestObjectResult(new ResponData<object>(false, "Format payload Request DTO tidak valid atau tidak cocok."));
         }
-        
+
     }
 }

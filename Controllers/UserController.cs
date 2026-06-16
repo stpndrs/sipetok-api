@@ -46,12 +46,12 @@ namespace sipetok_api.Controllers
             int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
             IMethod worker = _factory.CreateMethod("get");
             // Asumsikan kita buat action "get_by_id" di GetData untuk userId
-            return await worker.ActionAsync<User, UserRespon>("byid", userId);
+            return await worker.ActionAsync<User, UserResponseDto>("byid", userId);
         }
 
         [HttpPost]
         [Authorize(Roles = "ADMIN")]
-        public async Task<IActionResult> AddUser([FromBody] UserDto userDto)
+        public async Task<IActionResult> AddUser([FromBody] UserRequestDto request)
         {
             IMethod worker = _factory.CreateMethod("save");
             return await worker.ActionAsync<User, UserRespon>("add_user", userDto, "POST");
@@ -59,7 +59,7 @@ namespace sipetok_api.Controllers
 
         [HttpPut("{id:int}")]
         [Authorize(Roles = "ADMIN")]
-        public async Task<IActionResult> UpdateUser(int id, [FromBody] UserDto userDto)
+        public async Task<IActionResult> UpdateUser(int id, [FromBody] UserRequestDto request)
         {
             IMethod worker = _factory.CreateMethod("save");
             return await worker.ActionAsync<User, UserRespon>("update_user", userDto, "PUT", id);

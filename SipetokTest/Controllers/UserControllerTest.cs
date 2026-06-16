@@ -19,7 +19,7 @@
 //             {
 //                 username = "admin",
 //                 email = "admin@gmail.com",
-//                 password = Bcrypt.BcryptPassword("password123"),
+//                 password = Bcrypt.HashPassword("password123"),
 //                 role = 1,
 //                 status = 1
 //             });
@@ -45,7 +45,7 @@
 //             {
 //                 username = "user1",
 //                 email = "user1@gmail.com",
-//                 password = Bcrypt.BcryptPassword("password123"),
+//                 password = Bcrypt.HashPassword("password123"),
 //                 role = 3,
 //                 status = 1
 //             };
@@ -88,7 +88,7 @@
 //             {
 //                 username = "myaccount",
 //                 email = "myaccount@gmail.com",
-//                 password = Bcrypt.BcryptPassword("password123"),
+//                 password = Bcrypt.HashPassword("password123"),
 //                 role = 3,
 //                 status = 1
 //             };
@@ -131,7 +131,7 @@
 //             var mapper = TestHelper.CreateMapper();
 //             var controller = new global::UserController(dbContext, mapper);
 
-//             var request = new UserDto
+//             var request = new UserRequestDto
 //             {
 //                 username = "userbaru",
 //                 email = "userbaru@gmail.com",
@@ -156,7 +156,7 @@
 //             var mapper = TestHelper.CreateMapper();
 //             var controller = new global::UserController(dbContext, mapper);
 
-//             var request = new UserDto
+//             var request = new UserRequestDto
 //             {
 //                 username = "userbaru",
 //                 email = "userbaru@gmail.com",
@@ -183,7 +183,7 @@
 //             {
 //                 username = "userlama",
 //                 email = "lama@gmail.com",
-//                 password = Bcrypt.BcryptPassword("password123"),
+//                 password = Bcrypt.HashPassword("password123"),
 //                 role = 3,
 //                 status = 1
 //             };
@@ -193,7 +193,7 @@
 
 //             var controller = new global::UserController(dbContext, mapper);
 
-//             var request = new UserDto
+//             var request = new UserRequestDto
 //             {
 //                 username = "userbaru",
 //                 email = "baru@gmail.com",
@@ -217,7 +217,7 @@
 //             var mapper = TestHelper.CreateMapper();
 //             var controller = new global::UserController(dbContext, mapper);
 
-//             var request = new UserDto
+//             var request = new UserRequestDto
 //             {
 //                 username = "userbaru",
 //                 email = "baru@gmail.com",
@@ -244,7 +244,7 @@
 //             {
 //                 username = "myaccount",
 //                 email = "old@gmail.com",
-//                 password = Bcrypt.BcryptPassword("password123"),
+//                 password = Bcrypt.HashPassword("password123"),
 //                 role = 3,
 //                 status = 1
 //             };
@@ -255,7 +255,7 @@
 //             var controller = new global::UserController(dbContext, mapper);
 //             TestHelper.SetUserId(controller, user.id);
 
-//             var request = new UserDto
+//             var request = new UserRequestDto
 //             {
 //                 username = "myaccountnew",
 //                 email = "new@gmail.com",
@@ -281,7 +281,7 @@
 //             var controller = new global::UserController(dbContext, mapper);
 //             TestHelper.SetUserId(controller, 999);
 
-//             var request = new UserDto
+//             var request = new UserRequestDto
 //             {
 //                 username = "myaccountnew",
 //                 email = "new@gmail.com",
@@ -308,7 +308,7 @@
 //             {
 //                 username = "deleteuser",
 //                 email = "delete@gmail.com",
-//                 password = Bcrypt.BcryptPassword("password123"),
+//                 password = Bcrypt.HashPassword("password123"),
 //                 role = 3,
 //                 status = 1
 //             };

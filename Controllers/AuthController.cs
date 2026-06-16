@@ -28,19 +28,19 @@ namespace sipetok_api.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterDto req)
+        public async Task<IActionResult> Register([FromBody] RegisterRequestDto request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
             // 1. Hashing password
-            string passwordHash = Bcrypt.BcryptPassword(req.Password);
+            string hashedPassword = Bcrypt.HashPassword(request.Password);
 
-            // 2. Gunakan nama 'newUser' agar tidak bentrok dengan keyword bawaan C#
-            var newUser = new User
+            // 2. Gunakan nama 'user' agar tidak bentrok dengan keyword bawaan C#
+            var user = new User
             {
-                Username = req.Username,
-                Email = req.Email,
-                Password = passwordHash,
+                Username = request.Username,
+                Email = request.Email,
+                Password = hashedPassword,
                 Role = 3, // Default Customer
                 IsActive = true
             };
@@ -48,24 +48,24 @@ namespace sipetok_api.Controllers
             // 3. Panggil Factory
             IMethod handler = _factory.CreateMethod("save");
 
-            // 4. PASTIKAN di sini menulis 'newUser', bukan 'user'
-            return await handler.ActionAsync<User, AuthRespon>(
+            // 4. PASTIKAN di sini menulis 'user', bukan 'user'
+            return await handler.ActionAsync<User, AuthResponseDto>(
                 subAction: "register",
-                data: newUser, // <-- Perhatikan ini harus sama dengan nama di atas
+                data: user, // <-- Perhatikan ini harus sama dengan nama di atas
                 httpMethod: "POST"
             );
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginDto req)
+        public async Task<IActionResult> Login([FromBody] LoginRequestDto request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
             // 1. Cari user langsung di Controller
-            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Username == req.Username);
+            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Username == request.Username);
 
             // 2. Validasi Password
-            if (user == null || !Bcrypt.VerifyPassword(req.Password, user.Password))
+            if (user == null || !Bcrypt.VerifyPassword(request.Password, user.Password))
             {
                 return new BadRequestObjectResult(new ResponData<object>(false, "Wrong Username or Password"));
             }
