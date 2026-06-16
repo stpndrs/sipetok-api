@@ -8,7 +8,7 @@ namespace sipetok_api.Respon
         public int TenantId { get; set; }
         public virtual TenantRespon? Tenant { get; set; }
         public int CategoryId { get; set; }
-        public virtual EggCategoryRespon? Category { get; set; }
+        public virtual EggCategoryResponseDto? Category { get; set; }
 
         public string CategoryName { get; set; }
         public string TenantName { get; set; }

@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace sipetok_api.dto.Request
 {
-    public class EggCategoryDto
+    public class EggCategoryRequestDto
     {
         [Required(ErrorMessage = "Price is required!")]
         public decimal Price { get; set; }
@@ -13,9 +13,9 @@ namespace sipetok_api.dto.Request
         [Required(ErrorMessage = "Name is required!")]
         public string Name { get; set; } = string.Empty;
 
-        public EggCategoryDto() { }
+        public EggCategoryRequestDto() { }
 
-        public EggCategoryDto(decimal Price, string Description, string Name)
+        public EggCategoryRequestDto(decimal Price, string Description, string Name)
         {
             this.Price = Price;
             this.Description = Description;

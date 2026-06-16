@@ -8,11 +8,11 @@ namespace sipetok_api.Respon
         public DateTime ProductionDate { get; set; }
         public double Stock { get; set; }
         public int CategoryId { get; set; }
-        public virtual EggCategoryRespon? Category { get; set; }
+        public virtual EggCategoryResponseDto? Category { get; set; }
 
         public EggRespon() { }
 
-        public EggRespon(int Id, DateTime ProductionDate, double Stock, int CategoryId, EggCategoryRespon Category)
+        public EggRespon(int Id, DateTime ProductionDate, double Stock, int CategoryId, EggCategoryResponseDto Category)
         {
             this.Id = Id;
             this.ProductionDate = ProductionDate;
