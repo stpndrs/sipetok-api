@@ -37,8 +37,11 @@ namespace sipetok_api.Controllers.Products
                     // --- Spesifik Modul ---
                     "get_my_tenant" => await HandleGetMyTenantAsync<TResponse>(userId),
                     "get_my_user" => await HandleGetMyUserAsync<TResponse>(userId),
-
                     "get_tx_by_id" => await HandleGetTransactionByIdAsync<TResponse>(id, userId),
+                    "get_op_by_id" => await HandleGetOperationalByIdAsync<TResponse>(id, userId),
+                    "get_egg_by_id" => await HandleGetEggByIdAsync<TResponse>(id, userId),
+                    "get_category_by_id" => await HandleGetCategoryByIdAsync<TResponse>(id, userId),
+
                     "tx_all_tenant" => await HandleGetTransactionsByTenantAsync<TResponse>(userId),
                     "op_all_tenant" => await HandleGetAllOperationalByTenantAsync<TResponse>(userId),
                     "category_all_tenant" => await HandleGetAllCategoryByTenantAsync<TResponse>(userId),
@@ -130,17 +133,63 @@ namespace sipetok_api.Controllers.Products
         private async Task<IActionResult> HandleGetTransactionByIdAsync<TResponse>(int? id, int? userId)
         {
             var transaction = await _dbContext.Transactions
+                .Include(t => t.Tenant)
                 .Include(t => t.Details)
                     .ThenInclude(d => d.Category)
                 .FirstOrDefaultAsync(t => t.Id == (id ?? 0));
 
-            if (transaction == null)
+            if (transaction is null)
                 return new NotFoundObjectResult(new ResponData<object>(false, "Transaksi tidak ditemukan"));
 
             if (transaction.Tenant!.UserId != (userId ?? 0))
-                return new ObjectResult(new ResponData<object>(false, "Akses ditolak")) { StatusCode = 403 };
+                return new ObjectResult(new ResponData<object>(false, "Akses ditolak, ini bukan data Anda")) { StatusCode = 403 };
 
             return new OkObjectResult(new ResponData<TResponse>(true, _mapper.Map<TResponse>(transaction), "Berhasil mengambil data transaksi"));
+        }
+
+        private async Task<IActionResult> HandleGetOperationalByIdAsync<TResponse>(int? id, int? userId)
+        {
+            var operational = await _dbContext.Operationals
+                .Include(o => o.Tenant)
+                .FirstOrDefaultAsync(o => o.Id == (id ?? 0));
+
+            if (operational is null)
+                return new NotFoundObjectResult(new ResponData<object>(false, "Operasional tidak ditemukan"));
+
+            if (operational.Tenant!.UserId != (userId ?? 0))
+                return new ObjectResult(new ResponData<object>(false, "Akses ditolak, ini bukan data Anda")) { StatusCode = 403 };
+
+            return new OkObjectResult(new ResponData<TResponse>(true, _mapper.Map<TResponse>(operational), "Berhasil mengambil data operasional"));
+        }
+
+        private async Task<IActionResult> HandleGetEggByIdAsync<TResponse>(int? id, int? userId)
+        {
+            var egg = await _dbContext.Eggs
+                .Include(e => e.Category).ThenInclude(c => c!.Tenant)
+                .FirstOrDefaultAsync(e => e.Id == (id ?? 0));
+
+            if (egg is null)
+                return new NotFoundObjectResult(new ResponData<object>(false, "Telur tidak ditemukan"));
+
+            if (egg.Category!.Tenant!.UserId != (userId ?? 0))
+                return new ObjectResult(new ResponData<object>(false, "Akses ditolak, ini bukan data Anda")) { StatusCode = 403 };
+
+            return new OkObjectResult(new ResponData<TResponse>(true, _mapper.Map<TResponse>(egg), "Berhasil mengambil data telur"));
+        }
+
+        private async Task<IActionResult> HandleGetCategoryByIdAsync<TResponse>(int? id, int? userId)
+        {
+            var category = await _dbContext.EggCategories
+                .Include(c => c.Tenant)
+                .FirstOrDefaultAsync(c => c.Id == (id ?? 0));
+
+            if (category is null)
+                return new NotFoundObjectResult(new ResponData<object>(false, "Kategori tidak ditemukan"));
+
+            if (category.Tenant!.UserId != (userId ?? 0))
+                return new ObjectResult(new ResponData<object>(false, "Akses ditolak, ini bukan data Anda")) { StatusCode = 403 };
+
+            return new OkObjectResult(new ResponData<TResponse>(true, _mapper.Map<TResponse>(category), "Berhasil mengambil data kategori"));
         }
         #endregion
     }
