@@ -13,7 +13,9 @@ namespace sipetok_api
     {
         public MappingProfile()
         {
+            CreateMap<RegisterRequestDto, User>();
             CreateMap<UserRequestDto, User>();
+            CreateMap<User, UserResponseDto>();
             CreateMap<TenantDto, Tenant>();
             CreateMap<OperationalDto, Operational>();
             CreateMap<EggDto, Egg>();

@@ -8,5 +8,6 @@ namespace sipetok_api.Repositories.Interfaces
         void Update(T entity);
         void Delete(T entity);
         void SaveChanges();
+        Task<IEnumerable<T>> GetWithFiltersAsync(string[]? searchQuery = null, string[]? includes = null);
     }
 }
