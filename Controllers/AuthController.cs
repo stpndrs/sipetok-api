@@ -78,7 +78,7 @@ namespace sipetok_api.Controllers
 
             // 4. Kirim objek user yang sudah VALID ke SaveData
             IMethod handler = _factory.CreateMethod("save");
-            return await handler.ActionAsync<User, AuthRespon>(
+            return await handler.ActionAsync<User, AuthResponseDto>(
                 subAction: "login",
                 data: user, // Yang dikirim adalah object User
                 httpMethod: "POST"
