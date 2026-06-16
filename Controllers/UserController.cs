@@ -54,6 +54,7 @@ namespace sipetok_api.Controllers
         public async Task<IActionResult> AddUser([FromBody] UserRequestDto request)
         {
             var worker = (SaveData)_factory.CreateMethod("save");
+            request.Password = Bcrypt.HashPassword(request.Password);
             return await worker.ActionAsync<User, UserResponseDto>("add_user", request, "POST");
         }
 
@@ -62,6 +63,7 @@ namespace sipetok_api.Controllers
         public async Task<IActionResult> UpdateUser(int id, [FromBody] UserRequestDto request)
         {
             var worker = (SaveData)_factory.CreateMethod("save");
+            request.Password = Bcrypt.HashPassword(request.Password);
             return await worker.ActionAsync<User, UserResponseDto>("update_user", request, "PUT", id);
         }
 
