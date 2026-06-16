@@ -14,8 +14,8 @@ namespace sipetok_api.dto.Request
         public double Quantity { get; set; }
 
         [Required(ErrorMessage = "Subtotal is required!")]
-        public decimal Subtotal { get; set; }
-        public decimal PriceAtPurchase { get; set; }
+        public double Subtotal { get; set; }
+        public double PriceAtPurchase { get; set; }
 
         public TransactionDetailDto() { }
 

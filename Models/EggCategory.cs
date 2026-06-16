@@ -7,8 +7,8 @@ namespace sipetok_api.Models
     {
         public int Id { get; set; }
 
-        // Gunakan decimal untuk harga
-        public decimal Price { get; set; }
+        // Gunakan double untuk harga
+        public double Price { get; set; }
 
         [MaxLength(255)]
         public string Description { get; set; } = string.Empty;
@@ -25,7 +25,7 @@ namespace sipetok_api.Models
 
         public EggCategory() { }
 
-        public EggCategory(int Id, decimal Price, string Description, string Name)
+        public EggCategory(int Id, double Price, string Description, string Name)
         {
             this.Id = Id;
             this.Price = Price;

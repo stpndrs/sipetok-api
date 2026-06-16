@@ -34,12 +34,12 @@ namespace sipetok_api.Data
 
             // 3. Konfigurasi Relasi & Presisi Data (Fluent API)
 
-            // EggCategory -> Price menggunakan decimal (set presisi di DB agar aman)
+            // EggCategory -> Price menggunakan double (set presisi di DB agar aman)
             modelBuilder.Entity<EggCategory>()
                 .Property(ec => ec.Price)
                 .HasPrecision(18, 2);
 
-            // Transaction -> Price & Payment Amount menggunakan decimal
+            // Transaction -> Price & Payment Amount menggunakan double
             modelBuilder.Entity<Transaction>()
                 .Property(t => t.TotalPrice)
                 .HasPrecision(18, 2);
@@ -54,7 +54,7 @@ namespace sipetok_api.Data
                 .HasForeignKey(ec => ec.TenantId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // TransactionDetail -> PriceAtPurchase & Subtotal menggunakan decimal
+            // TransactionDetail -> PriceAtPurchase & Subtotal menggunakan double
             modelBuilder.Entity<TransactionDetail>()
                 .Property(td => td.PriceAtPurchase)
                 .HasPrecision(18, 2);
