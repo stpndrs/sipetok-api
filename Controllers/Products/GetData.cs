@@ -4,13 +4,14 @@ using Microsoft.EntityFrameworkCore;
 using sipetok_api.Data;
 using sipetok_api.dto.Respon;
 using sipetok_api.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace sipetok_api.Controllers.Products
 {
-    public class GetData
+    public class GetData : IMethod // 1. Daftarkan Interface IMethod di sini
     {
         private readonly AppDbContext _dbContext;
         private readonly IMapper _mapper;
@@ -21,14 +22,18 @@ namespace sipetok_api.Controllers.Products
             _mapper = mapper;
         }
 
-        public async Task<IActionResult> ActionAsync<TEntity, TResponse>(string subAction, int? id = null, int? userId = null) where TEntity : class
+        // =========================================================================
+        // 1. INTERFACE: KHUSUS TERIMA DATA (GET / QUERY) -> Logika asli kelas ini
+        // =========================================================================
+        public async Task<IActionResult> ActionAsync<TEntity, TResponse>(
+            string subAction, int? id = null, int? userId = null) where TEntity : class
         {
             try
             {
                 string entityName = typeof(TEntity).Name;
                 string action = subAction?.ToLower()?.Trim() ?? string.Empty;
 
-                // Menggunakan Switch Expression untuk routing yang lebih bersih
+                // Menggunakan Switch Expression untuk routing bawaanmu
                 return action switch
                 {
                     "getall" => await HandleGetAllAsync<TEntity, TResponse>(entityName),
@@ -54,6 +59,15 @@ namespace sipetok_api.Controllers.Products
             {
                 return new ObjectResult(new ResponData<object>(false, ex.Message)) { StatusCode = 500 };
             }
+        }
+
+        // =========================================================================
+        // 2. INTERFACE: KHUSUS KIRIM DATA (Ditangani oleh SaveData.cs)
+        // =========================================================================
+        public Task<IActionResult> ActionAsync<TEntity, TResponse>(
+            string subAction, object data, string httpMethod, int? id = null, int? userId = null) where TEntity : class
+        {
+            throw new NotImplementedException("Operasi KIRIM data (POST/PUT) tidak didukung di GetData. Gunakan SaveData.");
         }
 
         #region HANDLERS
@@ -129,7 +143,7 @@ namespace sipetok_api.Controllers.Products
 
             return new OkObjectResult(new ResponData<List<TResponse>>(true, _mapper.Map<List<TResponse>>(data), "Berhasil mengambil transaksi tenant"));
         }
-        
+
         private async Task<IActionResult> HandleGetTransactionByIdAsync<TResponse>(int? id, int? userId)
         {
             var transaction = await _dbContext.Transactions

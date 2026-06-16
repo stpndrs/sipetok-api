@@ -140,7 +140,7 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 
 // PERBAIKAN UTAMA: Wajib jalankan UseAuthentication() SEBELUM UseAuthorization()
 app.UseAuthentication(); 

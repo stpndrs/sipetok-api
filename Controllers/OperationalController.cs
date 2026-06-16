@@ -42,7 +42,7 @@ namespace sipetok_api.Controllers
             int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
             var handler = (SaveData)_factory.CreateMethod("save");
 
-            return await handler.ActionAsync<Operational, OperationalDto, OperationalRespon>(
+            return await handler.ActionAsync<Operational, OperationalRespon>(
                 subAction: "add_op",
                 data: operationalDto,
                 httpMethod: "POST",
@@ -56,7 +56,7 @@ namespace sipetok_api.Controllers
             int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
             var handler = (SaveData)_factory.CreateMethod("save");
 
-            return await handler.ActionAsync<Operational, OperationalDto, OperationalRespon>(
+            return await handler.ActionAsync<Operational, OperationalRespon>(
                 subAction: "update_op",
                 data: operationalDto,
                 httpMethod: "PUT",
@@ -70,7 +70,7 @@ namespace sipetok_api.Controllers
         {
             int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
             var handler = (DeleteData)_factory.CreateMethod("delete");
-            return await handler.ActionAsync<Operational>("delete_op", id: id, userId: userId);
+            return await handler.ActionAsync<Operational, OperationalRespon>("delete_op", id: id, userId: userId);
         }
     }
 }

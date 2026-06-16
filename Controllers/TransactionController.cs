@@ -49,7 +49,7 @@ namespace sipetok_api.Controllers
         {
             var handler = (SaveData)_factory.CreateMethod("save");
 
-            return await handler.ActionAsync<Transaction, TransactionDto, TransactionRespon>(
+            return await handler.ActionAsync<Transaction, TransactionRespon>(
                 subAction: "tx_store",
                 data: transactionDto,
                 httpMethod: "POST"
@@ -61,7 +61,7 @@ namespace sipetok_api.Controllers
         {
             var handler = (SaveData)_factory.CreateMethod("save");
 
-            return await handler.ActionAsync<Transaction, PaymentDto, TransactionRespon>(
+            return await handler.ActionAsync<Transaction, TransactionRespon>(
                 subAction: "tx_pay",
                 data: paymentDto,
                 httpMethod: "POST",
@@ -74,7 +74,7 @@ namespace sipetok_api.Controllers
         {
             var handler = (SaveData)_factory.CreateMethod("save");
 
-            return await handler.ActionAsync<Transaction, object, TransactionRespon>(
+            return await handler.ActionAsync<Transaction, TransactionRespon>(
                 subAction: "tx_cancel",
                 data: new object(),
                 httpMethod: "POST",
@@ -87,7 +87,7 @@ namespace sipetok_api.Controllers
         {
             var handler = (SaveData)_factory.CreateMethod("save");
 
-            return await handler.ActionAsync<Transaction, object, TransactionRespon>(
+            return await handler.ActionAsync<Transaction, TransactionRespon>(
                 subAction: "tx_complete",
                 data: new object(),
                 httpMethod: "POST",
