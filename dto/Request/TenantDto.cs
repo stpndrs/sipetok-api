@@ -12,7 +12,7 @@ namespace sipetok_api.dto.Request
         public string PhoneNumber { get; set; } = string.Empty;
         public bool IsValid { get; set; }
 
-        public virtual UserDto? User { get; set; }
+        public virtual UserRequestDto? User { get; set; }
         public TenantDto() { }
 
         public TenantDto(string Name, string Address, string PhoneNumber, bool IsValid)

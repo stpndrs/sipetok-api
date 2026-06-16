@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace sipetok_api.dto.Request
 {
-    public class LoginDto
+    public class LoginRequestDto
     {
         [Required(ErrorMessage = "Username is required!")]
         public string Username { get; set; } = string.Empty;
