@@ -17,7 +17,7 @@ namespace sipetok_api.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-        private readonly UserFactory _factory;
+        private readonly ModuleFactory _factory;
 
         public UserController(AppDbContext context, IMapper mapper)
         {
@@ -28,23 +28,23 @@ namespace sipetok_api.Controllers
         [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> GetAllUsers()
         {
-            var worker = (GetData)_factory.CreateMethod("get");
-            return await worker.ActionAsync<User, UserResponseDto>("getall");
+            IMethod worker = _factory.CreateMethod("get");
+            return await worker.ActionAsync<User, UserRespon>("getall");
         }
 
         [HttpGet("{id:int}")]
         [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> GetUserById(int id)
         {
-            var worker = (GetData)_factory.CreateMethod("get");
-            return await worker.ActionAsync<User, UserResponseDto>("byid", id);
+            IMethod worker = _factory.CreateMethod("get");
+            return await worker.ActionAsync<User, UserRespon>("byid", id);
         }
 
         [HttpGet("myaccount")]
         public async Task<IActionResult> GetMyAccount()
         {
             int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
-            var worker = (GetData)_factory.CreateMethod("get");
+            IMethod worker = _factory.CreateMethod("get");
             // Asumsikan kita buat action "get_by_id" di GetData untuk userId
             return await worker.ActionAsync<User, UserResponseDto>("byid", userId);
         }
@@ -53,26 +53,24 @@ namespace sipetok_api.Controllers
         [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> AddUser([FromBody] UserRequestDto request)
         {
-            var worker = (SaveData)_factory.CreateMethod("save");
-            request.Password = Bcrypt.HashPassword(request.Password);
-            return await worker.ActionAsync<User, UserResponseDto>("add_user", request, "POST");
+            IMethod worker = _factory.CreateMethod("save");
+            return await worker.ActionAsync<User, UserRespon>("add_user", userDto, "POST");
         }
 
         [HttpPut("{id:int}")]
         [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> UpdateUser(int id, [FromBody] UserRequestDto request)
         {
-            var worker = (SaveData)_factory.CreateMethod("save");
-            request.Password = Bcrypt.HashPassword(request.Password);
-            return await worker.ActionAsync<User, UserResponseDto>("update_user", request, "PUT", id);
+            IMethod worker = _factory.CreateMethod("save");
+            return await worker.ActionAsync<User, UserRespon>("update_user", userDto, "PUT", id);
         }
 
         [HttpDelete("{id:int}")]
         [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> DeleteUser(int id)
         {
-            var worker = (DeleteData)_factory.CreateMethod("delete");
-            return await worker.ActionAsync<User, UserResponseDto>("delete_user", id);
+            IMethod worker = _factory.CreateMethod("delete");
+            return await worker.ActionAsync<User, UserRespon>("delete_user", id);
         }
     }
 }

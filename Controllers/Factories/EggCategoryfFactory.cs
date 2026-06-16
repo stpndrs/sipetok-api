@@ -5,7 +5,7 @@ using sipetok_api.Controllers.Products;
 
 namespace sipetok_api.Controllers.Factories
 {
-    public class EggCategoryFactory
+    public class EggCategoryFactory : ModuleFactory
     {
         private readonly AppDbContext _dbContext;
         private readonly IMapper _mapper;
@@ -18,7 +18,7 @@ namespace sipetok_api.Controllers.Factories
         }
 
         // Method pabrik untuk membuat objek pekerja berdasarkan actionType
-        public object CreateMethod(string actionType)
+        public IMethod CreateMethod(string actionType)
         {
             switch (actionType.ToLower())
             {

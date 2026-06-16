@@ -14,7 +14,7 @@ namespace sipetok_api.Controllers
     [ApiController]
     public class EggCategoryController : ControllerBase
     {
-        private readonly EggCategoryFactory _factory;
+        private readonly ModuleFactory _factory;
 
         // Inject EggCategoryFactory langsung ke dalam Controller
         public EggCategoryController(EggCategoryFactory factory)
@@ -29,7 +29,7 @@ namespace sipetok_api.Controllers
             int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
 
             // Panggil factory untuk mendapatkan objek GetData
-            var handler = (GetData)_factory.CreateMethod("get");
+            IMethod handler = _factory.CreateMethod("get");
 
             if (User.IsInRole("CUSTOMER"))
             {
@@ -37,7 +37,7 @@ namespace sipetok_api.Controllers
             }
             else if (User.IsInRole("TENANT"))
             {
-                return await handler.ActionAsync<EggCategory, EggCategoryRespon>("category_all_tenant", userId: userId);
+                return await handler.ActionAsync<EggCategory, EggCategoryResponseDto>("category_all_tenant", userId: userId);
             }
             return Forbid();
         }
@@ -48,20 +48,20 @@ namespace sipetok_api.Controllers
         public async Task<IActionResult> GetEggCategoryById(int id)
         {
             var userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
-            var handler = (GetData)_factory.CreateMethod("get");
-            return await handler.ActionAsync<EggCategory, EggCategoryRespon>("get_category_by_id", id: id, userId: userId);
+            IMethod handler = _factory.CreateMethod("get");
+            return await handler.ActionAsync<EggCategory, EggCategoryResponseDto>("get_category_by_id", id: id, userId: userId);
         }
 
         [HttpPost]
         [Authorize(Roles = "TENANT")]
-        public async Task<IActionResult> AddEggCategory([FromBody] EggCategoryDto eggCategoryDto)
+        public async Task<IActionResult> AddEggCategory([FromBody] EggCategoryRequestDto eggCategoryDto)
         {
             int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
 
             // Panggil factory untuk mendapatkan objek SaveData
-            var handler = (SaveData)_factory.CreateMethod("save");
+            IMethod handler = _factory.CreateMethod("save");
 
-            return await handler.ActionAsync<EggCategory, EggCategoryRespon>(
+            return await handler.ActionAsync<EggCategory, EggCategoryResponseDto>(
                 subAction: "add_category",
                 data: eggCategoryDto,
                 httpMethod: "POST",
@@ -72,12 +72,12 @@ namespace sipetok_api.Controllers
         [HttpPut]
         [Route("{id:int}")]
         [Authorize(Roles = "TENANT")]
-        public async Task<IActionResult> UpdateEggCategory(int id, [FromBody] EggCategoryDto eggCategoryDto)
+        public async Task<IActionResult> UpdateEggCategory(int id, [FromBody] EggCategoryRequestDto eggCategoryDto)
         {
             int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
-            var handler = (SaveData)_factory.CreateMethod("save");
+            IMethod handler = _factory.CreateMethod("save");
 
-            return await handler.ActionAsync<EggCategory, EggCategoryRespon>(
+            return await handler.ActionAsync<EggCategory, EggCategoryResponseDto>(
                 subAction: "update_category",
                 data: eggCategoryDto,
                 httpMethod: "PUT",
@@ -94,9 +94,9 @@ namespace sipetok_api.Controllers
             int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
 
             // Panggil factory untuk mendapatkan objek DeleteData
-            var handler = (DeleteData)_factory.CreateMethod("delete");
+            IMethod handler = _factory.CreateMethod("delete");
 
-            return await handler.ActionAsync<EggCategory, EggCategoryRespon>(
+            return await handler.ActionAsync<EggCategory, EggCategoryResponseDto>(
                 subAction: "delete_category",
                 id: id,
                 userId: userId

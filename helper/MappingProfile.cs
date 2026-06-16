@@ -17,7 +17,7 @@ namespace sipetok_api
             CreateMap<TenantDto, Tenant>();
             CreateMap<OperationalDto, Operational>();
             CreateMap<EggDto, Egg>();
-            CreateMap<EggCategoryDto, EggCategory>();
+            CreateMap<EggCategoryRequestDto, EggCategory>();
             CreateMap<ChangePasswordDto, User>();
             CreateMap<TransactionDto, Transaction>();
             CreateMap<TransactionDetailDto, TransactionDetail>();
@@ -26,7 +26,7 @@ namespace sipetok_api
             CreateMap<Tenant, TenantRespon>();
             CreateMap<Operational, OperationalRespon>();
             CreateMap<Egg, EggRespon>();
-            CreateMap<EggCategory, EggCategoryRespon>();
+            CreateMap<EggCategory, EggCategoryResponseDto>();
             CreateMap<Transaction, TransactionRespon>();
             CreateMap<TransactionDetail, TransactionDetailRespon>();
         }

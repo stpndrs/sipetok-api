@@ -17,7 +17,7 @@ namespace sipetok_api.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-        private readonly AuthFactory _factory;
+        private readonly ModuleFactory _factory;
         private readonly AppDbContext _dbContext;
 
         public AuthController(AppDbContext context, IConfiguration config, IMapper mapper)
@@ -46,7 +46,7 @@ namespace sipetok_api.Controllers
             };
 
             // 3. Panggil Factory
-            IMethod handler = (IMethod)_factory.CreateMethod("save");
+            IMethod handler = _factory.CreateMethod("save");
 
             // 4. PASTIKAN di sini menulis 'user', bukan 'user'
             return await handler.ActionAsync<User, AuthResponseDto>(
@@ -77,8 +77,8 @@ namespace sipetok_api.Controllers
             }
 
             // 4. Kirim objek user yang sudah VALID ke SaveData
-            IMethod handler = (IMethod)_factory.CreateMethod("save");
-            return await handler.ActionAsync<User, AuthResponseDto>(
+            IMethod handler = _factory.CreateMethod("save");
+            return await handler.ActionAsync<User, AuthRespon>(
                 subAction: "login",
                 data: user, // Yang dikirim adalah object User
                 httpMethod: "POST"

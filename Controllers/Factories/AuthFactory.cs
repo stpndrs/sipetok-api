@@ -6,7 +6,7 @@ using System;
 
 namespace sipetok_api.Controllers.Factories
 {
-    public class AuthFactory
+    public class AuthFactory : ModuleFactory
     {
         // Deklarasi field yang bersih dan tidak ada duplikasi
         private readonly AppDbContext _dbContext;
@@ -22,7 +22,7 @@ namespace sipetok_api.Controllers.Factories
         }
 
         // Method pabrik untuk menghasilkan objek "Pekerja" (SaveData)
-        public object CreateMethod(string actionType)
+        public IMethod CreateMethod(string actionType)
         {
             // Meratakan string agar tidak case-sensitive
             string action = actionType?.ToLower()?.Trim() ?? string.Empty;
