@@ -32,7 +32,7 @@ namespace sipetok_api.Controllers
             int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
             var handler = (GetData)_factory.CreateMethod("get");
 
-            return await handler.ActionAsync<Transaction, TransactionRespon>("getall", userId: userId);
+            return await handler.ActionAsync<Transaction, TransactionRespon>("tx_all_tenant", userId: userId);
         }
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetTransactionById(int id)

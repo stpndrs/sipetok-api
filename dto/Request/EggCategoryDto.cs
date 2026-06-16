@@ -13,17 +13,13 @@ namespace sipetok_api.dto.Request
         [Required(ErrorMessage = "Name is required!")]
         public string Name { get; set; } = string.Empty;
 
-        // [Required(ErrorMessage = "Tenant ID is required!")]
-        public int TenantId { get; set; }
-
         public EggCategoryDto() { }
 
-        public EggCategoryDto(decimal Price, string Description, string Name, int TenantId)
+        public EggCategoryDto(decimal Price, string Description, string Name)
         {
             this.Price = Price;
             this.Description = Description;
             this.Name = Name;
-            this.TenantId = TenantId;
         }
     }
 }

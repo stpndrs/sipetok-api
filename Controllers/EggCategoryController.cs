@@ -37,7 +37,7 @@ namespace sipetok_api.Controllers
             }
             else if (User.IsInRole("TENANT"))
             {
-                return await handler.ActionAsync<EggCategory, EggCategoryRespon>("getall", userId: userId);
+                return await handler.ActionAsync<EggCategory, EggCategoryRespon>("category_all_tenant", userId: userId);
             }
             return Forbid();
         }
@@ -47,8 +47,9 @@ namespace sipetok_api.Controllers
         [Authorize(Roles = "TENANT")]
         public async Task<IActionResult> GetEggCategoryById(int id)
         {
+            var userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
             var handler = (GetData)_factory.CreateMethod("get");
-            return await handler.ActionAsync<EggCategory, EggCategoryRespon>("byid", id: id);
+            return await handler.ActionAsync<EggCategory, EggCategoryRespon>("get_category_by_id", id: id, userId: userId);
         }
 
         [HttpPost]
