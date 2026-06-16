@@ -220,10 +220,10 @@ namespace sipetok_api.Controllers.Products
             if (eggCategory is null) return new BadRequestObjectResult(new ResponData<object>(false, "Data Category not found"));
             if (eggCategory.TenantId != tenant.Id) return new BadRequestObjectResult(new ResponData<object>(false, "Category does not belong to your Tenant"));
 
-            var egg = _mapper.Map<Egg>(eggDto);
+            var egg = _mapper.Map<EggInventory>(eggDto);
             egg.CategoryId = eggCategory.Id;
 
-            await _dbContext.Eggs.AddAsync(egg);
+            await _dbContext.EggInventories.AddAsync(egg);
             await _dbContext.SaveChangesAsync();
             return new OkObjectResult(new ResponData<TResponse>(true, _mapper.Map<TResponse>(egg), "Successfully added egg data"));
         }
@@ -307,7 +307,7 @@ namespace sipetok_api.Controllers.Products
         {
             if (data is not EggDto editEggDto) return InvalidDtoResponse();
 
-            var egg = await _dbContext.Eggs.FirstOrDefaultAsync(e => e.Id == (id ?? 0));
+            var egg = await _dbContext.EggInventories.FirstOrDefaultAsync(e => e.Id == (id ?? 0));
             if (egg == null) return new NotFoundObjectResult(new ResponData<object>(false, "Data egg not found"));
 
             egg.ProductionDate = editEggDto.ProductionDate;
@@ -315,7 +315,7 @@ namespace sipetok_api.Controllers.Products
             egg.Stock = editEggDto.Stock;
             egg.UpdateTimestamps();
 
-            _dbContext.Eggs.Update(egg);
+            _dbContext.EggInventories.Update(egg);
             await _dbContext.SaveChangesAsync();
             return new OkObjectResult(new ResponData<TResponse>(true, _mapper.Map<TResponse>(egg), "Successfully updated egg data"));
         }

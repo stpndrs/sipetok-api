@@ -2,7 +2,7 @@
 
 namespace sipetok_api.Models
 {
-    public class Egg : BaseEntity
+    public class EggInventory : BaseEntity
     {
         public int Id { get; set; }
         public DateTime ProductionDate { get; set; }
@@ -13,9 +13,9 @@ namespace sipetok_api.Models
         [ForeignKey("CategoryId")]
         public virtual EggCategory? Category { get; set; }
 
-        public Egg() { }
+        public EggInventory() { }
 
-        public Egg(int Id, DateTime ProductionDate, double Stock, int CategoryId)
+        public EggInventory(int Id, DateTime ProductionDate, double Stock, int CategoryId)
         {
             this.Id = Id;
             this.ProductionDate = ProductionDate;

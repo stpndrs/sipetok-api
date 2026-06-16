@@ -62,7 +62,7 @@ namespace sipetok_api.Services
             using var transactionScope = await dbContext.Database.BeginTransactionAsync();
             try
             {
-                decimal totalPrice = 0;
+                double totalPrice = 0;
                 var transaction = new Transaction
                 {
                     Date = dto.Date,
@@ -85,8 +85,8 @@ namespace sipetok_api.Services
                         var eggCategory = await dbContext.EggCategories.FindAsync(d.CategoryId);
                         if (eggCategory == null) throw new Exception($"Kategori telur dengan ID {d.CategoryId} tidak ditemukan.");
 
-                        decimal priceAtPurchase = eggCategory.Price;
-                        decimal subtotal = (decimal)d.Quantity * priceAtPurchase;
+                        double priceAtPurchase = eggCategory.Price;
+                        double subtotal = (double)d.Quantity * priceAtPurchase;
                         totalPrice += subtotal;
 
                         dbContext.TransactionDetails.Add(new TransactionDetail

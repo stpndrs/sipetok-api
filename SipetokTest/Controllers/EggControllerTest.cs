@@ -144,7 +144,7 @@
 
 //             // Assert
 //             Assert.IsType<OkObjectResult>(result);
-//             Assert.Single(dbContext.Eggs);
+//             Assert.Single(dbContext.EggInventories);
 //         }
 
 //         [Fact]
@@ -195,7 +195,7 @@
 
 //             // Assert
 //             Assert.IsType<OkObjectResult>(result);
-//             Assert.Single(dbContext.Eggs);
+//             Assert.Single(dbContext.EggInventories);
 //         }
 
 //         [Fact]
@@ -248,7 +248,7 @@
 
 //             // Assert
 //             Assert.IsType<OkObjectResult>(result);
-//             Assert.Equal(25, dbContext.Eggs.Find(egg.Id)?.stock);
+//             Assert.Equal(25, dbContext.EggInventories.Find(egg.Id)?.stock);
 //         }
 
 //         [Fact]
@@ -297,7 +297,7 @@
 
 //             // Assert
 //             Assert.IsType<OkObjectResult>(result);
-//             Assert.Equal(30, dbContext.Eggs.Find(egg.Id)?.stock);
+//             Assert.Equal(30, dbContext.EggInventories.Find(egg.Id)?.stock);
 //         }
 
 //         [Fact]
@@ -404,9 +404,9 @@
 //             return (user, tenant, category);
 //         }
 
-//         private static Egg SeedEgg(AppDbContext dbContext, int tenantId, int categoryId, int stock)
+//         private static EggInventory SeedEgg(AppDbContext dbContext, int tenantId, int categoryId, int stock)
 //         {
-//             var egg = new Egg
+//             var egg = new EggInventory
 //             {
 //                 production_date = new DateTime(2026, 5, 10),
 //                 stock = stock,
@@ -414,7 +414,7 @@
 //                 category_id = categoryId
 //             };
 
-//             dbContext.Eggs.Add(egg);
+//             dbContext.EggInventories.Add(egg);
 //             dbContext.SaveChanges();
 
 //             return egg;

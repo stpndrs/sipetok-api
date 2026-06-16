@@ -6,8 +6,8 @@ namespace sipetok_api.dto.Respon
     {
         public int Id { get; set; }
         public DateTime Date { get; set; }
-        public decimal PaymentAmount { get; set; }
-        public decimal TotalPrice { get; set; }
+        public double PaymentAmount { get; set; }
+        public double TotalPrice { get; set; }
         public int TenantId { get; set; }
         public string CustomerName { get; set; } = string.Empty;
         public string CustomerPhoneNumber { get; set; } = string.Empty;
@@ -18,7 +18,7 @@ namespace sipetok_api.dto.Respon
 
         public TransactionRespon() { }
 
-        public TransactionRespon(int Id, decimal PaymentAmount, decimal TotalPrice, int TenantId, string CustomerName, string CustomerPhoneNumber, int PaymentStatus, int OrderStatus)
+        public TransactionRespon(int Id, double PaymentAmount, double TotalPrice, int TenantId, string CustomerName, string CustomerPhoneNumber, int PaymentStatus, int OrderStatus)
         {
             this.Id = Id;
             this.Date = DateTime.Now;

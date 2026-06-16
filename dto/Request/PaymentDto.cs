@@ -5,10 +5,10 @@ namespace sipetok_api.dto.Request
 {
     public class PaymentDto
     {
-        public decimal PaymentAmount { get; set; }
+        public double PaymentAmount { get; set; }
         public PaymentDto() { }
 
-        public PaymentDto(decimal PaymentAmount)
+        public PaymentDto(double PaymentAmount)
         {
             this.PaymentAmount = PaymentAmount;
         }

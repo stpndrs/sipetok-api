@@ -7,8 +7,8 @@ namespace sipetok_api.Models
     {
         public int Id { get; set; }
         public DateTime Date { get; set; }
-        public decimal PaymentAmount { get; set; }
-        public decimal TotalPrice { get; set; }
+        public double PaymentAmount { get; set; }
+        public double TotalPrice { get; set; }
         public PaymentState PaymentStatus { get; set; } = PaymentState.WaitingForPayment;
         public OrderState OrderStatus { get; set; } = OrderState.OrderComeIn;
         public string CustomerName { get; set; } = string.Empty;
@@ -21,7 +21,7 @@ namespace sipetok_api.Models
 
         public Transaction() { }
 
-        public Transaction(int Id, decimal PaymentAmount, PaymentState PaymentStatus, OrderState OrderStatus, decimal TotalPrice, int TenantId, string CustomerName, string CustomerPhoneNumber)
+        public Transaction(int Id, double PaymentAmount, PaymentState PaymentStatus, OrderState OrderStatus, double TotalPrice, int TenantId, string CustomerName, string CustomerPhoneNumber)
         {
             this.Id = Id;
             this.Date = DateTime.Now;

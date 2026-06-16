@@ -7,11 +7,11 @@ namespace sipetok_api.dto.Respon
         public EggCategoryResponseDto Category { get; set; }
         public double Quantity { get; set; }
         public double PriceAtPurchase { get; set; }
-        public decimal Subtotal { get; set; } // Ubah ke decimal
+        public double Subtotal { get; set; } // Ubah ke double
 
         // public TransactionDetailRespon() { }
 
-        public TransactionDetailRespon(int Id, int TransactionId, EggCategoryResponseDto Category, double Quantity, double PriceAtPurchase, decimal Subtotal)
+        public TransactionDetailRespon(int Id, int TransactionId, EggCategoryResponseDto Category, double Quantity, double PriceAtPurchase, double Subtotal)
         {
             this.Id = Id;
             this.TransactionId = TransactionId;

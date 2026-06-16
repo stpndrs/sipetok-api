@@ -66,13 +66,13 @@ namespace sipetok_api.Controllers.Products
         {
             try
             {
-                var egg = await _dbContext.Eggs
+                var egg = await _dbContext.EggInventories
                     .Include(e => e.Category)
                         .ThenInclude(cat => cat!.Tenant)
                     .FirstOrDefaultAsync(e => e.Id == (id ?? 0));
 
                 if (egg is null)
-                    return new NotFoundObjectResult(new ResponData<object>(false, "Egg tidak ditemukan"));
+                    return new NotFoundObjectResult(new ResponData<object>(false, "EggInventory tidak ditemukan"));
 
                 if (egg.Category is null || egg.Category.Tenant is null)
                 {

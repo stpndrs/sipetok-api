@@ -7,9 +7,9 @@ namespace sipetok_api.dto.Request
     {
         public DateTime Date { get; set; }
 
-        public decimal PaymentAmount { get; set; }
+        public double PaymentAmount { get; set; }
 
-        public decimal TotalPrice { get; set; }
+        public double TotalPrice { get; set; }
 
         public int TenantId { get; set; }
         public string CustomerName { get; set; } = string.Empty;
@@ -19,7 +19,7 @@ namespace sipetok_api.dto.Request
 
         public TransactionDto() { }
 
-        public TransactionDto(decimal PaymentAmount, int TenantId, string CustomerName, string CustomerPhoneNumber)
+        public TransactionDto(double PaymentAmount, int TenantId, string CustomerName, string CustomerPhoneNumber)
         {
             this.Date = DateTime.Now;
             this.PaymentAmount = PaymentAmount;
