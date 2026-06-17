@@ -120,8 +120,6 @@ namespace sipetok_api.Controllers.Products
 
                     if (existingEntity is BaseEntity baseEntity)
                     {
-                        baseEntity.SoftDelete();
-
                         repository.Update(existingEntity);
                         repository.SaveChanges();
 
