@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using sipetok_api.Data;
 using sipetok_api.dto;
-using sipetok_api.dto.Respon;
+using sipetok_api.dto.Response;
 using sipetok_api.helper;
 using sipetok_api.Models;
 using sipetok_api.Repositories;

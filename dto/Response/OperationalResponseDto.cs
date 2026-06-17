@@ -1,14 +1,14 @@
-namespace sipetok_api.dto.Respon
+namespace sipetok_api.dto.Response
 {
-    public class OperationalRespon
+    public class OperationalResponseDto
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public string OperationalCost { get; set; } = string.Empty;
         public int TenantId { get; set; }
         public DateTime OperationalDate { get; set; }
-        public OperationalRespon() { }
-        public OperationalRespon(int Id, string Name, string OperationalCost, int TenantId, DateTime OperationalDate)
+        public OperationalResponseDto() { }
+        public OperationalResponseDto(int Id, string Name, string OperationalCost, int TenantId, DateTime OperationalDate)
         {
             this.Id = Id;
             this.Name = Name;

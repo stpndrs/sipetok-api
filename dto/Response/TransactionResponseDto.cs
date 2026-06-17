@@ -1,6 +1,6 @@
 using sipetok_api.Utils;
 
-namespace sipetok_api.dto.Respon
+namespace sipetok_api.dto.Response
 {
     public class TransactionResponseDto
     {

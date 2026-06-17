@@ -1,8 +1,8 @@
-using sipetok_api.dto.Respon;
+using sipetok_api.dto.Response;
 
 namespace sipetok_api.Respon
 {
-    public class EggAvailableRespon
+    public class EggAvailableResponseDto
     {
         public double Stock { get; set; }
         public int TenantId { get; set; }
@@ -13,9 +13,9 @@ namespace sipetok_api.Respon
         public string CategoryName { get; set; }
         public string TenantName { get; set; }
 
-        public EggAvailableRespon() { }
+        public EggAvailableResponseDto() { }
 
-        public EggAvailableRespon(double Stock, int TenantId, int CategoryId, string CategoryName, string TenantName)
+        public EggAvailableResponseDto(double Stock, int TenantId, int CategoryId, string CategoryName, string TenantName)
         {
             this.Stock = Stock;
             this.TenantId = TenantId;

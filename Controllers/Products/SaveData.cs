@@ -5,7 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using sipetok_api.Data;
 using sipetok_api.dto.Request;
-using sipetok_api.dto.Respon;
+using sipetok_api.dto.Response;
 using sipetok_api.Models;
 using sipetok_api.Services;
 using sipetok_api.Utils;
@@ -211,7 +211,7 @@ namespace sipetok_api.Controllers.Products
 
         private async Task<IActionResult> HandleAddEggAsync<TResponse>(object data, int? userId)
         {
-            if (data is not EggInventoryDto eggDto) return InvalidDtoResponse();
+            if (data is not EggInventoryRequestDto eggDto) return InvalidDtoResponse();
 
             var tenant = await GetTenantByUserIdAsync(userId);
             var eggCategory = await _dbContext.EggCategories.FindAsync(eggDto.CategoryId);
@@ -305,7 +305,7 @@ namespace sipetok_api.Controllers.Products
 
         private async Task<IActionResult> HandleUpdateEggAsync<TResponse>(int? id, object data)
         {
-            if (data is not EggInventoryDto editEggDto) return InvalidDtoResponse();
+            if (data is not EggInventoryRequestDto editEggDto) return InvalidDtoResponse();
 
             var egg = await _dbContext.EggInventories.FirstOrDefaultAsync(e => e.Id == (id ?? 0));
             if (egg == null) return new NotFoundObjectResult(new ResponData<object>(false, "Data egg not found"));

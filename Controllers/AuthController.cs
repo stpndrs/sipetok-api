@@ -1,17 +1,12 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using sipetok_api.Controllers.Factories;
-using sipetok_api.Controllers.Products;
-using sipetok_api.Data;
 using sipetok_api.dto;
 using sipetok_api.dto.Request;
-using sipetok_api.dto.Respon;
+using sipetok_api.dto.Response;
 using sipetok_api.helper;
 using sipetok_api.Models;
-using sipetok_api.Repositories;
-using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace sipetok_api.Controllers
@@ -21,14 +16,12 @@ namespace sipetok_api.Controllers
     public class AuthController : ControllerBase
     {
         private readonly StevanModuleFactory _factory;
-        private readonly IConfiguration appConfig;
-        private readonly AppDbContext _dbContext;
+        private readonly IConfiguration _appConfig;
 
-        public AuthController(AppDbContext context, IConfiguration config, IMapper mapper)
+        public AuthController(AuthFactory factory, IConfiguration config)
         {
-            _dbContext = context;
-            appConfig = config;
-            _factory = new AuthFactory(context, appConfig, mapper);
+            _factory = factory;
+            _appConfig = config;
         }
 
         [HttpPost("register")]
@@ -38,21 +31,17 @@ namespace sipetok_api.Controllers
 
             if (string.IsNullOrWhiteSpace(request.Password))
             {
-                return new BadRequestObjectResult(new ResponData<object?>(false, "Password is required"));
+                return BadRequest(new ResponData<object?>(false, "Password is required"));
             }
 
-            User userModel = new User();
-            UserResponseDto response = new UserResponseDto();
-
-            string hashedPassword = Bcrypt.HashPassword(request.Password);
-
-            request.Password = hashedPassword;
+            // KISS: Mutasi properti request secara langsung & rapi
+            request.Password = Bcrypt.HashPassword(request.Password);
             request.Role = 3;
             request.IsActive = true;
 
-            IStevanMethod worker = _factory.CreateMethod("register");
-
-            return await worker.ActionAsync<User, UserResponseDto, RegisterRequestDto>(userModel, response, request, "POST");
+            var worker = _factory.CreateMethod("register");
+            return await worker.ActionAsync<User, UserResponseDto, RegisterRequestDto>(
+                new User(), new UserResponseDto(), request, "POST");
         }
 
         [HttpPost("login")]
@@ -60,54 +49,42 @@ namespace sipetok_api.Controllers
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            User userModel = new User();
-            UserResponseDto userResponse = new UserResponseDto();
+            var getWorker = _factory.CreateMethod("get");
+            var usernameCheckQuery = new[] { $"Username:{request.Username}" };
 
-            IStevanMethod getWorker = _factory.CreateMethod("get");
-
-            string[] usernameCheckQuery = new[] { $"Username:{request.Username}" };
-
-            // 1. Lakukan pencarian dinamis via StevanGetData
+            // 1. Ambil data via StevanGetData secara langsung tanpa deklarasi variabel sampah
             var checkResult = await getWorker.ActionAsync<User, UserResponseDto>(
-                userModel,
-                userResponse,
-                searchQuery: usernameCheckQuery
-            );
+                new User(), new UserResponseDto(), searchQuery: usernameCheckQuery);
 
+            // KISS: Sederhanakan ekstraksi targetUser menggunakan pola matching C# modern
             UserResponseDto? targetUser = null;
-
-            if (checkResult is OkObjectResult okResult && okResult.Value != null)
+            if (checkResult is OkObjectResult { Value: ResponData<List<UserResponseDto>> { Success: true, Data: { Count: > 0 } } responData })
             {
-                var responData = okResult.Value as ResponData<List<UserResponseDto>>;
-
-                if (responData != null && responData.Success && responData.Data != null && responData.Data.Count > 0)
-                {
-                    targetUser = responData.Data[0];
-                }
+                targetUser = responData.Data[0];
             }
 
-
+            // 2. Validasi kredensial & status user
             if (targetUser == null || !Bcrypt.VerifyPassword(request.Password, targetUser.Password))
             {
-                return new BadRequestObjectResult(new ResponData<object>(false, "Wrong Username or Password"));
+                return BadRequest(new ResponData<object>(false, "Wrong Username or Password"));
             }
 
             if (targetUser.IsActive.key == 0)
             {
-                return new BadRequestObjectResult(new ResponData<object>(false, "Your account has been deactivated"));
+                return BadRequest(new ResponData<object>(false, "Your account has been deactivated"));
             }
 
-            User userForToken = new User
+            // 3. Generate token & kembalikan respon
+            var userForToken = new User
             {
                 Username = targetUser.Username,
                 Role = targetUser.Role.key,
                 Id = targetUser.Id
             };
 
-            string token = AuthHelper.CreateToken(userForToken, appConfig);
+            string token = AuthHelper.CreateToken(userForToken, _appConfig);
 
-            var response = new ResponData<AuthResponseDto>
-            (
+            var response = new ResponData<AuthResponseDto>(
                 true,
                 new AuthResponseDto(token != "false" ? token : null),
                 "Login berhasil"
