@@ -5,22 +5,24 @@ using sipetok_api.Services;
 
 namespace sipetok_api.Controllers.Factories
 {
-    public class TransactionFactory : ModuleFactory
+    public class TransactionFactory : StevanModuleFactory
     {
+        private readonly IConfiguration appConfig;
         private readonly AppDbContext _dbContext;
         private readonly IMapper _mapper;
         private readonly PaymentService _paymentService;
         private readonly OrderService _orderService;
 
-        public TransactionFactory(AppDbContext dbContext, IMapper mapper, PaymentService paymentService, OrderService orderService)
+        public TransactionFactory(AppDbContext dbContext, IConfiguration config, IMapper mapper, PaymentService paymentService, OrderService orderService)
         {
             _dbContext = dbContext;
             _mapper = mapper;
             _paymentService = paymentService;
             _orderService = orderService;
+            appConfig = config;
         }
 
-        public IMethod CreateMethod(string actionType)
+        public IStevanMethod CreateMethod(string actionType)
         {
             // Menghindari NullReferenceException dan meratakan teks ke huruf kecil
             string action = actionType?.ToLower()?.Trim() ?? string.Empty;
@@ -29,15 +31,15 @@ namespace sipetok_api.Controllers.Factories
             {
                 case "get":
                 case "read":
-                    return new GetData(_dbContext, _mapper);
+                    return new StevanGetData(_dbContext, _mapper);
 
                 case "save":
                 case "write":
-                    return new SaveData(_dbContext, _mapper, _paymentService, _orderService);
+                    return new StevanSaveData(_dbContext, appConfig, _mapper, _paymentService, _orderService);
 
-                case "delete":
-                case "remove":
-                    return new DeleteData(_dbContext);
+                // case "delete":
+                // case "remove":
+                //     return new DeleteData(_dbContext);
 
                 default:
                     throw new ArgumentException($"Aksi '{actionType}' tidak dikenal di TransactionFactory.");

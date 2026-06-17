@@ -1,6 +1,6 @@
 namespace sipetok_api.dto.Respon
 {
-    public class TransactionDetailRespon
+    public class TransactionDetailResponseDto
     {
         public int Id { get; set; }
         public int TransactionId { get; set; }
@@ -9,9 +9,9 @@ namespace sipetok_api.dto.Respon
         public double PriceAtPurchase { get; set; }
         public double Subtotal { get; set; } // Ubah ke double
 
-        // public TransactionDetailRespon() { }
+        // public TransactionDetailResponseDto() { }
 
-        public TransactionDetailRespon(int Id, int TransactionId, EggCategoryResponseDto Category, double Quantity, double PriceAtPurchase, double Subtotal)
+        public TransactionDetailResponseDto(int Id, int TransactionId, EggCategoryResponseDto Category, double Quantity, double PriceAtPurchase, double Subtotal)
         {
             this.Id = Id;
             this.TransactionId = TransactionId;

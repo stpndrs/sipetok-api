@@ -7,6 +7,7 @@ using sipetok_api.dto.Respon;
 using sipetok_api.helper;
 using sipetok_api.Models;
 using sipetok_api.Repositories;
+using sipetok_api.Services;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -18,12 +19,23 @@ namespace sipetok_api.Controllers.Products
         private readonly IConfiguration appConfig;
         private readonly AppDbContext _dbContext;
         private readonly IMapper _mapper;
+        private readonly PaymentService _paymentService;
+        private readonly OrderService _orderService;
 
         public StevanSaveData(AppDbContext dbContext, IConfiguration config, IMapper mapper)
         {
             _dbContext = dbContext;
             _mapper = mapper;
             appConfig = config;
+        }
+
+        public StevanSaveData(AppDbContext dbContext, IConfiguration config, IMapper mapper, PaymentService paymentService, OrderService orderService)
+        {
+            _dbContext = dbContext;
+            _mapper = mapper;
+            appConfig = config;
+            _paymentService = paymentService;
+            _orderService = orderService;
         }
 
         // =========================================================================
@@ -53,15 +65,38 @@ namespace sipetok_api.Controllers.Products
                     repository.Add(entity);
                     repository.SaveChanges();
 
+                    // aturan khusus auth response
                     if (response is AuthResponseDto authResponse)
                     {
                         string token = AuthHelper.CreateToken(entity as User, appConfig);
-                        Console.WriteLine("Token " + token);
 
                         var responseAuth = _mapper.Map<TResponse>(new AuthResponseDto(token != "false" ? token : null));
 
                         return new OkObjectResult(new ResponData<TResponse>(true, responseAuth, "Successfully added data"));
                     }
+
+                    // --- LOGIKA OTOMATIS UNTUK DETAILS ---
+                    var detailsProperty = entity.GetType().GetProperty("Details");
+                    if (detailsProperty != null && request != null)
+                    {
+                        var requestDetailsProperty = request.GetType().GetProperty("Details");
+                        if (requestDetailsProperty != null)
+                        {
+                            var detailsValue = requestDetailsProperty.GetValue(request);
+                            if (detailsValue != null)
+                            {
+                                // Jika ada data Details di request, set ke entity
+                                detailsProperty.SetValue(entity, detailsValue);
+
+                                // Simpan perubahan detail ke database
+                                _dbContext.SaveChanges();
+                            }
+                        }
+                    }
+                    // -------------------------------------
+
+                    if (entity is Transaction) return new OkObjectResult(entity);
+
                     var responseData = _mapper.Map<TResponse>(entity);
                     return new OkObjectResult(new ResponData<TResponse>(true, responseData, "Successfully added data"));
                 }

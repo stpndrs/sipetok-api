@@ -31,9 +31,11 @@ namespace sipetok_api.Controllers.Products
 
                 var entities = await repository.GetWithFiltersAsync(searchQuery, includes);
                 Console.WriteLine("Data Count: " + entities.Count());
+
                 if (id != null)
                 {
-                    var entity = entities.FirstOrDefault(e => Microsoft.EntityFrameworkCore.EF.Property<int>(e, "Id") == id.Value);
+                    var entity = entities.FirstOrDefault(e =>
+                        (int)e.GetType().GetProperty("Id")?.GetValue(e, null) == id.Value);
 
                     if (entity is null)
                     {
@@ -45,15 +47,22 @@ namespace sipetok_api.Controllers.Products
                 }
                 else if (userId != null)
                 {
-                    var entity = entities.FirstOrDefault(e => Microsoft.EntityFrameworkCore.EF.Property<int>(e, "Id") == userId.Value);
+                    var propertyInfo = typeof(TModel).GetProperty("TenantId") ?? typeof(TModel).GetProperty("UserId");
 
-                    if (entity is null)
+                    if (propertyInfo == null)
                     {
-                        return new NotFoundObjectResult(new ResponData<object?>(false, $"Data dengan userId {userId} tidak ditemukan"));
+                        return new BadRequestObjectResult(new ResponData<object?>(false, "Model tidak memiliki properti TenantId/UserId."));
                     }
 
-                    var mappedResponse = _mapper.Map<TResponse>(entity);
-                    return new OkObjectResult(new ResponData<TResponse>(true, mappedResponse, $"Successfully retrieved data with userId {userId}"));
+                    var filteredEntities = entities.Where(e =>
+                    {
+                        var value = propertyInfo.GetValue(e);
+                        return value != null;
+                    }).ToList();
+
+
+                    var mappedResponseList = _mapper.Map<List<TResponse>>(filteredEntities);
+                    return new OkObjectResult(new ResponData<List<TResponse>>(true, mappedResponseList, $"Successfully retrieved items"));
                 }
                 else
                 {

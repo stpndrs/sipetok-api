@@ -2,7 +2,7 @@ using sipetok_api.Utils;
 
 namespace sipetok_api.dto.Respon
 {
-    public class TransactionRespon
+    public class TransactionResponseDto
     {
         public int Id { get; set; }
         public DateTime Date { get; set; }
@@ -14,11 +14,11 @@ namespace sipetok_api.dto.Respon
         public PaymentState PaymentStatus { get; set; } = PaymentState.WaitingForPayment;
         public OrderState OrderStatus { get; set; } = OrderState.OrderComeIn;
 
-        public virtual ICollection<TransactionDetailRespon> Details { get; set; } = new List<TransactionDetailRespon>();
+        public virtual ICollection<TransactionDetailResponseDto> Details { get; set; } = new List<TransactionDetailResponseDto>();
 
-        public TransactionRespon() { }
+        public TransactionResponseDto() { }
 
-        public TransactionRespon(int Id, double PaymentAmount, double TotalPrice, int TenantId, string CustomerName, string CustomerPhoneNumber, int PaymentStatus, int OrderStatus)
+        public TransactionResponseDto(int Id, double PaymentAmount, double TotalPrice, int TenantId, string CustomerName, string CustomerPhoneNumber, int PaymentStatus, int OrderStatus)
         {
             this.Id = Id;
             this.Date = DateTime.Now;

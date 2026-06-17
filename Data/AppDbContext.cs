@@ -26,11 +26,11 @@ namespace sipetok_api.Data
             // Ini otomatis menyaring data yang DeletedAt != null agar tidak ikut ke-load
             modelBuilder.Entity<User>().HasQueryFilter(e => e.DeletedAt == null);
             modelBuilder.Entity<Tenant>().HasQueryFilter(e => e.DeletedAt == null);
-            modelBuilder.Entity<EggCategory>().HasQueryFilter(e => e.DeletedAt == null);
+            // modelBuilder.Entity<EggCategory>().HasQueryFilter(e => e.DeletedAt == null);
             modelBuilder.Entity<EggInventory>().HasQueryFilter(e => e.DeletedAt == null);
             modelBuilder.Entity<Operational>().HasQueryFilter(e => e.DeletedAt == null);
-            modelBuilder.Entity<Transaction>().HasQueryFilter(e => e.DeletedAt == null);
-            modelBuilder.Entity<TransactionDetail>().HasQueryFilter(e => e.DeletedAt == null);
+            // modelBuilder.Entity<Transaction>().HasQueryFilter(e => e.DeletedAt == null);
+            // modelBuilder.Entity<TransactionDetail>().HasQueryFilter(e => e.DeletedAt == null);
 
             // 3. Konfigurasi Relasi & Presisi Data (Fluent API)
 
