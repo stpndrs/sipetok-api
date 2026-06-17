@@ -19,6 +19,7 @@ namespace sipetok_api.Controllers
     {
         private readonly IConfiguration appConfig;
         private readonly StevanModuleFactory _factory;
+        private readonly AppDbContext _dbContext;
 
         public UserController(AppDbContext context, IConfiguration config, IMapper mapper)
         {
