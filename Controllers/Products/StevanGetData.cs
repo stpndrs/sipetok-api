@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using sipetok_api.Data;
-using sipetok_api.dto.Respon;
+using sipetok_api.dto.Response;
 using sipetok_api.Repositories;
 using sipetok_api.Repositories.Interfaces;
 using System;

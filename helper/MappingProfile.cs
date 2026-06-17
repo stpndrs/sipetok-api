@@ -1,7 +1,7 @@
 using AutoMapper;
 using sipetok_api.dto;
 using sipetok_api.dto.Request;
-using sipetok_api.dto.Respon;
+using sipetok_api.dto.Response;
 using sipetok_api.Models;
 using sipetok_api.Respon;
 using sipetok_api.Utilis;
@@ -18,7 +18,7 @@ namespace sipetok_api
             CreateMap<User, UserResponseDto>();
             CreateMap<TenantDto, Tenant>();
             CreateMap<OperationalDto, Operational>();
-            CreateMap<EggInventoryDto, EggInventory>();
+            CreateMap<EggInventoryRequestDto, EggInventory>();
             CreateMap<EggCategoryRequestDto, EggCategory>();
             CreateMap<ChangePasswordDto, User>();
             CreateMap<TransactionRequestDto, Transaction>();
@@ -28,8 +28,8 @@ namespace sipetok_api
 
             CreateMap<User, UserResponseDto>();
             CreateMap<Tenant, TenantRespon>();
-            CreateMap<Operational, OperationalRespon>();
-            CreateMap<EggInventory, EggInventoryRespon>();
+            CreateMap<Operational, OperationalResponseDto>();
+            CreateMap<EggInventory, EggInventoryResponseDto>();
             CreateMap<EggCategory, EggCategoryResponseDto>();
             CreateMap<Transaction, TransactionResponseDto>();
             CreateMap<TransactionDetail, TransactionDetailResponseDto>();

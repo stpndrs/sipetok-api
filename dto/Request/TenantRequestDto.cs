@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace sipetok_api.dto.Request
 {
-    public class TenantDto
+    public class TenantRequestDto
     {
         [Required(ErrorMessage = "Name is required!")]
         public string Name { get; set; } = string.Empty;
@@ -13,9 +13,9 @@ namespace sipetok_api.dto.Request
         public bool IsValid { get; set; }
 
         public virtual UserRequestDto? User { get; set; }
-        public TenantDto() { }
+        public TenantRequestDto() { }
 
-        public TenantDto(string Name, string Address, string PhoneNumber, bool IsValid)
+        public TenantRequestDto(string Name, string Address, string PhoneNumber, bool IsValid)
         {
             this.Name = Name;
             this.Address = Address;

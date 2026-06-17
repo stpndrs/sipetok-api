@@ -1,19 +1,17 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using sipetok_api.Controllers.Factories;
-using sipetok_api.Controllers.Products;
 using sipetok_api.dto.Request;
-using sipetok_api.dto.Respon;
+using sipetok_api.dto.Response;
 using sipetok_api.Services;
-using sipetok_api.Utils;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using sipetok_api.Models;
 using sipetok_api.Data;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
+using sipetok_api.Utils;
 
 namespace sipetok_api.Controllers
 {
@@ -28,6 +26,9 @@ namespace sipetok_api.Controllers
         private readonly OrderService _orderService;
         private readonly IMapper _mapper;
 
+        // DRY: Mengisolasi ekstraksi UserId agar tidak berulang di setiap endpoint
+        private int CurrentUserId => int.Parse(User.FindFirst("userId")?.Value ?? "0");
+
         public TransactionController(TransactionFactory factory, AppDbContext context, PaymentService paymentService, OrderService orderService, IMapper mapper)
         {
             _factory = factory;
@@ -40,36 +41,28 @@ namespace sipetok_api.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
-
             var worker = _factory.CreateMethod("get");
-            Transaction transactionModel = new Transaction();
-            TransactionResponseDto response = new TransactionResponseDto();
-
-            return await worker.ActionAsync<Transaction, TransactionResponseDto>(transactionModel, response, null, userId, null, new[] { "Details", "Details.Category" });
+            return await worker.ActionAsync<Transaction, TransactionResponseDto>(
+                new Transaction(), new TransactionResponseDto(), null, CurrentUserId, null, new[] { "Details", "Details.Category" });
         }
 
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetTransactionById(int id)
         {
-            int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
-
             var worker = _factory.CreateMethod("get");
-            Transaction transactionModel = new Transaction();
-            TransactionResponseDto response = new TransactionResponseDto();
-
-            return await worker.ActionAsync<Transaction, TransactionResponseDto>(transactionModel, response, id, userId, null, new[] { "Details", "Details.Category" });
+            return await worker.ActionAsync<Transaction, TransactionResponseDto>(
+                new Transaction(), new TransactionResponseDto(), id, CurrentUserId, null, new[] { "Details", "Details.Category" });
         }
 
         [HttpPost]
         public async Task<IActionResult> Store([FromBody] TransactionRequestDto request)
         {
-            // Menggunakan IDbContextTransaction agar aman (Atomic)
-            // find tenant by userId
-            int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
-            Tenant tenant = await _dbContext.Tenants.FirstOrDefaultAsync(a => a.UserId == userId);
+            var tenant = await _dbContext.Tenants.FirstOrDefaultAsync(a => a.UserId == CurrentUserId);
+            if (tenant == null) return Forbid();
+
             using var transactionScope = await _dbContext.Database.BeginTransactionAsync();
-            request.TenantId = tenant!.Id;
+            request.TenantId = tenant.Id;
+
             try
             {
                 // 1. Siapkan data transaksi dasar
@@ -77,7 +70,7 @@ namespace sipetok_api.Controllers
                 {
                     Date = request.Date,
                     PaymentAmount = 0,
-                    TotalPrice = 0, // Akan dihitung nanti
+                    TotalPrice = 0,
                     TenantId = request.TenantId,
                     PaymentStatus = PaymentState.WaitingForPayment,
                     OrderStatus = OrderState.OrderComeIn,
@@ -86,34 +79,31 @@ namespace sipetok_api.Controllers
                 };
 
                 // 2. Simpan transaksi utama lewat worker
-                IStevanMethod worker = _factory.CreateMethod("save");
+                var worker = _factory.CreateMethod("save");
                 var result = await worker.ActionAsync<Transaction, TransactionResponseDto, Transaction>(
                     new Transaction(), new TransactionResponseDto(), transactionData, "POST");
 
-                // 3. Pastikan transaksi utama berhasil tersimpan dan kita dapatkan ID-nya
-                if (!(result is OkObjectResult okResult && okResult.Value is Transaction createdTransaction))
+                if (result is not OkObjectResult okResult || okResult.Value is not Transaction createdTransaction)
                 {
                     return BadRequest("Gagal menyimpan transaksi utama.");
                 }
 
-                // 4. Proses Details jika ada
+                // 3. Proses Details jika ada
                 if (request.Details != null && request.Details.Any())
                 {
                     double totalCalculated = 0;
 
                     foreach (var d in request.Details)
                     {
-                        // Ambil harga dari database
                         var eggCategory = await _dbContext.EggCategories.FindAsync(d.CategoryId);
                         if (eggCategory == null) throw new Exception($"Kategori telur ID {d.CategoryId} tidak ditemukan.");
 
                         double subtotal = (double)d.Quantity * eggCategory.Price;
                         totalCalculated += subtotal;
 
-                        // Tambahkan detail ke entitas yang sudah tersimpan
                         _dbContext.TransactionDetails.Add(new TransactionDetail
                         {
-                            TransactionId = createdTransaction.Id, // Menggunakan ID hasil dari ActionAsync
+                            TransactionId = createdTransaction.Id,
                             CategoryId = d.CategoryId,
                             Quantity = d.Quantity,
                             Subtotal = subtotal,
@@ -121,72 +111,35 @@ namespace sipetok_api.Controllers
                         });
                     }
 
-                    // Update total price pada transaksi utama
                     createdTransaction.TotalPrice = totalCalculated;
                     _dbContext.Transactions.Update(createdTransaction);
-
-                    // Simpan semua detail
                     await _dbContext.SaveChangesAsync();
                 }
 
-                // 5. Commit semua perubahan
                 await transactionScope.CommitAsync();
 
-                // Susun respon sesuai format yang kamu minta
-                var responseData = new
-                {
-                    id = createdTransaction.Id,
-                    date = createdTransaction.Date,
-                    paymentAmount = createdTransaction.PaymentAmount,
-                    totalPrice = createdTransaction.TotalPrice,
-                    tenantId = createdTransaction.TenantId,
-                    customerName = createdTransaction.CustomerName,
-                    customerPhoneNumber = createdTransaction.CustomerPhoneNumber,
-                    status = createdTransaction.PaymentStatus.ToString(), // Pastikan Enum jadi string
-                    orderStatus = createdTransaction.OrderStatus.ToString(),
-                    details = createdTransaction.Details.Select(d => new
-                    {
-                        id = d.Id,
-                        transactionId = d.TransactionId,
-                        categoryName = d.Category?.Name ?? "Unknown", // Pastikan ada navigasi ke EggCategory
-                        quantity = d.Quantity,
-                        price = d.PriceAtPurchase,
-                        subtotal = d.Subtotal
-                    }).ToList()
-                };
+                // KISS & DRY: Manfaatkan Automapper bawaan proyekmu untuk menyusun payload response, 
+                // tidak perlu memetakan properti anonim secara hardcoded sepanjang itu.
+                var responseData = _mapper.Map<TransactionResponseDto>(createdTransaction);
 
-                return Ok(new
-                {
-                    success = true,
-                    message = "Berhasil menambahkan transaksi (Orderan Masuk & Menunggu Pembayaran)",
-                    data = responseData
-                });
+                return Ok(new { success = true, message = "Berhasil menambahkan transaksi (Orderan Masuk & Menunggu Pembayaran)", data = responseData });
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
                 await transactionScope.RollbackAsync();
                 return BadRequest(new { Message = "Terjadi kesalahan", Error = ex.Message });
             }
         }
 
         [HttpPost("pay/{id:int}")]
-        public async Task<IActionResult> Pay(int id, [FromBody] PaymentDto paymentDto)
+        public async Task<IActionResult> Pay(int id, [FromBody] PaymentRequestDto paymentDto)
         {
             try
             {
                 var success = await _paymentService.UpdateStatus(id, PaymentTrigger.Pay, paymentDto);
-                if (!success)
-                    return BadRequest(new { success = false, message = "Gagal memproses pembayaran. Pastikan ID benar atau status saat ini valid." });
+                if (!success) return BadRequest(new { success = false, message = "Gagal memproses pembayaran. Pastikan ID benar atau status saat ini valid." });
 
-                var transaction = await _dbContext.Transactions.Include(t => t.Details).ThenInclude(d => d.Category).FirstOrDefaultAsync(t => t.Id == id);
-
-                return Ok(new
-                {
-                    success = true,
-                    message = "Pembayaran sukses dicatat, stok telur berhasil dikurangi, dan pesanan SIAP DIAMBIL.",
-                    data = _mapper.Map<TransactionResponseDto>(transaction)
-                });
+                return await GetTransactionResponseAsync(id, "Pembayaran sukses dicatat, stok telur berhasil dikurangi, dan pesanan SIAP DIAMBIL.");
             }
             catch (Exception ex)
             {
@@ -200,17 +153,9 @@ namespace sipetok_api.Controllers
             try
             {
                 var success = await _paymentService.UpdateStatus(id, PaymentTrigger.Cancel, null);
-                if (!success)
-                    return BadRequest(new { success = false, message = "Transaksi tidak ditemukan atau tidak dapat dibatalkan pada status saat ini." });
+                if (!success) return BadRequest(new { success = false, message = "Transaksi tidak ditemukan atau tidak dapat dibatalkan pada status saat ini." });
 
-                var transaction = await _dbContext.Transactions.Include(t => t.Details).ThenInclude(d => d.Category).FirstOrDefaultAsync(t => t.Id == id);
-
-                return Ok(new
-                {
-                    success = true,
-                    message = "Transaksi dan pesanan telah berhasil dibatalkan.",
-                    data = _mapper.Map<TransactionResponseDto>(transaction)
-                });
+                return await GetTransactionResponseAsync(id, "Transaksi dan pesanan telah berhasil dibatalkan.");
             }
             catch (Exception ex)
             {
@@ -223,27 +168,34 @@ namespace sipetok_api.Controllers
         {
             try
             {
-                var transaction = await _dbContext.Transactions.Include(t => t.Details).ThenInclude(d => d.Category).FirstOrDefaultAsync(t => t.Id == id);
-                if (transaction == null)
-                    return NotFound(new { success = false, message = "Transaksi tidak ditemukan." });
+                var transaction = await FetchTransactionWithDetailsAsync(id);
+                if (transaction == null) return NotFound(new { success = false, message = "Transaksi tidak ditemukan." });
 
                 var isUpdated = _orderService.UpdateOrderStatus(transaction, OrderTrigger.PickedUp);
-                if (!isUpdated)
-                    return BadRequest(new { success = false, message = "Gagal menyelesaikan pesanan. Pastikan status pesanan saat ini adalah 'ReadyForPickup'." });
+                if (!isUpdated) return BadRequest(new { success = false, message = "Gagal menyelesaikan pesanan. Pastikan status pesanan saat ini adalah 'ReadyForPickup'." });
 
                 await _dbContext.SaveChangesAsync();
 
-                return Ok(new
-                {
-                    success = true,
-                    message = "Pesanan selesai! Telur telah diambil oleh pelanggan.",
-                    data = _mapper.Map<TransactionResponseDto>(transaction)
-                });
+                return Ok(new { success = true, message = "Pesanan selesai! Telur telah diambil oleh pelanggan.", data = _mapper.Map<TransactionResponseDto>(transaction) });
             }
             catch (Exception ex)
             {
                 return StatusCode(500, new { success = false, message = ex.Message });
             }
+        }
+
+        private async Task<Transaction?> FetchTransactionWithDetailsAsync(int id)
+        {
+            return await _dbContext.Transactions
+                .Include(t => t.Details)
+                .ThenInclude(d => d.Category)
+                .FirstOrDefaultAsync(t => t.Id == id);
+        }
+
+        private async Task<IActionResult> GetTransactionResponseAsync(int id, string successMessage)
+        {
+            var transaction = await FetchTransactionWithDetailsAsync(id);
+            return Ok(new { success = true, message = successMessage, data = _mapper.Map<TransactionResponseDto>(transaction) });
         }
     }
 }

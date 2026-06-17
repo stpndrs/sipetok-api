@@ -1,6 +1,6 @@
-namespace sipetok_api.dto.Respon
+namespace sipetok_api.dto.Response
 {
-    public class TenantRespon
+    public class TenantResponseDto
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
@@ -8,9 +8,9 @@ namespace sipetok_api.dto.Respon
         public string PhoneNumber { get; set; } = string.Empty;
         public bool IsValid { get; set; }
         public int UserId { get; set; }
-        public TenantRespon() { }
+        public TenantResponseDto() { }
 
-        public TenantRespon(int Id, string Name, string Address, string PhoneNumber, int UserId, bool IsValid)
+        public TenantResponseDto(int Id, string Name, string Address, string PhoneNumber, int UserId, bool IsValid)
         {
             this.Id = Id;
             this.Name = Name;
