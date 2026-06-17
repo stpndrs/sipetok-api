@@ -65,8 +65,11 @@ namespace sipetok_api.Controllers
         public async Task<IActionResult> Store([FromBody] TransactionRequestDto request)
         {
             // Menggunakan IDbContextTransaction agar aman (Atomic)
+            // find tenant by userId
+            int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
+            Tenant tenant = await _dbContext.Tenants.FirstOrDefaultAsync(a => a.UserId == userId);
             using var transactionScope = await _dbContext.Database.BeginTransactionAsync();
-
+            request.TenantId = tenant!.Id;
             try
             {
                 // 1. Siapkan data transaksi dasar
@@ -161,6 +164,7 @@ namespace sipetok_api.Controllers
             }
             catch (Exception ex)
             {
+                Console.WriteLine(ex);
                 await transactionScope.RollbackAsync();
                 return BadRequest(new { Message = "Terjadi kesalahan", Error = ex.Message });
             }
