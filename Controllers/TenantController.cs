@@ -6,6 +6,7 @@ using sipetok_api.Controllers.Products;
 using sipetok_api.Data;
 using sipetok_api.dto.Request;
 using sipetok_api.dto.Respon;
+using sipetok_api.dto;
 using sipetok_api.Models;
 using System.Threading.Tasks;
 
@@ -125,21 +126,6 @@ namespace sipetok_api.Controllers
             return await worker.ActionAsync<Tenant, TenantResponseDto, TenantDto>(tenantModel, response, request, "PUT", tenantId);
         }
 
-        // [HttpPost]
-        // [Route("validate/{id:int}")]
-        // [Authorize(Roles = "ADMIN")]
-        // public async Task<IActionResult> Validation(int id)
-        // {
-        //     IMethod handler = _factory.CreateMethod("save");
-        //     // Karena tidak mengirim object body, kita isi data dengan object kosong / dummy
-        //     return await handler.ActionAsync<Tenant, TenantRespon>(
-        //         subAction: "validate_tenant",
-        //         data: new object(),
-        //         httpMethod: "POST",
-        //         id: id
-        //     );
-        // }
-
         [HttpDelete]
         [Route("{id:int}")]
         [Authorize(Roles = "ADMIN")]
@@ -149,8 +135,30 @@ namespace sipetok_api.Controllers
             Tenant tenantModel = new Tenant();
             TenantResponseDto response = new TenantResponseDto();
 
+            var userId = _dbContext.Tenants.Where(t => t.Id == id).Select(t => t.UserId).FirstOrDefault();
+            if (userId != 0)
+            {
+                await DeleteUserTenant(userId);
+            }
+            
+
             return await worker.ActionAsync<Tenant, TenantResponseDto, object>(
                 model: tenantModel,
+                response: response,
+                request: null,
+                httpMethod: "DELETE",
+                id: id
+            );
+        }
+
+        public async Task<IActionResult> DeleteUserTenant(int id)
+        {
+            IStevanMethod worker = _factory.CreateMethod("save");
+            User userModel = new User();
+            UserResponseDto response = new UserResponseDto();
+
+            return await worker.ActionAsync<User, UserResponseDto, object>(
+                model: userModel,
                 response: response,
                 request: null,
                 httpMethod: "DELETE",
