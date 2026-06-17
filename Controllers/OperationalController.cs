@@ -3,9 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using sipetok_api.Controllers.Factories;
-using sipetok_api.Controllers.Products;
 using sipetok_api.Data;
-using sipetok_api.dto;
 using sipetok_api.dto.Request;
 using sipetok_api.dto.Response;
 using sipetok_api.Models;
@@ -14,13 +12,15 @@ using System.Threading.Tasks;
 
 namespace sipetok_api.Controllers
 {
-    [Authorize]
-    [Route("api/operationals")]
+    [Authorize(Roles = "TENANT")]
     [ApiController]
+    [Route("api/operationals")]
     public class OperationalController : ControllerBase
     {
         private readonly StevanModuleFactory _factory;
         private readonly AppDbContext _dbContext;
+
+        private int CurrentUserId => int.Parse(User.FindFirst("userId")?.Value ?? "0");
 
         public OperationalController(AppDbContext context, IMapper mapper)
         {
@@ -29,60 +29,53 @@ namespace sipetok_api.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "TENANT")]
         public async Task<IActionResult> GetAllOperationals()
         {
             var worker = _factory.CreateMethod("get");
-            Operational operationalModel = new Operational();
-            OperationalResponseDto response = new OperationalResponseDto();
-
-            return await worker.ActionAsync<Operational, OperationalResponseDto>(operationalModel, response);
+            return await worker.ActionAsync<Operational, OperationalResponseDto>(
+                new Operational(), new OperationalResponseDto());
         }
 
         [HttpGet("{id:int}")]
-        [Authorize(Roles = "TENANT")]
         public async Task<IActionResult> GetOperationalById(int id)
         {
-            IStevanMethod worker = _factory.CreateMethod("get");
-            Operational operationalModel = new Operational();
-            OperationalResponseDto response = new OperationalResponseDto();
-            return await worker.ActionAsync<Operational, OperationalResponseDto>(operationalModel, response, id);
+            var worker = _factory.CreateMethod("get");
+            return await worker.ActionAsync<Operational, OperationalResponseDto>(
+                new Operational(), new OperationalResponseDto(), id);
         }
 
         [HttpPost]
-        [Authorize(Roles = "TENANT")]
         public async Task<IActionResult> AddOperational([FromBody] OperationalRequestDto request)
         {
-            int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
-            IStevanMethod worker = _factory.CreateMethod("save");
-            Operational operationalModel = new Operational();
-            OperationalResponseDto response = new OperationalResponseDto();
-            Tenant tenant = await _dbContext.Tenants.FirstOrDefaultAsync(a => a.UserId == userId);
-            request.TenantId = tenant!.Id;
+            var tenant = await _dbContext.Tenants.FirstOrDefaultAsync(a => a.UserId == CurrentUserId);
+            if (tenant == null) return Forbid();
 
-            return await worker.ActionAsync<Operational, OperationalResponseDto, OperationalRequestDto>(operationalModel, response, request, "POST");
+            request.TenantId = tenant.Id;
+
+            var worker = _factory.CreateMethod("save");
+            return await worker.ActionAsync<Operational, OperationalResponseDto, OperationalRequestDto>(
+                new Operational(), new OperationalResponseDto(), request, "POST");
         }
 
         [HttpPut("{id:int}")]
-        [Authorize(Roles = "TENANT")]
         public async Task<IActionResult> UpdateOperational(int id, [FromBody] OperationalRequestDto request)
         {
-            IStevanMethod worker = _factory.CreateMethod("save");
-            Operational operationalModel = new Operational();
-            OperationalResponseDto response = new OperationalResponseDto();
+            var tenant = await _dbContext.Tenants.FirstOrDefaultAsync(a => a.UserId == CurrentUserId);
+            if (tenant == null) return Forbid();
 
-            return await worker.ActionAsync<Operational, OperationalResponseDto, OperationalRequestDto>(operationalModel, response, request, "PUT", id);
+            request.TenantId = tenant.Id;
+
+            var worker = _factory.CreateMethod("save");
+            return await worker.ActionAsync<Operational, OperationalResponseDto, OperationalRequestDto>(
+                new Operational(), new OperationalResponseDto(), request, "PUT", id);
         }
 
         [HttpDelete("{id:int}")]
-        [Authorize(Roles = "TENANT")]
         public async Task<IActionResult> DeleteOperational(int id)
         {
-            IStevanMethod worker = _factory.CreateMethod("save");
-            Operational operationalModel = new Operational();
-            OperationalResponseDto response = new OperationalResponseDto();
-
-            return await worker.ActionAsync<Operational, OperationalResponseDto, object>(operationalModel, response, null, "DELETE", id);
+            var worker = _factory.CreateMethod("save");
+            return await worker.ActionAsync<Operational, OperationalResponseDto, object>(
+                new Operational(), new OperationalResponseDto(), null!, "DELETE", id);
         }
     }
 }
