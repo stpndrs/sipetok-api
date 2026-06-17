@@ -2,7 +2,7 @@ using sipetok_api.dto.Respon;
 
 namespace sipetok_api.Respon
 {
-    public class EggRespon
+    public class EggInventoryRespon
     {
         public int Id { get; set; }
         public DateTime ProductionDate { get; set; }
@@ -10,9 +10,9 @@ namespace sipetok_api.Respon
         public int CategoryId { get; set; }
         public virtual EggCategoryResponseDto? Category { get; set; }
 
-        public EggRespon() { }
+        public EggInventoryRespon() { }
 
-        public EggRespon(int Id, DateTime ProductionDate, double Stock, int CategoryId, EggCategoryResponseDto Category)
+        public EggInventoryRespon(int Id, DateTime ProductionDate, double Stock, int CategoryId, EggCategoryResponseDto Category)
         {
             this.Id = Id;
             this.ProductionDate = ProductionDate;

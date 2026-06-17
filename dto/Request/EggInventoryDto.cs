@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace sipetok_api.dto.Request
 {
-    public class EggDto
+    public class EggInventoryDto
     {
         [Required(ErrorMessage = "Production date is required!")]
         public DateTime ProductionDate { get; set; }
@@ -13,9 +13,9 @@ namespace sipetok_api.dto.Request
         [Required(ErrorMessage = "Category is required!")]
         public int CategoryId { get; set; }
 
-        public EggDto() { }
+        public EggInventoryDto() { }
 
-        public EggDto(DateTime ProductionDate, double Stock, int CategoryId)
+        public EggInventoryDto(DateTime ProductionDate, double Stock, int CategoryId)
         {
             this.ProductionDate = ProductionDate;
             this.Stock = Stock;

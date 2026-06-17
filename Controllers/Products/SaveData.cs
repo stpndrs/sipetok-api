@@ -211,7 +211,7 @@ namespace sipetok_api.Controllers.Products
 
         private async Task<IActionResult> HandleAddEggAsync<TResponse>(object data, int? userId)
         {
-            if (data is not EggDto eggDto) return InvalidDtoResponse();
+            if (data is not EggInventoryDto eggDto) return InvalidDtoResponse();
 
             var tenant = await GetTenantByUserIdAsync(userId);
             var eggCategory = await _dbContext.EggCategories.FindAsync(eggDto.CategoryId);
@@ -305,7 +305,7 @@ namespace sipetok_api.Controllers.Products
 
         private async Task<IActionResult> HandleUpdateEggAsync<TResponse>(int? id, object data)
         {
-            if (data is not EggDto editEggDto) return InvalidDtoResponse();
+            if (data is not EggInventoryDto editEggDto) return InvalidDtoResponse();
 
             var egg = await _dbContext.EggInventories.FirstOrDefaultAsync(e => e.Id == (id ?? 0));
             if (egg == null) return new NotFoundObjectResult(new ResponData<object>(false, "Data egg not found"));

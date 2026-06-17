@@ -54,7 +54,7 @@ builder.Services.AddApplicationServices();
 
 // PERBAIKAN: Registrasi TenantFactory untuk mengatasi error 'Unable to resolve service' sebelumnya
 builder.Services.AddScoped<sipetok_api.Controllers.Factories.TenantFactory>();
-builder.Services.AddScoped<sipetok_api.Controllers.Factories.EggFactory>();
+builder.Services.AddScoped<sipetok_api.Controllers.Factories.EggInventoryFactory>();
 builder.Services.AddScoped<sipetok_api.Controllers.Factories.EggCategoryFactory>();
 builder.Services.AddScoped<sipetok_api.Controllers.Factories.TransactionFactory>();
 builder.Services.AddScoped<sipetok_api.Controllers.Factories.OperationalFactory>();
