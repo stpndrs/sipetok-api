@@ -23,6 +23,9 @@ namespace sipetok_api.Models
 
         public virtual ICollection<EggInventory> EggInventories { get; set; } = new List<EggInventory>();
 
+        [NotMapped]
+        public new DateTime? UpdatedAt { get; set; }
+
         public EggCategory() { }
 
         public EggCategory(int Id, double Price, string Description, string Name)
