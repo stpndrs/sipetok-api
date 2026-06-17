@@ -5,7 +5,7 @@ using sipetok_api.Controllers.Factories;
 using sipetok_api.Controllers.Products;
 using sipetok_api.Data;
 using sipetok_api.dto.Request;
-using sipetok_api.dto.Respon;
+using sipetok_api.dto.Response;
 using sipetok_api.dto;
 using sipetok_api.Models;
 using System.Threading.Tasks;
@@ -65,26 +65,26 @@ namespace sipetok_api.Controllers
 
         [HttpPost]
         [Authorize(Roles = "ADMIN")]
-        public async Task<IActionResult> AddTenant([FromBody] TenantDto request)
+        public async Task<IActionResult> AddTenant([FromBody] TenantRequestDto request)
         {
             IStevanMethod worker = _factory.CreateMethod("save");
             Tenant tenantModel = new Tenant();
             TenantResponseDto response = new TenantResponseDto();
 
-            if(request.User == null || string.IsNullOrWhiteSpace(request.User.Password))
+            if (request.User == null || string.IsNullOrWhiteSpace(request.User.Password))
             {
                 return new BadRequestObjectResult(new ResponData<object?>(false, "Password is required"));
             }
             string hashedPassword = Bcrypt.HashPassword(request.User.Password);
             request.User.Password = hashedPassword;
 
-            return await worker.ActionAsync<Tenant, TenantResponseDto, TenantDto>(tenantModel, response, request, "POST");
+            return await worker.ActionAsync<Tenant, TenantResponseDto, TenantRequestDto>(tenantModel, response, request, "POST");
         }
 
         [HttpPut]
         [Route("{id:int}")]
         [Authorize(Roles = "ADMIN")]
-        public async Task<IActionResult> UpdateTenant(int id, [FromBody] TenantDto request)
+        public async Task<IActionResult> UpdateTenant(int id, [FromBody] TenantRequestDto request)
         {
             IStevanMethod worker = _factory.CreateMethod("save");
             Tenant tenantModel = new Tenant();
@@ -96,11 +96,11 @@ namespace sipetok_api.Controllers
                 request.User.Password = hashedPassword;
             }
 
-            return await worker.ActionAsync<Tenant, TenantResponseDto, TenantDto>(
-                model: tenantModel, 
-                response: response, 
-                request: request, 
-                httpMethod: "PUT", 
+            return await worker.ActionAsync<Tenant, TenantResponseDto, TenantRequestDto>(
+                model: tenantModel,
+                response: response,
+                request: request,
+                httpMethod: "PUT",
                 id: id
             );
         }
@@ -108,7 +108,7 @@ namespace sipetok_api.Controllers
         [HttpPut]
         [Route("updatemyprofile")]
         [Authorize(Roles = "TENANT")]
-        public async Task<IActionResult> UpdateMyProfile([FromBody] TenantDto request)
+        public async Task<IActionResult> UpdateMyProfile([FromBody] TenantRequestDto request)
         {
             int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
             int tenantId = _dbContext.Tenants.Where(t => t.UserId == userId).Select(t => t.Id).FirstOrDefault();
@@ -123,7 +123,7 @@ namespace sipetok_api.Controllers
                 request.User.Password = hashedPassword;
             }
 
-            return await worker.ActionAsync<Tenant, TenantResponseDto, TenantDto>(tenantModel, response, request, "PUT", tenantId);
+            return await worker.ActionAsync<Tenant, TenantResponseDto, TenantRequestDto>(tenantModel, response, request, "PUT", tenantId);
         }
 
         [HttpDelete]
@@ -140,7 +140,7 @@ namespace sipetok_api.Controllers
             {
                 await DeleteUserTenant(userId);
             }
-            
+
 
             return await worker.ActionAsync<Tenant, TenantResponseDto, object>(
                 model: tenantModel,
