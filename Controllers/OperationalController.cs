@@ -7,7 +7,7 @@ using sipetok_api.Controllers.Products;
 using sipetok_api.Data;
 using sipetok_api.dto;
 using sipetok_api.dto.Request;
-using sipetok_api.dto.Respon;
+using sipetok_api.dto.Response;
 using sipetok_api.Models;
 using sipetok_api.Respon;
 using System.Threading.Tasks;
@@ -34,9 +34,9 @@ namespace sipetok_api.Controllers
         {
             var worker = _factory.CreateMethod("get");
             Operational operationalModel = new Operational();
-            OperationalRespon response = new OperationalRespon();
+            OperationalResponseDto response = new OperationalResponseDto();
 
-            return await worker.ActionAsync<Operational, OperationalRespon>(operationalModel, response);
+            return await worker.ActionAsync<Operational, OperationalResponseDto>(operationalModel, response);
         }
 
         [HttpGet("{id:int}")]
@@ -45,8 +45,8 @@ namespace sipetok_api.Controllers
         {
             IStevanMethod worker = _factory.CreateMethod("get");
             Operational operationalModel = new Operational();
-            OperationalRespon response = new OperationalRespon();
-            return await worker.ActionAsync<Operational, OperationalRespon>(operationalModel, response, id);
+            OperationalResponseDto response = new OperationalResponseDto();
+            return await worker.ActionAsync<Operational, OperationalResponseDto>(operationalModel, response, id);
         }
 
         [HttpPost]
@@ -56,11 +56,11 @@ namespace sipetok_api.Controllers
             int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
             IStevanMethod worker = _factory.CreateMethod("save");
             Operational operationalModel = new Operational();
-            OperationalRespon response = new OperationalRespon();
+            OperationalResponseDto response = new OperationalResponseDto();
             Tenant tenant = await _dbContext.Tenants.FirstOrDefaultAsync(a => a.UserId == userId);
             request.TenantId = tenant!.Id;
 
-            return await worker.ActionAsync<Operational, OperationalRespon, OperationalRequestDto>(operationalModel, response, request, "POST");
+            return await worker.ActionAsync<Operational, OperationalResponseDto, OperationalRequestDto>(operationalModel, response, request, "POST");
         }
 
         [HttpPut("{id:int}")]
@@ -69,9 +69,9 @@ namespace sipetok_api.Controllers
         {
             IStevanMethod worker = _factory.CreateMethod("save");
             Operational operationalModel = new Operational();
-            OperationalRespon response = new OperationalRespon();
+            OperationalResponseDto response = new OperationalResponseDto();
 
-            return await worker.ActionAsync<Operational, OperationalRespon, OperationalRequestDto>(operationalModel, response, request, "PUT", id);
+            return await worker.ActionAsync<Operational, OperationalResponseDto, OperationalRequestDto>(operationalModel, response, request, "PUT", id);
         }
 
         [HttpDelete("{id:int}")]
@@ -80,9 +80,9 @@ namespace sipetok_api.Controllers
         {
             IStevanMethod worker = _factory.CreateMethod("save");
             Operational operationalModel = new Operational();
-            OperationalRespon response = new OperationalRespon();
+            OperationalResponseDto response = new OperationalResponseDto();
 
-            return await worker.ActionAsync<Operational, OperationalRespon, object>(operationalModel, response, null, "DELETE", id);
+            return await worker.ActionAsync<Operational, OperationalResponseDto, object>(operationalModel, response, null, "DELETE", id);
         }
     }
 }
