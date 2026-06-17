@@ -21,7 +21,9 @@ namespace sipetok_api
             CreateMap<EggDto, EggInventory>();
             CreateMap<EggCategoryRequestDto, EggCategory>();
             CreateMap<ChangePasswordDto, User>();
-            CreateMap<TransactionDto, Transaction>();
+            CreateMap<TransactionRequestDto, Transaction>();
+            CreateMap<TransactionDetail, TransactionDetailResponseDto>()
+                .ForMember(dest => dest.Category, opt => opt.MapFrom(src => src.Category));
             CreateMap<TransactionDetailDto, TransactionDetail>();
 
             CreateMap<User, UserResponseDto>();
@@ -29,8 +31,8 @@ namespace sipetok_api
             CreateMap<Operational, OperationalRespon>();
             CreateMap<EggInventory, EggRespon>();
             CreateMap<EggCategory, EggCategoryResponseDto>();
-            CreateMap<Transaction, TransactionRespon>();
-            CreateMap<TransactionDetail, TransactionDetailRespon>();
+            CreateMap<Transaction, TransactionResponseDto>();
+            CreateMap<TransactionDetail, TransactionDetailResponseDto>();
         }
     }
 }

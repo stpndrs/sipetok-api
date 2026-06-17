@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace sipetok_api.dto.Request
 {
-    public class TransactionDto
+    public class TransactionRequestDto
     {
         public DateTime Date { get; set; }
 
@@ -17,9 +17,9 @@ namespace sipetok_api.dto.Request
 
         public virtual ICollection<TransactionDetailDto> Details { get; set; } = new List<TransactionDetailDto>();
 
-        public TransactionDto() { }
+        public TransactionRequestDto() { }
 
-        public TransactionDto(double PaymentAmount, int TenantId, string CustomerName, string CustomerPhoneNumber)
+        public TransactionRequestDto(double PaymentAmount, int TenantId, string CustomerName, string CustomerPhoneNumber)
         {
             this.Date = DateTime.Now;
             this.PaymentAmount = PaymentAmount;

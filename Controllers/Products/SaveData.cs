@@ -68,10 +68,10 @@ namespace sipetok_api.Controllers.Products
                         "login" => await HandleLoginAsync<TResponse>(data),
 
                         // --- TRANSACTION ENGINE ---
-                        "tx_store" => await HandleTxStoreAsync<TResponse>(data),
-                        "tx_pay" => await HandleTxPayAsync<TResponse>(id, data),
-                        "tx_cancel" => await HandleTxCancelAsync<TResponse>(id),
-                        "tx_complete" => await HandleTxCompleteAsync<TResponse>(id),
+                        // "tx_store" => await HandleTxStoreAsync<TResponse>(data),
+                        // "tx_pay" => await HandleTxPayAsync<TResponse>(id, data),
+                        // "tx_cancel" => await HandleTxCancelAsync<TResponse>(id),
+                        // "tx_complete" => await HandleTxCompleteAsync<TResponse>(id),
 
                         // --- CRUD POST ---
                         "add_category" when typeof(TEntity) == typeof(EggCategory) => await HandleAddCategoryAsync<TEntity, TResponse>(data, userId),
@@ -141,58 +141,58 @@ namespace sipetok_api.Controllers.Products
             return new OkObjectResult(new ResponData<TResponse>(true, mappedResult, "Login berhasil"));
         }
 
-        private async Task<IActionResult> HandleTxStoreAsync<TResponse>(object data)
-        {
-            if (data is not TransactionDto transactionDto) return InvalidDtoResponse();
+        // private async Task<IActionResult> HandleTxStoreAsync<TResponse>(object data)
+        // {
+        // if (data is not TransactionRequestDto transactionDto) return InvalidDtoResponse();
 
-            var transaction = await _paymentService!.ProcessTransaction(transactionDto);
-            var completeData = await _dbContext.Transactions
-                .Include(t => t.Details)
-                .FirstOrDefaultAsync(t => t.Id == transaction.Id);
+        // var transaction = await _paymentService!.ProcessTransaction(transactionDto);
+        // var completeData = await _dbContext.Transactions
+        //     .Include(t => t.Details)
+        //     .FirstOrDefaultAsync(t => t.Id == transaction.Id);
 
-            return new OkObjectResult(new ResponData<TResponse>(true, _mapper.Map<TResponse>(completeData), "Berhasil menambahkan transaksi (Orderan Masuk & Menunggu Pembayaran)"));
-        }
+        // return new OkObjectResult(new ResponData<TResponse>(true, _mapper.Map<TResponse>(completeData), "Berhasil menambahkan transaksi (Orderan Masuk & Menunggu Pembayaran)"));
+        // }
 
-        private async Task<IActionResult> HandleTxPayAsync<TResponse>(int? id, object data)
-        {
-            if (data is not PaymentDto paymentDto) return InvalidDtoResponse();
+        // private async Task<IActionResult> HandleTxPayAsync<TResponse>(int? id, object data)
+        // {
+        //     if (data is not PaymentDto paymentDto) return InvalidDtoResponse();
 
-            var success = await _paymentService!.UpdateStatus(id ?? 0, PaymentTrigger.Pay, paymentDto);
-            if (!success) return new BadRequestObjectResult(new ResponData<object>(false, "Gagal memproses pembayaran. Pastikan ID benar atau status saat ini valid."));
+        //     var success = await _paymentService!.UpdateStatus(id ?? 0, PaymentTrigger.Pay, paymentDto);
+        //     if (!success) return new BadRequestObjectResult(new ResponData<object>(false, "Gagal memproses pembayaran. Pastikan ID benar atau status saat ini valid."));
 
-            var transaction = await _dbContext.Transactions
-                .Include(t => t.Details)
-                .FirstOrDefaultAsync(t => t.Id == (id ?? 0));
+        //     var transaction = await _dbContext.Transactions
+        //         .Include(t => t.Details)
+        //         .FirstOrDefaultAsync(t => t.Id == (id ?? 0));
 
-            return new OkObjectResult(new ResponData<TResponse>(true, _mapper.Map<TResponse>(transaction), "Pembayaran sukses dicatat, stok telur berhasil dikurangi, dan pesanan SIAP DIAMBIL."));
-        }
+        //     return new OkObjectResult(new ResponData<TResponse>(true, _mapper.Map<TResponse>(transaction), "Pembayaran sukses dicatat, stok telur berhasil dikurangi, dan pesanan SIAP DIAMBIL."));
+        // }
 
-        private async Task<IActionResult> HandleTxCancelAsync<TResponse>(int? id)
-        {
-            var success = await _paymentService!.UpdateStatus(id ?? 0, PaymentTrigger.Cancel, null);
-            if (!success) return new BadRequestObjectResult(new ResponData<object>(false, "Transaksi tidak ditemukan atau tidak dapat dibatalkan pada status saat ini."));
+        // private async Task<IActionResult> HandleTxCancelAsync<TResponse>(int? id)
+        // {
+        //     var success = await _paymentService!.UpdateStatus(id ?? 0, PaymentTrigger.Cancel, null);
+        //     if (!success) return new BadRequestObjectResult(new ResponData<object>(false, "Transaksi tidak ditemukan atau tidak dapat dibatalkan pada status saat ini."));
 
-            var transaction = await _dbContext.Transactions
-                .Include(t => t.Details)
-                .FirstOrDefaultAsync(t => t.Id == (id ?? 0));
+        //     var transaction = await _dbContext.Transactions
+        //         .Include(t => t.Details)
+        //         .FirstOrDefaultAsync(t => t.Id == (id ?? 0));
 
-            return new OkObjectResult(new ResponData<TResponse>(true, _mapper.Map<TResponse>(transaction), "Transaksi dan pesanan telah berhasil dibatalkan."));
-        }
+        //     return new OkObjectResult(new ResponData<TResponse>(true, _mapper.Map<TResponse>(transaction), "Transaksi dan pesanan telah berhasil dibatalkan."));
+        // }
 
-        private async Task<IActionResult> HandleTxCompleteAsync<TResponse>(int? id)
-        {
-            var transaction = await _dbContext.Transactions
-                .Include(t => t.Details)
-                .FirstOrDefaultAsync(t => t.Id == (id ?? 0));
+        // private async Task<IActionResult> HandleTxCompleteAsync<TResponse>(int? id)
+        // {
+        //     var transaction = await _dbContext.Transactions
+        //         .Include(t => t.Details)
+        //         .FirstOrDefaultAsync(t => t.Id == (id ?? 0));
 
-            if (transaction == null) return new NotFoundObjectResult(new ResponData<object>(false, "Transaksi tidak ditemukan."));
+        //     if (transaction == null) return new NotFoundObjectResult(new ResponData<object>(false, "Transaksi tidak ditemukan."));
 
-            var isUpdated = _orderService!.UpdateOrderStatus(transaction, OrderTrigger.PickedUp);
-            if (!isUpdated) return new BadRequestObjectResult(new ResponData<object>(false, "Gagal menyelesaikan pesanan. Pastikan status pesanan saat ini adalah 'ReadyForPickup' (Siap Diambil)."));
+        //     var isUpdated = _orderService!.UpdateOrderStatus(transaction, OrderTrigger.PickedUp);
+        //     if (!isUpdated) return new BadRequestObjectResult(new ResponData<object>(false, "Gagal menyelesaikan pesanan. Pastikan status pesanan saat ini adalah 'ReadyForPickup' (Siap Diambil)."));
 
-            await _dbContext.SaveChangesAsync();
-            return new OkObjectResult(new ResponData<TResponse>(true, _mapper.Map<TResponse>(transaction), "Pesanan selesai! Telur telah diambil oleh pelanggan."));
-        }
+        //     await _dbContext.SaveChangesAsync();
+        //     return new OkObjectResult(new ResponData<TResponse>(true, _mapper.Map<TResponse>(transaction), "Pesanan selesai! Telur telah diambil oleh pelanggan."));
+        // }
 
         private async Task<IActionResult> HandleAddCategoryAsync<TEntity, TResponse>(object data, int? userId) where TEntity : class
         {

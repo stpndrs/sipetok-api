@@ -57,59 +57,59 @@ namespace sipetok_api.Services
             }
         }
 
-        public virtual async Task<Transaction> ProcessTransaction(TransactionDto dto)
-        {
-            using var transactionScope = await dbContext.Database.BeginTransactionAsync();
-            try
-            {
-                double totalPrice = 0;
-                var transaction = new Transaction
-                {
-                    Date = dto.Date,
-                    PaymentAmount = 0,
-                    TotalPrice = 0,
-                    TenantId = dto.TenantId,
-                    PaymentStatus = PaymentState.WaitingForPayment,
-                    OrderStatus = OrderState.OrderComeIn,
-                    CustomerName = dto.CustomerName,
-                    CustomerPhoneNumber = dto.CustomerPhoneNumber,
-                };
+        // public virtual async Task<Transaction> ProcessTransaction(TransactionRequestDto dto)
+        // {
+        //     using var transactionScope = await dbContext.Database.BeginTransactionAsync();
+        //     try
+        //     {
+        //         double totalPrice = 0;
+        //         var transaction = new Transaction
+        //         {
+        //             Date = dto.Date,
+        //             PaymentAmount = 0,
+        //             TotalPrice = 0,
+        //             TenantId = dto.TenantId,
+        //             PaymentStatus = PaymentState.WaitingForPayment,
+        //             OrderStatus = OrderState.OrderComeIn,
+        //             CustomerName = dto.CustomerName,
+        //             CustomerPhoneNumber = dto.CustomerPhoneNumber,
+        //         };
 
-                dbContext.Transactions.Add(transaction);
-                await dbContext.SaveChangesAsync();
+        //         dbContext.Transactions.Add(transaction);
+        //         await dbContext.SaveChangesAsync();
 
-                if (dto.Details != null)
-                {
-                    foreach (var d in dto.Details)
-                    {
-                        var eggCategory = await dbContext.EggCategories.FindAsync(d.CategoryId);
-                        if (eggCategory == null) throw new Exception($"Kategori telur dengan ID {d.CategoryId} tidak ditemukan.");
+        //         if (dto.Details != null)
+        //         {
+        //             foreach (var d in dto.Details)
+        //             {
+        //                 var eggCategory = await dbContext.EggCategories.FindAsync(d.CategoryId);
+        //                 if (eggCategory == null) throw new Exception($"Kategori telur dengan ID {d.CategoryId} tidak ditemukan.");
 
-                        double priceAtPurchase = eggCategory.Price;
-                        double subtotal = (double)d.Quantity * priceAtPurchase;
-                        totalPrice += subtotal;
+        //                 double priceAtPurchase = eggCategory.Price;
+        //                 double subtotal = (double)d.Quantity * priceAtPurchase;
+        //                 totalPrice += subtotal;
 
-                        dbContext.TransactionDetails.Add(new TransactionDetail
-                        {
-                            TransactionId = transaction.Id,
-                            CategoryId = d.CategoryId,
-                            Quantity = d.Quantity,
-                            Subtotal = subtotal,
-                            PriceAtPurchase = priceAtPurchase
-                        });
-                    }
-                    transaction.TotalPrice = totalPrice;
-                    await dbContext.SaveChangesAsync();
-                }
-                await transactionScope.CommitAsync();
-                return transaction;
-            }
-            catch (Exception)
-            {
-                await transactionScope.RollbackAsync();
-                throw;
-            }
-        }
+        //                 dbContext.TransactionDetails.Add(new TransactionDetail
+        //                 {
+        //                     TransactionId = transaction.Id,
+        //                     CategoryId = d.CategoryId,
+        //                     Quantity = d.Quantity,
+        //                     Subtotal = subtotal,
+        //                     PriceAtPurchase = priceAtPurchase
+        //                 });
+        //             }
+        //             transaction.TotalPrice = totalPrice;
+        //             await dbContext.SaveChangesAsync();
+        //         }
+        //         await transactionScope.CommitAsync();
+        //         return transaction;
+        //     }
+        //     catch (Exception)
+        //     {
+        //         await transactionScope.RollbackAsync();
+        //         throw;
+        //     }
+        // }
 
         public virtual async Task<bool> UpdateStatus(
             int id,
