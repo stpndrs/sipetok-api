@@ -29,6 +29,7 @@ namespace sipetok_api.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "TENANT")]
         public async Task<IActionResult> GetAllEggCategory()
         {
             int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
@@ -42,6 +43,7 @@ namespace sipetok_api.Controllers
         }
 
         [HttpGet("{id:int}")]
+        [Authorize(Roles = "TENANT")]
         public async Task<IActionResult> GetEggCategoryById(int id)
         {
             int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
@@ -55,6 +57,7 @@ namespace sipetok_api.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "TENANT")]
         public async Task<IActionResult> AddEggCategory([FromBody] EggCategoryRequestDto request)
         {
             int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
@@ -77,6 +80,7 @@ namespace sipetok_api.Controllers
         }
 
         [HttpPut("{id:int}")]
+        [Authorize(Roles = "TENANT")]
         public async Task<IActionResult> UpdateEggCategory(int id, [FromBody] EggCategoryRequestDto request)
         {
             int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
@@ -94,6 +98,7 @@ namespace sipetok_api.Controllers
         }
 
         [HttpDelete("{id:int}")]
+        [Authorize(Roles = "TENANT")]   
         public async Task<IActionResult> DeleteEggCategory(int id)
         {
             int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");

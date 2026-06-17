@@ -32,11 +32,6 @@ namespace sipetok_api.Controllers.Factories
                 case "write":
                     return new StevanSaveData(_dbContext, _config, _mapper);
 
-                case "delete":
-                case "remove":
-
-                    return new DeleteData(_dbContext) as IStevanMethod ?? throw new InvalidCastException("DeleteData tidak mengimplementasikan IStevanMethod");
-
                 default:
                     throw new ArgumentException($"Aksi '{actionType}' tidak dikenal di EggCategoryFactory.");
             }
