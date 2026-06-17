@@ -1,6 +1,7 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using sipetok_api.Controllers.Factories;
 using sipetok_api.Controllers.Products;
 using sipetok_api.Data;
@@ -19,10 +20,12 @@ namespace sipetok_api.Controllers
     public class OperationalController : ControllerBase
     {
         private readonly StevanModuleFactory _factory;
+        private readonly AppDbContext _dbContext;
 
         public OperationalController(AppDbContext context, IMapper mapper)
         {
             _factory = new OperationalFactory(context, mapper);
+            _dbContext = context;
         }
 
         [HttpGet]
@@ -50,9 +53,12 @@ namespace sipetok_api.Controllers
         [Authorize(Roles = "TENANT")]
         public async Task<IActionResult> AddOperational([FromBody] OperationalDto request)
         {
+            int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
             IStevanMethod worker = _factory.CreateMethod("save");
             Operational operationalModel = new Operational();
             OperationalRespon response = new OperationalRespon();
+            Tenant tenant = await _dbContext.Tenants.FirstOrDefaultAsync(a => a.UserId == userId);
+            request.TenantId = tenant!.Id;
 
             return await worker.ActionAsync<Operational, OperationalRespon, OperationalDto>(operationalModel, response, request, "POST");
         }

@@ -11,7 +11,7 @@ namespace sipetok_api.dto.Request
         public string OperationalCost { get; set; } = string.Empty;
 
         // [Required(ErrorMessage = "Tenant ID is required!")]
-        // public int tenant_id { get; set; }
+        public int TenantId { get; set; }
 
         [Required(ErrorMessage = "Operational date is required!")]
         public DateTime OperationalDate { get; set; }
