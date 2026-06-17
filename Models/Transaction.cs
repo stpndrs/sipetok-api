@@ -20,9 +20,6 @@ namespace sipetok_api.Models
         public virtual Tenant? Tenant { get; set; }
 
         [NotMapped]
-        public new DateTime? UpdatedAt { get; set; }
-
-        [NotMapped]
         public new DateTime? DeletedAt { get; set; }
 
         public Transaction() { }
