@@ -107,6 +107,7 @@ namespace sipetok_api.Controllers.Products
 
         private async Task<IActionResult> HandleGetAllEggByTenantAsync<TResponse>(int? userId)
         {
+
             var data = await _dbContext.EggInventories
                 .Include(e => e.Category).ThenInclude(c => c!.Tenant)
                 .Where(e => e.Category!.Tenant!.UserId == (userId ?? 0))
@@ -197,11 +198,6 @@ namespace sipetok_api.Controllers.Products
                 .Include(c => c.Tenant)
                 .FirstOrDefaultAsync(c => c.Id == (id ?? 0));
 
-            if (category is null)
-                return new NotFoundObjectResult(new ResponData<object>(false, "Kategori tidak ditemukan"));
-
-            if (category.Tenant!.UserId != (userId ?? 0))
-                return new ObjectResult(new ResponData<object>(false, "Akses ditolak, ini bukan data Anda")) { StatusCode = 403 };
 
             return new OkObjectResult(new ResponData<TResponse>(true, _mapper.Map<TResponse>(category), "Berhasil mengambil data kategori"));
         }
