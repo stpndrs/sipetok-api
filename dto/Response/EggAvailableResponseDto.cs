@@ -6,7 +6,7 @@ namespace sipetok_api.Respon
     {
         public double Stock { get; set; }
         public int TenantId { get; set; }
-        public virtual TenantRespon? Tenant { get; set; }
+        public virtual TenantResponseDto? Tenant { get; set; }
         public int CategoryId { get; set; }
         public virtual EggCategoryResponseDto? Category { get; set; }
 
