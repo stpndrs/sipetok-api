@@ -1,10 +1,11 @@
 ﻿using AutoMapper;
 using sipetok_api.Data;
 using sipetok_api.Controllers.Products;
+using System;
 
 namespace sipetok_api.Controllers.Factories
 {
-    public class OperationalFactory : ModuleFactory
+    public class OperationalFactory : StevanModuleFactory
     {
         private readonly AppDbContext _dbContext;
         private readonly IMapper _mapper;
@@ -15,25 +16,17 @@ namespace sipetok_api.Controllers.Factories
             _mapper = mapper;
         }
 
-        public IMethod CreateMethod(string actionType)
+        public IStevanMethod CreateMethod(string actionType)
         {
-            switch (actionType.ToLower())
+            string action = actionType?.ToLower()?.Trim() ?? string.Empty;
+
+            return action switch
             {
-                case "get":
-                case "read":
-                    return new GetData(_dbContext, _mapper);
-
-                case "save":
-                case "write":
-                    return new SaveData(_dbContext, _mapper);
-
-                case "delete":
-                case "remove":
-                    return new DeleteData(_dbContext);
-
-                default:
-                    throw new ArgumentException($"Aksi '{actionType}' tidak dikenal di OperationalFactory.");
-            }
+                "get" or "read" => new StevanGetData(_dbContext, _mapper),
+                "save" or "write" => new StevanSaveData(_dbContext, null, _mapper),
+                // "delete" or "remove" => new DeleteData(_dbContext),
+                // _ => throw new ArgumentException($"Aksi '{actionType}' tidak dikenal di UserFactory.")
+            };
         }
     }
 }
