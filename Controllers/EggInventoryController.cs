@@ -64,12 +64,14 @@ namespace sipetok_api.Controllers
         public async Task<IActionResult> UpdateEgg(int id, [FromBody] EggDto eggDto)
         {
             IMethod handler = _factory.CreateMethod("save");
+            var userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
 
             return await handler.ActionAsync<EggInventory, EggRespon>(
                 subAction: "update_egg",
                 data: eggDto,
                 httpMethod: "PUT",
-                id: id
+                id: id,
+                userId: userId
             );
         }
 
@@ -78,8 +80,16 @@ namespace sipetok_api.Controllers
         [Authorize(Roles = "TENANT")]
         public async Task<IActionResult> DeleteEgg(int id)
         {
+            var userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
             IMethod handler = _factory.CreateMethod("delete");
-            return await handler.ActionAsync<EggInventory, EggRespon>("delete_egg", id: id);
+
+            return await handler.ActionAsync<EggInventory, EggRespon>(
+                subAction: "delete_egg",
+                data: null,
+                httpMethod: "DELETE",
+                id: id,
+                userId: userId
+            );
         }
     }
 }
