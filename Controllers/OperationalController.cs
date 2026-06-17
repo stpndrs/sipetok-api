@@ -51,7 +51,7 @@ namespace sipetok_api.Controllers
 
         [HttpPost]
         [Authorize(Roles = "TENANT")]
-        public async Task<IActionResult> AddOperational([FromBody] OperationalDto request)
+        public async Task<IActionResult> AddOperational([FromBody] OperationalRequestDto request)
         {
             int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
             IStevanMethod worker = _factory.CreateMethod("save");
@@ -60,18 +60,18 @@ namespace sipetok_api.Controllers
             Tenant tenant = await _dbContext.Tenants.FirstOrDefaultAsync(a => a.UserId == userId);
             request.TenantId = tenant!.Id;
 
-            return await worker.ActionAsync<Operational, OperationalRespon, OperationalDto>(operationalModel, response, request, "POST");
+            return await worker.ActionAsync<Operational, OperationalRespon, OperationalRequestDto>(operationalModel, response, request, "POST");
         }
 
         [HttpPut("{id:int}")]
         [Authorize(Roles = "TENANT")]
-        public async Task<IActionResult> UpdateOperational(int id, [FromBody] OperationalDto request)
+        public async Task<IActionResult> UpdateOperational(int id, [FromBody] OperationalRequestDto request)
         {
             IStevanMethod worker = _factory.CreateMethod("save");
             Operational operationalModel = new Operational();
             OperationalRespon response = new OperationalRespon();
 
-            return await worker.ActionAsync<Operational, OperationalRespon, OperationalDto>(operationalModel, response, request, "PUT", id);
+            return await worker.ActionAsync<Operational, OperationalRespon, OperationalRequestDto>(operationalModel, response, request, "PUT", id);
         }
 
         [HttpDelete("{id:int}")]
