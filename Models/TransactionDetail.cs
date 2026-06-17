@@ -19,6 +19,15 @@ namespace sipetok_api.Models
         public double PriceAtPurchase { get; set; }
         public double Subtotal { get; set; } // Ubah ke double
 
+        [NotMapped]
+        public new DateTime? CreatedAt { get; set; }
+
+        [NotMapped]
+        public new DateTime? UpdatedAt { get; set; }
+
+        [NotMapped]
+        public new DateTime? DeletedAt { get; set; }
+
         public TransactionDetail() { }
 
         public TransactionDetail(int Id, int TransactionId, int CategoryId, double Quantity, double PriceAtPurchase, double Subtotal)

@@ -19,6 +19,12 @@ namespace sipetok_api.Models
         [ForeignKey("TenantId")]
         public virtual Tenant? Tenant { get; set; }
 
+        [NotMapped]
+        public new DateTime? UpdatedAt { get; set; }
+
+        [NotMapped]
+        public new DateTime? DeletedAt { get; set; }
+
         public Transaction() { }
 
         public Transaction(int Id, double PaymentAmount, PaymentState PaymentStatus, OrderState OrderStatus, double TotalPrice, int TenantId, string CustomerName, string CustomerPhoneNumber)
