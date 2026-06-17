@@ -18,14 +18,14 @@ namespace sipetok_api.Controllers
     public class EggCategoryController : ControllerBase
     {
         private readonly StevanModuleFactory _factory;
+        private readonly IConfiguration appConfig;
         private readonly AppDbContext _dbContext;
         private readonly IMapper _mapper;
 
-        public EggCategoryController(StevanModuleFactory factory, AppDbContext context, IMapper mapper)
+        public EggCategoryController(AppDbContext context, IConfiguration config, IMapper mapper)
         {
-            _factory = factory;
             _dbContext = context;
-            _mapper = mapper;
+            _factory = new EggCategoryFactory(context, appConfig, mapper);
         }
 
         [HttpGet]
@@ -98,7 +98,7 @@ namespace sipetok_api.Controllers
         }
 
         [HttpDelete("{id:int}")]
-        [Authorize(Roles = "TENANT")]   
+        [Authorize(Roles = "TENANT")]
         public async Task<IActionResult> DeleteEggCategory(int id)
         {
             int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
