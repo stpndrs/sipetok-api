@@ -12,6 +12,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using sipetok_api.Utils;
+using sipetok_api.Repositories;
 
 namespace sipetok_api.Controllers
 {
@@ -40,23 +41,36 @@ namespace sipetok_api.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
+            var repository = new TenantRepository(_dbContext);
+            var tenant = await repository.GetTenantByUserId(CurrentUserId);
+            if (tenant == null) return Forbid();
+
+            var searchQuery = new[] { $"TenantId : {tenant.Id}" };
+
             var worker = _factory.CreateMethod("get");
             return await worker.ActionAsync<Transaction, TransactionResponseDto>(
-                new Transaction(), new TransactionResponseDto(), null, CurrentUserId, null, new[] { "Details", "Details.Category" });
+                new Transaction(), new TransactionResponseDto(), null, CurrentUserId, searchQuery, new[] { "Details", "Details.Category" });
         }
 
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetTransactionById(int id)
         {
+            var repository = new TenantRepository(_dbContext);
+            var tenant = await repository.GetTenantByUserId(CurrentUserId);
+            if (tenant == null) return Forbid();
+
+            var searchQuery = new[] { $"TenantId : {tenant.Id}" };
+
             var worker = _factory.CreateMethod("get");
             return await worker.ActionAsync<Transaction, TransactionResponseDto>(
-                new Transaction(), new TransactionResponseDto(), id, CurrentUserId, null, new[] { "Details", "Details.Category" });
+                new Transaction(), new TransactionResponseDto(), id, CurrentUserId, searchQuery, new[] { "Details", "Details.Category" });
         }
 
         [HttpPost]
         public async Task<IActionResult> Store([FromBody] TransactionRequestDto request)
         {
-            var tenant = await _dbContext.Tenants.FirstOrDefaultAsync(a => a.UserId == CurrentUserId);
+            var repository = new TenantRepository(_dbContext);
+            var tenant = await repository.GetTenantByUserId(CurrentUserId);
             if (tenant == null) return Forbid();
 
             using var transactionScope = await _dbContext.Database.BeginTransactionAsync();
