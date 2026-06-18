@@ -5,5 +5,6 @@ namespace sipetok_api.Repositories.Interfaces
 {
     public interface ITenantRepository : IGenericRepository<Tenant>
     {
+        Task<Tenant> GetTenantByUserId(int userId);
     }
 }
