@@ -62,6 +62,7 @@ namespace sipetok_api.Repositories
             {
                 foreach (var search in searchQuery)
                 {
+                    Console.WriteLine(search);
                     if (string.IsNullOrWhiteSpace(search) || !search.Contains(":")) continue;
 
                     var parts = search.Split(':', 2);
@@ -70,10 +71,29 @@ namespace sipetok_api.Repositories
 
                     PropertyInfo? propInfo = typeof(T).GetProperty(propertyName, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
 
-                    if (propInfo != null && propInfo.PropertyType == typeof(string))
+                    if (propInfo != null)
                     {
-                        Console.WriteLine("query" + propInfo.Name + " keyword " + keyword);
-                        query = query.Where(e => EF.Functions.Like(EF.Property<string>(e, propInfo.Name), $"%{keyword}%"));
+                        if (propInfo.PropertyType == typeof(string))
+                        {
+                            Console.WriteLine("Query String " + propInfo.Name + " keyword " + keyword);
+                            query = query.Where(e => EF.Functions.Like(EF.Property<string>(e, propInfo.Name), $"%{keyword}%"));
+                        }
+                        else if (propInfo.PropertyType == typeof(int))
+                        {
+                            if (int.TryParse(keyword, out int intKeyword))
+                            {
+                                Console.WriteLine("Query Int " + propInfo.Name + " keyword " + intKeyword);
+                                query = query.Where(e => EF.Property<int>(e, propInfo.Name) == intKeyword);
+                            }
+                        }
+                        else if (propInfo.PropertyType == typeof(int?))
+                        {
+                            if (int.TryParse(keyword, out int intKeyword))
+                            {
+                                Console.WriteLine("Query Nullable Int " + propInfo.Name + " keyword " + intKeyword);
+                                query = query.Where(e => EF.Property<int?>(e, propInfo.Name) == intKeyword);
+                            }
+                        }
                     }
                 }
             }
