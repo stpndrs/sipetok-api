@@ -1,6 +1,6 @@
-using sipetok_api.dto.Respon;
+using sipetok_api.dto.Response;
 
-namespace sipetok_api.Respon
+namespace sipetok_api.Response
 {
     public class EggRespon
     {

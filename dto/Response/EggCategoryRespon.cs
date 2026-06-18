@@ -1,4 +1,4 @@
-namespace sipetok_api.dto.Respon
+namespace sipetok_api.dto.Response
 {
     public class EggCategoryResponseDto
     {
@@ -11,11 +11,11 @@ namespace sipetok_api.dto.Respon
 
         public EggCategoryResponseDto(int Id, decimal Price, string Description, string Name, int TenantId)
         {
-            this.Id = Id;
-            this.Price = Price;
-            this.Description = Description;
-            this.Name = Name;
-            this.TenantId = TenantId;
+            Id = Id;
+            Price = Price;
+            Description = Description;
+            Name = Name;
+            TenantId = TenantId;
         }
     }
 }

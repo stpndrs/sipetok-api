@@ -6,7 +6,7 @@ using sipetok_api.Controllers.Products;
 using sipetok_api.Data;
 using sipetok_api.dto;
 using sipetok_api.dto.Request;
-using sipetok_api.dto.Respon;
+using sipetok_api.dto.Response;
 using sipetok_api.Models;
 using System.Threading.Tasks;
 

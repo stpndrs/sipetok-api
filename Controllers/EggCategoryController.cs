@@ -3,9 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using sipetok_api.Controllers.Factories;
 using sipetok_api.Controllers.Products;
 using sipetok_api.dto.Request;
-using sipetok_api.dto.Respon;
+using sipetok_api.dto.Response;
 using sipetok_api.Models;
-using sipetok_api.Respon;
 
 namespace sipetok_api.Controllers
 {
