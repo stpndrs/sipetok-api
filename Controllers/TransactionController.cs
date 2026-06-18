@@ -26,7 +26,6 @@ namespace sipetok_api.Controllers
         private readonly OrderService _orderService;
         private readonly IMapper _mapper;
 
-        // DRY: Mengisolasi ekstraksi UserId agar tidak berulang di setiap endpoint
         private int CurrentUserId => int.Parse(User.FindFirst("userId")?.Value ?? "0");
 
         public TransactionController(TransactionFactory factory, AppDbContext context, PaymentService paymentService, OrderService orderService, IMapper mapper)
@@ -65,7 +64,6 @@ namespace sipetok_api.Controllers
 
             try
             {
-                // 1. Siapkan data transaksi dasar
                 var transactionData = new Transaction
                 {
                     Date = request.Date,
@@ -78,7 +76,6 @@ namespace sipetok_api.Controllers
                     CustomerPhoneNumber = request.CustomerPhoneNumber,
                 };
 
-                // 2. Simpan transaksi utama lewat worker
                 var worker = _factory.CreateMethod("save");
                 var result = await worker.ActionAsync<Transaction, TransactionResponseDto, Transaction>(
                     new Transaction(), new TransactionResponseDto(), transactionData, "POST");
@@ -88,7 +85,6 @@ namespace sipetok_api.Controllers
                     return BadRequest("Gagal menyimpan transaksi utama.");
                 }
 
-                // 3. Proses Details jika ada
                 if (request.Details != null && request.Details.Any())
                 {
                     double totalCalculated = 0;
@@ -118,8 +114,6 @@ namespace sipetok_api.Controllers
 
                 await transactionScope.CommitAsync();
 
-                // KISS & DRY: Manfaatkan Automapper bawaan proyekmu untuk menyusun payload response, 
-                // tidak perlu memetakan properti anonim secara hardcoded sepanjang itu.
                 var responseData = _mapper.Map<TransactionResponseDto>(createdTransaction);
 
                 return Ok(new { success = true, message = "Berhasil menambahkan transaksi (Orderan Masuk & Menunggu Pembayaran)", data = responseData });

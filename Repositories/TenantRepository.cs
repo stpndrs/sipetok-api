@@ -8,7 +8,7 @@ namespace sipetok_api.Repositories
     {
         public TenantRepository(AppDbContext context) : base(context)
         {
-            // Semua context dioper ke GenericRepository
+
         }
     }
 }

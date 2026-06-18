@@ -4,7 +4,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.Extensions.Configuration; // Pastikan namespace ini ada
+using Microsoft.Extensions.Configuration;
 using sipetok_api.dto;
 using sipetok_api.Services;
 using sipetok_api.Models;
@@ -13,7 +13,7 @@ namespace sipetok_api.helper
 {
     public class AuthHelper
     {
-        public static string CreateToken(User user, IConfiguration configuration) // Tambahkan parameter di sini
+        public static string CreateToken(User user, IConfiguration configuration) 
         {
             try
             {
@@ -47,7 +47,6 @@ namespace sipetok_api.helper
             }
             catch (Exception ex)
             {
-                // Bagus untuk debugging di console biar tahu kalau konfigurasi appsettings salah membaca path
                 Console.WriteLine("JWT Error: " + ex.Message);
                 return "false";
             }

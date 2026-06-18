@@ -50,7 +50,6 @@ namespace sipetok_api.Repositories
         {
             IQueryable<T> query = _dbSet;
 
-            // 1. Handle Include Relasi secara dinamis
             if (includes != null && includes.Length > 0)
             {
                 foreach (var include in includes)
@@ -59,7 +58,6 @@ namespace sipetok_api.Repositories
                 }
             }
 
-            // 2. Handle Search Query dinamis via Reflection (Format: "NamaProperti:Nilai")
             if (searchQuery != null && searchQuery.Length > 0)
             {
                 foreach (var search in searchQuery)

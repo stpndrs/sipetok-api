@@ -62,7 +62,6 @@ namespace sipetok_api.Controllers
         {
             int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
 
-            // Ambil tenant berdasarkan userId
             Tenant tenant = await _dbContext.Tenants.FirstOrDefaultAsync(a => a.UserId == userId);
             if (tenant == null) return Forbid();
 
@@ -103,7 +102,6 @@ namespace sipetok_api.Controllers
         {
             int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
 
-            // Validasi kepemilikan data sebelum didelete
             var existingCategory = await _dbContext.EggCategories.Include(c => c.Tenant)
                 .FirstOrDefaultAsync(c => c.Id == id);
 

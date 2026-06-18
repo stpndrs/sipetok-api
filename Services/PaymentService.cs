@@ -13,7 +13,7 @@ namespace sipetok_api.Services
     public class PaymentService : IPaymentSubject
     {
         private readonly AppDbContext _dbContext;
-        private readonly List<IPaymentObserver> _observers = new(); // C# Modern shorthand instantiation
+        private readonly List<IPaymentObserver> _observers = new(); 
 
         private static readonly Dictionary<(PaymentState, PaymentTrigger), PaymentState> _transitions =
             new Dictionary<(PaymentState, PaymentTrigger), PaymentState>
@@ -26,7 +26,6 @@ namespace sipetok_api.Services
         {
             _dbContext = context;
 
-            // Otomatis daftarkan stockObserver dan orderService sebagai pendengar perubahan status
             this.Attach(new StockObserver(_dbContext));
             this.Attach(orderService);
         }
@@ -69,7 +68,6 @@ namespace sipetok_api.Services
 
                 if (transaksi == null) return false;
 
-                // Cek apakah transisi state pembayaran terdaftar di State Machine
                 if (_transitions.TryGetValue((transaksi.PaymentStatus, paymentTrigger), out PaymentState nextPaymentState))
                 {
                     if (paymentTrigger == PaymentTrigger.Pay)
@@ -85,7 +83,6 @@ namespace sipetok_api.Services
 
                     transaksi.PaymentStatus = nextPaymentState;
 
-                    // Menggunakan Pola Observer untuk menyiarkan perubahan data ke modul stok & pemesanan secara terpusat (DRY)
                     if (nextPaymentState == PaymentState.Success)
                     {
                         await NotifyPaymentSuccess(transaksi);

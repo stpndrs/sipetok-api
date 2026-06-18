@@ -17,7 +17,7 @@ namespace sipetok_api.Models
         public virtual EggCategory? Category { get; set; }
         public double Quantity { get; set; }
         public double PriceAtPurchase { get; set; }
-        public double Subtotal { get; set; } // Ubah ke double
+        public double Subtotal { get; set; } 
 
         [NotMapped]
         public new DateTime? CreatedAt { get; set; }
