@@ -6,6 +6,8 @@ using sipetok_api.Controllers.Factories;
 using sipetok_api.dto.Request;
 using sipetok_api.dto.Response;
 using sipetok_api.Models;
+<<<<<<< HEAD
+=======
 using sipetok_api.Data;
 using System;
 using System.Threading.Tasks;
