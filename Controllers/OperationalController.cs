@@ -9,6 +9,7 @@ using sipetok_api.dto;
 using sipetok_api.dto.Request;
 using sipetok_api.dto.Response;
 using sipetok_api.Models;
+using sipetok_api.Repositories;
 using sipetok_api.Respon;
 using System.Threading.Tasks;
 
@@ -32,21 +33,38 @@ namespace sipetok_api.Controllers
         [Authorize(Roles = "TENANT")]
         public async Task<IActionResult> GetAllOperationals()
         {
+            int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
+
             var worker = _factory.CreateMethod("get");
             Operational operationalModel = new Operational();
             OperationalResponseDto response = new OperationalResponseDto();
 
-            return await worker.ActionAsync<Operational, OperationalResponseDto>(operationalModel, response);
+            var repository = new TenantRepository(_dbContext);
+            var tenant = await repository.GetTenantByUserId(userId);
+            if (tenant == null) return Forbid();
+
+            var searchQuery = new[] { $"TenantId : {tenant.Id}" };
+
+            return await worker.ActionAsync<Operational, OperationalResponseDto>(operationalModel, response, null, null, searchQuery);
         }
 
         [HttpGet("{id:int}")]
         [Authorize(Roles = "TENANT")]
         public async Task<IActionResult> GetOperationalById(int id)
         {
-            IStevanMethod worker = _factory.CreateMethod("get");
+            int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
+
+            var worker = _factory.CreateMethod("get");
             Operational operationalModel = new Operational();
             OperationalResponseDto response = new OperationalResponseDto();
-            return await worker.ActionAsync<Operational, OperationalResponseDto>(operationalModel, response, id);
+
+            var repository = new TenantRepository(_dbContext);
+            var tenant = await repository.GetTenantByUserId(userId);
+            if (tenant == null) return Forbid();
+
+            var searchQuery = new[] { $"TenantId : {tenant.Id}" };
+
+            return await worker.ActionAsync<Operational, OperationalResponseDto>(operationalModel, response, id, null, searchQuery);
         }
 
         [HttpPost]
@@ -57,7 +75,8 @@ namespace sipetok_api.Controllers
             IStevanMethod worker = _factory.CreateMethod("save");
             Operational operationalModel = new Operational();
             OperationalResponseDto response = new OperationalResponseDto();
-            Tenant tenant = await _dbContext.Tenants.FirstOrDefaultAsync(a => a.UserId == userId);
+            var repository = new TenantRepository(_dbContext);
+            var tenant = await repository.GetTenantByUserId(userId);
             request.TenantId = tenant!.Id;
 
             return await worker.ActionAsync<Operational, OperationalResponseDto, OperationalRequestDto>(operationalModel, response, request, "POST");
