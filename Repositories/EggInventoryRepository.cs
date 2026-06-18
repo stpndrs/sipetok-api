@@ -8,7 +8,6 @@ namespace sipetok_api.Repositories
     {
         public EggInventoryRepository (AppDbContext context) : base(context)
         {
-            // Semua context dioper ke GenericRepository
         }
     }
 }

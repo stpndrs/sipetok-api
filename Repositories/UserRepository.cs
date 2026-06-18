@@ -8,7 +8,7 @@ namespace sipetok_api.Repositories
     {
         public UserRepository(AppDbContext context) : base(context)
         {
-            // Semua context dioper ke GenericRepository
+
         }
     }
 }

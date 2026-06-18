@@ -5,7 +5,6 @@ namespace sipetok_api.Controllers.Products
 {
     public interface IStevanMethod
     {
-        // 1. KHUSUS TERIMA DATA (GET / QUERY)
         Task<IActionResult> ActionAsync<TModel, TResponse>(
             TModel model,
             TResponse response,
@@ -15,7 +14,6 @@ namespace sipetok_api.Controllers.Products
             string[]? includes = null)
             where TModel : class;
 
-        // 2. KHUSUS KIRIM DATA (POST / PUT / SAVE / COMMAND)
         Task<IActionResult> ActionAsync<TModel, TResponse, TRequest>(
             TModel model,
             TResponse response,

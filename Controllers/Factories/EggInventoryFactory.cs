@@ -24,8 +24,6 @@ namespace sipetok_api.Controllers.Factories
             {
                 "get" or "read" => new StevanGetData(_dbContext, _mapper),
                 "save" or "write" => new StevanSaveData(_dbContext, null, _mapper),
-                // "delete" or "remove" => new DeleteData(_dbContext),
-                // _ => throw new ArgumentException($"Aksi '{actionType}' tidak dikenal di UserFactory.")
             };
         }
     }

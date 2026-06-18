@@ -38,18 +38,12 @@ namespace sipetok_api.Controllers.Products
             _orderService = orderService;
         }
 
-        // =========================================================================
-        // 1. KHUSUS TERIMA DATA (Ditangani oleh StevanGetData.cs)
-        // =========================================================================
         public Task<IActionResult> ActionAsync<TModel, TResponse>(
             TModel model, TResponse response, int? id = null, int? userId = null, string[] searchQuery = null, string[]? includes = null) where TModel : class
         {
             throw new NotImplementedException("Operasi TERIMA data (GET) tidak didukung di StevanSaveData. Gunakan StevanGetData.");
         }
 
-        // =========================================================================
-        // 2. KHUSUS KIRIM DATA (POST / PUT / SAVE / COMMAND) -> Logika asli kelas ini
-        // =========================================================================
         public async Task<IActionResult> ActionAsync<TModel, TResponse, TRequest>(
             TModel model, TResponse response, TRequest request, string httpMethod, int? id = null, int? userId = null, string[] searchQuery = null) where TModel : class
         {
@@ -65,7 +59,6 @@ namespace sipetok_api.Controllers.Products
                     repository.Add(entity);
                     repository.SaveChanges();
 
-                    // aturan khusus auth response
                     if (response is AuthResponseDto authResponse)
                     {
                         string token = AuthHelper.CreateToken(entity as User, appConfig);
@@ -75,7 +68,6 @@ namespace sipetok_api.Controllers.Products
                         return new OkObjectResult(new ResponData<TResponse>(true, responseAuth, "Successfully added data"));
                     }
 
-                    // --- LOGIKA OTOMATIS UNTUK DETAILS ---
                     var detailsProperty = entity.GetType().GetProperty("Details");
                     if (detailsProperty != null && request != null)
                     {
@@ -85,15 +77,12 @@ namespace sipetok_api.Controllers.Products
                             var detailsValue = requestDetailsProperty.GetValue(request);
                             if (detailsValue != null)
                             {
-                                // Jika ada data Details di request, set ke entity
                                 detailsProperty.SetValue(entity, detailsValue);
 
-                                // Simpan perubahan detail ke database
                                 _dbContext.SaveChanges();
                             }
                         }
                     }
-                    // -------------------------------------
 
                     if (entity is Transaction) return new OkObjectResult(entity);
 
@@ -164,7 +153,6 @@ namespace sipetok_api.Controllers.Products
             }
             catch (DbUpdateException ex)
             {
-                // tambahkan logika khusus
                 if (ex.InnerException != null && (ex.InnerException.Message.Contains("Duplicate") || ex.InnerException.Message.Contains("unique")))
                 {
                     var errorDetail = new Dictionary<string, string[]>

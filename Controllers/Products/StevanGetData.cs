@@ -30,7 +30,6 @@ namespace sipetok_api.Controllers.Products
                 var repository = new GenericRepository<TModel>(_dbContext);
 
                 var entities = await repository.GetWithFiltersAsync(searchQuery, includes);
-                Console.WriteLine("Data Count: " + entities.Count());
 
                 if (id != null)
                 {
