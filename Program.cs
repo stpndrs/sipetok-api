@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using MySql.EntityFrameworkCore.Extensions;
 using sipetok_api;
 using sipetok_api.Data;
-using sipetok_api.dto.Respon;
+using sipetok_api.dto.Response;
 using sipetok_api.Services;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -54,11 +54,12 @@ builder.Services.AddApplicationServices();
 
 // PERBAIKAN: Registrasi TenantFactory untuk mengatasi error 'Unable to resolve service' sebelumnya
 builder.Services.AddScoped<sipetok_api.Controllers.Factories.TenantFactory>();
-builder.Services.AddScoped<sipetok_api.Controllers.Factories.EggFactory>();
+builder.Services.AddScoped<sipetok_api.Controllers.Factories.EggInventoryFactory>();
 builder.Services.AddScoped<sipetok_api.Controllers.Factories.EggCategoryFactory>();
 builder.Services.AddScoped<sipetok_api.Controllers.Factories.TransactionFactory>();
 builder.Services.AddScoped<sipetok_api.Controllers.Factories.OperationalFactory>();
 builder.Services.AddScoped<sipetok_api.Controllers.Factories.UserFactory>();
+builder.Services.AddScoped<sipetok_api.Controllers.Factories.AuthFactory>();
 
 // 2. OpenAPI / Swagger
 builder.Services.AddOpenApi();
@@ -143,7 +144,7 @@ if (app.Environment.IsDevelopment())
 //app.UseHttpsRedirection();
 
 // PERBAIKAN UTAMA: Wajib jalankan UseAuthentication() SEBELUM UseAuthorization()
-app.UseAuthentication(); 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

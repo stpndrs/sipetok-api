@@ -3,12 +3,12 @@ using System.ComponentModel.DataAnnotations;
 
 namespace sipetok_api.dto.Request
 {
-    public class PaymentDto
+    public class PaymentRequestDto
     {
-        public decimal PaymentAmount { get; set; }
-        public PaymentDto() { }
+        public double PaymentAmount { get; set; }
+        public PaymentRequestDto() { }
 
-        public PaymentDto(decimal PaymentAmount)
+        public PaymentRequestDto(double PaymentAmount)
         {
             this.PaymentAmount = PaymentAmount;
         }

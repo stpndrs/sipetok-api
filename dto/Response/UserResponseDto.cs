@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using sipetok_api.Services;
 using sipetok_api.Utils;
 
@@ -8,6 +9,8 @@ namespace sipetok_api.dto.Response
         public int Id { get; set; }
         public string Username { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
+        // [Browsable(false)]
+        public string Password { get; set; } = string.Empty;
         public TabelDriven Role { get; set; } = null!;
         public TabelDriven IsActive { get; set; } = null!;
         public UserResponseDto() { }

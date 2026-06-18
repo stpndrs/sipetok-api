@@ -52,7 +52,7 @@
 //             var mapper = TestHelper.CreateMapper();
 //             var orderService = new OrderService();
 
-//             var request = new TransactionDto
+//             var request = new TransactionRequestDto
 //             {
 //                 customer_name = "Andreas",
 //                 total_price = 100000
@@ -65,7 +65,7 @@
 //                 OrderStatus = OrderState.OrderComeIn
 //             };
 
-//             _mockPaymentService.Setup(s => s.ProcessTransaction(It.IsAny<TransactionDto>()))
+//             _mockPaymentService.Setup(s => s.ProcessTransaction(It.IsAny<TransactionRequestDto>()))
 //                                .ReturnsAsync(fakeTransaction);
 
 //             dbContext.Transactions.Add(fakeTransaction);
@@ -88,13 +88,13 @@
 //             var mapper = TestHelper.CreateMapper();
 //             var orderService = new OrderService();
 
-//             _mockPaymentService.Setup(s => s.ProcessTransaction(It.IsAny<TransactionDto>()))
+//             _mockPaymentService.Setup(s => s.ProcessTransaction(It.IsAny<TransactionRequestDto>()))
 //                                .ThrowsAsync(new Exception("Database Error"));
 
 //             var controller = new TransactionController(dbContext, _mockPaymentService.Object, orderService, mapper);
 
 //             // Act
-//             var result = await controller.Store(new TransactionDto());
+//             var result = await controller.Store(new TransactionRequestDto());
 
 //             // Assert
 //             Assert.IsType<BadRequestObjectResult>(result);

@@ -5,7 +5,7 @@ namespace sipetok_api.dto.Request
     public class EggCategoryRequestDto
     {
         [Required(ErrorMessage = "Price is required!")]
-        public decimal Price { get; set; }
+        public double Price { get; set; }
 
         [Required(ErrorMessage = "Description is required!")]
         public string Description { get; set; } = string.Empty;
@@ -15,7 +15,7 @@ namespace sipetok_api.dto.Request
 
         public EggCategoryRequestDto() { }
 
-        public EggCategoryRequestDto(decimal Price, string Description, string Name)
+        public EggCategoryRequestDto(double Price, string Description, string Name)
         {
             Price = Price;
             Description = Description;

@@ -5,12 +5,12 @@ using System;
 
 namespace sipetok_api.Controllers.Factories
 {
-    public class OperationalFactory : StevanModuleFactory
+    public class EggInventoryFactory : StevanModuleFactory
     {
         private readonly AppDbContext _dbContext;
         private readonly IMapper _mapper;
 
-        public OperationalFactory(AppDbContext dbContext, IMapper mapper)
+        public EggInventoryFactory(AppDbContext dbContext, IMapper mapper)
         {
             _dbContext = dbContext;
             _mapper = mapper;

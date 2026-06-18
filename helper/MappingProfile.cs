@@ -1,7 +1,7 @@
 using AutoMapper;
 using sipetok_api.dto;
 using sipetok_api.dto.Request;
-using sipetok_api.dto.Respon;
+using sipetok_api.dto.Response;
 using sipetok_api.Models;
 using sipetok_api.Response;
 using sipetok_api.Utilis;
@@ -13,22 +13,26 @@ namespace sipetok_api
     {
         public MappingProfile()
         {
+            CreateMap<RegisterRequestDto, User>();
             CreateMap<UserRequestDto, User>();
-            CreateMap<TenantDto, Tenant>();
-            CreateMap<OperationalDto, Operational>();
-            CreateMap<EggDto, Egg>();
+            CreateMap<User, UserResponseDto>();
+            CreateMap<TenantRequestDto, Tenant>();
+            CreateMap<OperationalRequestDto, Operational>();
+            CreateMap<EggInventoryRequestDto, EggInventory>();
             CreateMap<EggCategoryRequestDto, EggCategory>();
             CreateMap<ChangePasswordDto, User>();
-            CreateMap<TransactionDto, Transaction>();
+            CreateMap<TransactionRequestDto, Transaction>();
+            CreateMap<TransactionDetail, TransactionDetailResponseDto>()
+                .ForMember(dest => dest.Category, opt => opt.MapFrom(src => src.Category));
             CreateMap<TransactionDetailDto, TransactionDetail>();
 
             CreateMap<User, UserResponseDto>();
-            CreateMap<Tenant, TenantRespon>();
-            CreateMap<Operational, OperationalRespon>();
-            CreateMap<Egg, EggRespon>();
+            CreateMap<Tenant, TenantResponseDto>();
+            CreateMap<Operational, OperationalResponseDto>();
+            CreateMap<EggInventory, EggInventoryResponseDto>();
             CreateMap<EggCategory, EggCategoryResponseDto>();
-            CreateMap<Transaction, TransactionRespon>();
-            CreateMap<TransactionDetail, TransactionDetailRespon>();
+            CreateMap<Transaction, TransactionResponseDto>();
+            CreateMap<TransactionDetail, TransactionDetailResponseDto>();
         }
     }
 }

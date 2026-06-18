@@ -20,7 +20,7 @@ namespace sipetok_api.Observers
         {
             foreach (var detail in transaction.Details)
             {
-                var availableEggs = await _dbContext.Eggs
+                var availableEggs = await _dbContext.EggInventories
                     .Where(e => e.CategoryId == detail.CategoryId && e.Stock > 0)
                     .OrderBy(e => e.ProductionDate)
                     .ToListAsync();

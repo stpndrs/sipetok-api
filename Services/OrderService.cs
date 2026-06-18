@@ -9,7 +9,7 @@ namespace sipetok_api.Services
 {
     public class OrderService : IPaymentObserver
     {
-        private readonly Dictionary<(OrderState, OrderTrigger), OrderState> transitions =
+        private readonly Dictionary<(OrderState, OrderTrigger), OrderState> _transitions =
             new Dictionary<(OrderState, OrderTrigger), OrderState>
         {
             { (OrderState.OrderComeIn, OrderTrigger.PaymentSucceeded), OrderState.ReadyForPickup },
@@ -31,32 +31,22 @@ namespace sipetok_api.Services
 
         public bool UpdateOrderStatus(Transaction transaction, OrderTrigger trigger)
         {
-            try
-            {
-                if (transaction == null)
-                {
-                    return false;
-                }
+            if (transaction == null) return false;
 
-                if (transaction.OrderStatus == OrderState.OrderComeIn &&
-                    trigger == OrderTrigger.PaymentSucceeded &&
-                    transaction.PaymentStatus != PaymentState.Success)
-                {
-                    return false;
-                }
-
-                if (transitions.TryGetValue((transaction.OrderStatus, trigger), out OrderState nextOrderStatus))
-                {
-                    transaction.OrderStatus = nextOrderStatus;
-                    return true;
-                }
-
-                return false;
-            }
-            catch (Exception)
+            if (transaction.OrderStatus == OrderState.OrderComeIn &&
+                trigger == OrderTrigger.PaymentSucceeded &&
+                transaction.PaymentStatus != PaymentState.Success)
             {
                 return false;
             }
+
+            if (_transitions.TryGetValue((transaction.OrderStatus, trigger), out OrderState nextOrderStatus))
+            {
+                transaction.OrderStatus = nextOrderStatus;
+                return true;
+            }
+
+            return false;
         }
     }
 }

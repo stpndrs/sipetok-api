@@ -1,105 +1,122 @@
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using sipetok_api.Controllers.Factories;
-using sipetok_api.Controllers.Products;
 using sipetok_api.dto.Request;
 using sipetok_api.dto.Response;
 using sipetok_api.Models;
+<<<<<<< HEAD
+=======
+using sipetok_api.Data;
+using System;
+using System.Threading.Tasks;
+>>>>>>> 66185cb9672652d715a413bd97d21b5b6f10fbf7
 
 namespace sipetok_api.Controllers
 {
-    [Authorize]
-    [Route("api/egg/categories")]
+    [Authorize(Roles = "TENANT")]
     [ApiController]
+    [Route("api/egg/categories")]
     public class EggCategoryController : ControllerBase
     {
-        private readonly ModuleFactory _factory;
+        private readonly StevanModuleFactory _factory;
+        private readonly IConfiguration appConfig;
+        private readonly AppDbContext _dbContext;
+        private readonly IMapper _mapper;
 
-        // Inject EggCategoryFactory langsung ke dalam Controller
-        public EggCategoryController(EggCategoryFactory factory)
+        public EggCategoryController(AppDbContext context, IConfiguration config, IMapper mapper)
         {
-            _factory = factory;
+            _dbContext = context;
+            _factory = new EggCategoryFactory(context, appConfig, mapper);
         }
 
         [HttpGet]
-        [Authorize(Roles = "TENANT, CUSTOMER")]
+        [Authorize(Roles = "TENANT")]
         public async Task<IActionResult> GetAllEggCategory()
         {
             int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
 
-            // Panggil factory untuk mendapatkan objek GetData
-            IMethod handler = _factory.CreateMethod("get");
+            var worker = _factory.CreateMethod("get");
+            EggCategory model = new EggCategory();
+            EggCategoryResponseDto response = new EggCategoryResponseDto();
 
-            if (User.IsInRole("CUSTOMER"))
-            {
-                return await handler.ActionAsync<EggCategory, EggAvailableRespon>("customer_all", userId: userId);
-            }
-            else if (User.IsInRole("TENANT"))
-            {
-                return await handler.ActionAsync<EggCategory, EggCategoryResponseDto>("category_all_tenant", userId: userId);
-            }
-            return Forbid();
+            return await worker.ActionAsync<EggCategory, EggCategoryResponseDto>(
+                model, response, null, userId, null, new[] { "Tenant" });
         }
 
-        [HttpGet]
-        [Route("{id:int}")]
+        [HttpGet("{id:int}")]
         [Authorize(Roles = "TENANT")]
         public async Task<IActionResult> GetEggCategoryById(int id)
         {
-            var userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
-            IMethod handler = _factory.CreateMethod("get");
-            return await handler.ActionAsync<EggCategory, EggCategoryResponseDto>("get_category_by_id", id: id, userId: userId);
+            int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
+
+            var worker = _factory.CreateMethod("get");
+            EggCategory model = new EggCategory();
+            EggCategoryResponseDto response = new EggCategoryResponseDto();
+
+            return await worker.ActionAsync<EggCategory, EggCategoryResponseDto>(
+                model, response, id, userId, null, new[] { "Tenant" });
         }
 
         [HttpPost]
         [Authorize(Roles = "TENANT")]
-        public async Task<IActionResult> AddEggCategory([FromBody] EggCategoryRequestDto eggCategoryDto)
+        public async Task<IActionResult> AddEggCategory([FromBody] EggCategoryRequestDto request)
         {
             int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
 
-            // Panggil factory untuk mendapatkan objek SaveData
-            IMethod handler = _factory.CreateMethod("save");
+            // Ambil tenant berdasarkan userId
+            Tenant tenant = await _dbContext.Tenants.FirstOrDefaultAsync(a => a.UserId == userId);
+            if (tenant == null) return Forbid();
 
-            return await handler.ActionAsync<EggCategory, EggCategoryResponseDto>(
-                subAction: "add_category",
-                data: eggCategoryDto,
-                httpMethod: "POST",
-                userId: userId
-            );
+            var eggCategoryData = new EggCategory
+            {
+                Name = request.Name,
+                Price = request.Price,
+                TenantId = tenant.Id
+            };
+
+            var worker = _factory.CreateMethod("save");
+
+            return await worker.ActionAsync<EggCategory, EggCategoryResponseDto, EggCategory>(
+                new EggCategory(), new EggCategoryResponseDto(), eggCategoryData, "POST");
         }
 
-        [HttpPut]
-        [Route("{id:int}")]
+        [HttpPut("{id:int}")]
         [Authorize(Roles = "TENANT")]
-        public async Task<IActionResult> UpdateEggCategory(int id, [FromBody] EggCategoryRequestDto eggCategoryDto)
+        public async Task<IActionResult> UpdateEggCategory(int id, [FromBody] EggCategoryRequestDto request)
         {
             int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
-            IMethod handler = _factory.CreateMethod("save");
 
-            return await handler.ActionAsync<EggCategory, EggCategoryResponseDto>(
-                subAction: "update_category",
-                data: eggCategoryDto,
-                httpMethod: "PUT",
-                id: id,
-                userId: userId
-            );
+            var existingCategory = await _dbContext.EggCategories.Include(c => c.Tenant)
+                .FirstOrDefaultAsync(c => c.Id == id);
+
+            if (existingCategory == null) return NotFound();
+            if (existingCategory.Tenant?.UserId != userId) return Forbid();
+
+            var worker = _factory.CreateMethod("save");
+
+            return await worker.ActionAsync<EggCategory, EggCategoryResponseDto, EggCategoryRequestDto>(
+                new EggCategory(), new EggCategoryResponseDto(), request, "PUT", id, userId);
         }
 
-        [HttpDelete]
-        [Route("{id:int}")]
+        [HttpDelete("{id:int}")]
         [Authorize(Roles = "TENANT")]
         public async Task<IActionResult> DeleteEggCategory(int id)
         {
             int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
 
-            // Panggil factory untuk mendapatkan objek DeleteData
-            IMethod handler = _factory.CreateMethod("delete");
+            // Validasi kepemilikan data sebelum didelete
+            var existingCategory = await _dbContext.EggCategories.Include(c => c.Tenant)
+                .FirstOrDefaultAsync(c => c.Id == id);
 
-            return await handler.ActionAsync<EggCategory, EggCategoryResponseDto>(
-                subAction: "delete_category",
-                id: id,
-                userId: userId
-            );
+            if (existingCategory == null) return NotFound();
+            if (existingCategory.Tenant?.UserId != userId) return Forbid();
+
+            var worker = _factory.CreateMethod("delete");
+
+            return await worker.ActionAsync<EggCategory, EggCategoryResponseDto, object>(
+                new EggCategory(), new EggCategoryResponseDto(), null!, "DELETE", id, userId);
         }
     }
 }

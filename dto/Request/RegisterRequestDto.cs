@@ -22,5 +22,8 @@ namespace sipetok_api.dto.Request
         [Required(ErrorMessage = "Email is required!")]
         [EmailAddress(ErrorMessage = "Format email salah")]
         public string Email { get; set; } = string.Empty;
+
+        public int Role { get; set; }
+        public bool IsActive { get; set; }
     }
 }

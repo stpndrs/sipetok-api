@@ -1,9 +1,9 @@
-using sipetok_api.Models;
+﻿using sipetok_api.Models;
 using System.Threading.Tasks;
 
 namespace sipetok_api.Repositories.Interfaces
 {
-    public interface IUserRepository : IGenericRepository<User>
+    public interface IEggInventoryRepository : IGenericRepository<EggInventory>
     {
         // Task<User?> GetUserByUsernameAsync(string username);
     }

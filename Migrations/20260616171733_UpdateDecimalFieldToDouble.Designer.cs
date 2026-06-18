@@ -11,8 +11,8 @@ using sipetok_api.Data;
 namespace sipetok_api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260609070706_InitDb")]
-    partial class InitDb
+    [Migration("20260616171733_UpdateDecimalFieldToDouble")]
+    partial class UpdateDecimalFieldToDouble
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -22,7 +22,46 @@ namespace sipetok_api.Migrations
                 .HasAnnotation("ProductVersion", "10.0.5")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
-            modelBuilder.Entity("sipetok_api.Models.Egg", b =>
+            modelBuilder.Entity("sipetok_api.Models.EggCategory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
+
+                    b.Property<double>("Price")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("double");
+
+                    b.Property<int>("TenantId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId");
+
+                    b.ToTable("EggCategories");
+                });
+
+            modelBuilder.Entity("sipetok_api.Models.EggInventory", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -50,46 +89,7 @@ namespace sipetok_api.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.ToTable("Eggs");
-                });
-
-            modelBuilder.Entity("sipetok_api.Models.EggCategory", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("varchar(255)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("varchar(50)");
-
-                    b.Property<decimal>("Price")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("TenantId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime(6)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TenantId");
-
-                    b.ToTable("EggCategories");
+                    b.ToTable("EggInventories");
                 });
 
             modelBuilder.Entity("sipetok_api.Models.Operational", b =>
@@ -199,21 +199,26 @@ namespace sipetok_api.Migrations
                     b.Property<int>("OrderStatus")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("PaymentAmount")
+                    b.Property<double>("PaymentAmount")
                         .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("double");
 
                     b.Property<int>("PaymentStatus")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("TotalPrice")
+                    b.Property<int>("TenantId")
+                        .HasColumnType("int");
+
+                    b.Property<double>("TotalPrice")
                         .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("double");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime(6)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("TenantId");
 
                     b.ToTable("Transactions");
                 });
@@ -233,16 +238,16 @@ namespace sipetok_api.Migrations
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<decimal>("PriceAtPurchase")
+                    b.Property<double>("PriceAtPurchase")
                         .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("double");
 
                     b.Property<double>("Quantity")
                         .HasColumnType("double");
 
-                    b.Property<decimal>("Subtotal")
+                    b.Property<double>("Subtotal")
                         .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("double");
 
                     b.Property<int>("TransactionId")
                         .HasColumnType("int");
@@ -306,17 +311,6 @@ namespace sipetok_api.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("sipetok_api.Models.Egg", b =>
-                {
-                    b.HasOne("sipetok_api.Models.EggCategory", "Category")
-                        .WithMany("Eggs")
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Category");
-                });
-
             modelBuilder.Entity("sipetok_api.Models.EggCategory", b =>
                 {
                     b.HasOne("sipetok_api.Models.Tenant", "Tenant")
@@ -326,6 +320,17 @@ namespace sipetok_api.Migrations
                         .IsRequired();
 
                     b.Navigation("Tenant");
+                });
+
+            modelBuilder.Entity("sipetok_api.Models.EggInventory", b =>
+                {
+                    b.HasOne("sipetok_api.Models.EggCategory", "Category")
+                        .WithMany("EggInventories")
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Category");
                 });
 
             modelBuilder.Entity("sipetok_api.Models.Operational", b =>
@@ -350,6 +355,17 @@ namespace sipetok_api.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("sipetok_api.Models.Transaction", b =>
+                {
+                    b.HasOne("sipetok_api.Models.Tenant", "Tenant")
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Tenant");
+                });
+
             modelBuilder.Entity("sipetok_api.Models.TransactionDetail", b =>
                 {
                     b.HasOne("sipetok_api.Models.EggCategory", "Category")
@@ -371,7 +387,7 @@ namespace sipetok_api.Migrations
 
             modelBuilder.Entity("sipetok_api.Models.EggCategory", b =>
                 {
-                    b.Navigation("Eggs");
+                    b.Navigation("EggInventories");
                 });
 
             modelBuilder.Entity("sipetok_api.Models.Transaction", b =>

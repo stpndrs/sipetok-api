@@ -3,13 +3,13 @@ using System.ComponentModel.DataAnnotations;
 
 namespace sipetok_api.dto.Request
 {
-    public class TransactionDto
+    public class TransactionRequestDto
     {
         public DateTime Date { get; set; }
 
-        public decimal PaymentAmount { get; set; }
+        public double PaymentAmount { get; set; }
 
-        public decimal TotalPrice { get; set; }
+        public double TotalPrice { get; set; }
 
         public int TenantId { get; set; }
         public string CustomerName { get; set; } = string.Empty;
@@ -17,9 +17,9 @@ namespace sipetok_api.dto.Request
 
         public virtual ICollection<TransactionDetailDto> Details { get; set; } = new List<TransactionDetailDto>();
 
-        public TransactionDto() { }
+        public TransactionRequestDto() { }
 
-        public TransactionDto(decimal PaymentAmount, int TenantId, string CustomerName, string CustomerPhoneNumber)
+        public TransactionRequestDto(double PaymentAmount, int TenantId, string CustomerName, string CustomerPhoneNumber)
         {
             this.Date = DateTime.Now;
             this.PaymentAmount = PaymentAmount;

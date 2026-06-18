@@ -2,9 +2,12 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using sipetok_api.Data;
-using sipetok_api.dto.Respon;
+using sipetok_api.dto;
+using sipetok_api.dto.Response;
+using sipetok_api.helper;
 using sipetok_api.Models;
 using sipetok_api.Repositories;
+using sipetok_api.Services;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -13,20 +16,33 @@ namespace sipetok_api.Controllers.Products
 {
     public class StevanSaveData : IStevanMethod
     {
+        private readonly IConfiguration appConfig;
         private readonly AppDbContext _dbContext;
         private readonly IMapper _mapper;
+        private readonly PaymentService _paymentService;
+        private readonly OrderService _orderService;
 
-        public StevanSaveData(AppDbContext dbContext, IMapper mapper)
+        public StevanSaveData(AppDbContext dbContext, IConfiguration config, IMapper mapper)
         {
             _dbContext = dbContext;
             _mapper = mapper;
+            appConfig = config;
+        }
+
+        public StevanSaveData(AppDbContext dbContext, IConfiguration config, IMapper mapper, PaymentService paymentService, OrderService orderService)
+        {
+            _dbContext = dbContext;
+            _mapper = mapper;
+            appConfig = config;
+            _paymentService = paymentService;
+            _orderService = orderService;
         }
 
         // =========================================================================
         // 1. KHUSUS TERIMA DATA (Ditangani oleh StevanGetData.cs)
         // =========================================================================
         public Task<IActionResult> ActionAsync<TModel, TResponse>(
-            TModel model, TResponse response, int? id = null, int? userId = null, string[]? includes = null) where TModel : class
+            TModel model, TResponse response, int? id = null, int? userId = null, string[] searchQuery = null, string[]? includes = null) where TModel : class
         {
             throw new NotImplementedException("Operasi TERIMA data (GET) tidak didukung di StevanSaveData. Gunakan StevanGetData.");
         }
@@ -35,7 +51,7 @@ namespace sipetok_api.Controllers.Products
         // 2. KHUSUS KIRIM DATA (POST / PUT / SAVE / COMMAND) -> Logika asli kelas ini
         // =========================================================================
         public async Task<IActionResult> ActionAsync<TModel, TResponse, TRequest>(
-            TModel model, TResponse response, TRequest request, string httpMethod, int? id = null, int? userId = null) where TModel : class
+            TModel model, TResponse response, TRequest request, string httpMethod, int? id = null, int? userId = null, string[] searchQuery = null) where TModel : class
         {
             try
             {
@@ -46,18 +62,40 @@ namespace sipetok_api.Controllers.Products
                 {
                     var entity = _mapper.Map<TModel>(request);
 
-                    // tambahkan logika logika khusus...
-                    if (entity is User userEntity)
-                    {
-                        if (string.IsNullOrWhiteSpace(userEntity.Password))
-                        {
-                            return new BadRequestObjectResult(new ResponData<object?>(false, "Password is required"));
-                        }
-                        userEntity.Password = Bcrypt.HashPassword(userEntity.Password);
-                    }
-
                     repository.Add(entity);
                     repository.SaveChanges();
+
+                    // aturan khusus auth response
+                    if (response is AuthResponseDto authResponse)
+                    {
+                        string token = AuthHelper.CreateToken(entity as User, appConfig);
+
+                        var responseAuth = _mapper.Map<TResponse>(new AuthResponseDto(token != "false" ? token : null));
+
+                        return new OkObjectResult(new ResponData<TResponse>(true, responseAuth, "Successfully added data"));
+                    }
+
+                    // --- LOGIKA OTOMATIS UNTUK DETAILS ---
+                    var detailsProperty = entity.GetType().GetProperty("Details");
+                    if (detailsProperty != null && request != null)
+                    {
+                        var requestDetailsProperty = request.GetType().GetProperty("Details");
+                        if (requestDetailsProperty != null)
+                        {
+                            var detailsValue = requestDetailsProperty.GetValue(request);
+                            if (detailsValue != null)
+                            {
+                                // Jika ada data Details di request, set ke entity
+                                detailsProperty.SetValue(entity, detailsValue);
+
+                                // Simpan perubahan detail ke database
+                                _dbContext.SaveChanges();
+                            }
+                        }
+                    }
+                    // -------------------------------------
+
+                    if (entity is Transaction) return new OkObjectResult(entity);
 
                     var responseData = _mapper.Map<TResponse>(entity);
                     return new OkObjectResult(new ResponData<TResponse>(true, responseData, "Successfully added data"));
@@ -72,7 +110,6 @@ namespace sipetok_api.Controllers.Products
                         return new BadRequestObjectResult(new ResponData<object?>(false, "Target ID tidak valid untuk operasi update."));
                     }
 
-                    // Cari data lama di database
                     var existingEntity = repository.GetById(targetId);
                     if (existingEntity is null)
                     {
@@ -81,27 +118,14 @@ namespace sipetok_api.Controllers.Products
 
                     _mapper.Map(request, existingEntity);
 
-                    // tambahkan logika khusus...
-                    if (existingEntity is User userToUpdate)
+                    if (existingEntity is BaseEntity baseEntity)
                     {
-                        dynamic dtoRequest = request!;
-                        try
-                        {
-                            if (!string.IsNullOrWhiteSpace((string)dtoRequest.Password))
-                            {
-                                userToUpdate.Password = Bcrypt.HashPassword((string)dtoRequest.Password);
-                            }
-                        }
-                        catch { /* Abaikan jika TRequest modul lain tidak punya properti Password */ }
+                        repository.Update(existingEntity);
+                        repository.SaveChanges();
 
-                        userToUpdate.UpdateTimestamps();
+                        var responseData = _mapper.Map<TResponse>(existingEntity);
+                        return new OkObjectResult(new ResponData<TResponse>(true, responseData, $"Successfully updated data with id {targetId}"));
                     }
-
-                    repository.Update(existingEntity);
-                    repository.SaveChanges();
-
-                    var responseData = _mapper.Map<TResponse>(existingEntity);
-                    return new OkObjectResult(new ResponData<TResponse>(true, responseData, $"Successfully updated data with id {targetId}"));
                 }
 
                 if (method == "DELETE")

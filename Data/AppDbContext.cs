@@ -13,7 +13,7 @@ namespace sipetok_api.Data
         public DbSet<User> Users { get; set; }
         public DbSet<Tenant> Tenants { get; set; }
         public DbSet<EggCategory> EggCategories { get; set; }
-        public DbSet<Egg> Eggs { get; set; }
+        public DbSet<EggInventory> EggInventories { get; set; }
         public DbSet<Operational> Operationals { get; set; }
         public DbSet<Transaction> Transactions { get; set; }
         public DbSet<TransactionDetail> TransactionDetails { get; set; }
@@ -26,20 +26,20 @@ namespace sipetok_api.Data
             // Ini otomatis menyaring data yang DeletedAt != null agar tidak ikut ke-load
             modelBuilder.Entity<User>().HasQueryFilter(e => e.DeletedAt == null);
             modelBuilder.Entity<Tenant>().HasQueryFilter(e => e.DeletedAt == null);
-            modelBuilder.Entity<EggCategory>().HasQueryFilter(e => e.DeletedAt == null);
-            modelBuilder.Entity<Egg>().HasQueryFilter(e => e.DeletedAt == null);
+            // modelBuilder.Entity<EggCategory>().HasQueryFilter(e => e.DeletedAt == null);
+            modelBuilder.Entity<EggInventory>().HasQueryFilter(e => e.DeletedAt == null);
             modelBuilder.Entity<Operational>().HasQueryFilter(e => e.DeletedAt == null);
-            modelBuilder.Entity<Transaction>().HasQueryFilter(e => e.DeletedAt == null);
-            modelBuilder.Entity<TransactionDetail>().HasQueryFilter(e => e.DeletedAt == null);
+            // modelBuilder.Entity<Transaction>().HasQueryFilter(e => e.DeletedAt == null);
+            // modelBuilder.Entity<TransactionDetail>().HasQueryFilter(e => e.DeletedAt == null);
 
             // 3. Konfigurasi Relasi & Presisi Data (Fluent API)
 
-            // EggCategory -> Price menggunakan decimal (set presisi di DB agar aman)
+            // EggCategory -> Price menggunakan double (set presisi di DB agar aman)
             modelBuilder.Entity<EggCategory>()
                 .Property(ec => ec.Price)
                 .HasPrecision(18, 2);
 
-            // Transaction -> Price & Payment Amount menggunakan decimal
+            // Transaction -> Price & Payment Amount menggunakan double
             modelBuilder.Entity<Transaction>()
                 .Property(t => t.TotalPrice)
                 .HasPrecision(18, 2);
@@ -54,7 +54,7 @@ namespace sipetok_api.Data
                 .HasForeignKey(ec => ec.TenantId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // TransactionDetail -> PriceAtPurchase & Subtotal menggunakan decimal
+            // TransactionDetail -> PriceAtPurchase & Subtotal menggunakan double
             modelBuilder.Entity<TransactionDetail>()
                 .Property(td => td.PriceAtPurchase)
                 .HasPrecision(18, 2);

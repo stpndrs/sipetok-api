@@ -7,8 +7,8 @@ namespace sipetok_api.Models
     {
         public int Id { get; set; }
 
-        // Gunakan decimal untuk harga
-        public decimal Price { get; set; }
+        // Gunakan double untuk harga
+        public double Price { get; set; }
 
         [MaxLength(255)]
         public string Description { get; set; } = string.Empty;
@@ -21,11 +21,14 @@ namespace sipetok_api.Models
         [ForeignKey("TenantId")]
         public virtual Tenant? Tenant { get; set; }
 
-        public virtual ICollection<Egg> Eggs { get; set; } = new List<Egg>();
+        public virtual ICollection<EggInventory> EggInventories { get; set; } = new List<EggInventory>();
+
+        [NotMapped]
+        public new DateTime? DeletedAt { get; set; }
 
         public EggCategory() { }
 
-        public EggCategory(int Id, decimal Price, string Description, string Name)
+        public EggCategory(int Id, double Price, string Description, string Name)
         {
             this.Id = Id;
             this.Price = Price;

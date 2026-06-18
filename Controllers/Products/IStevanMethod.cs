@@ -11,6 +11,7 @@ namespace sipetok_api.Controllers.Products
             TResponse response,
             int? id = null,
             int? userId = null,
+            string[]? searchQuery = null,
             string[]? includes = null)
             where TModel : class;
 
@@ -21,7 +22,8 @@ namespace sipetok_api.Controllers.Products
             TRequest? request = default,
             string httpMethod = "POST",
             int? id = null,
-            int? userId = null)
+            int? userId = null,
+            string[]? searchQuery = null)
             where TModel : class;
     }
 }

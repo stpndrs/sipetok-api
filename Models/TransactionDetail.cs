@@ -16,12 +16,21 @@ namespace sipetok_api.Models
         [ForeignKey("CategoryId")]
         public virtual EggCategory? Category { get; set; }
         public double Quantity { get; set; }
-        public decimal PriceAtPurchase { get; set; }
-        public decimal Subtotal { get; set; } // Ubah ke decimal
+        public double PriceAtPurchase { get; set; }
+        public double Subtotal { get; set; } // Ubah ke double
+
+        [NotMapped]
+        public new DateTime? CreatedAt { get; set; }
+
+        [NotMapped]
+        public new DateTime? UpdatedAt { get; set; }
+
+        [NotMapped]
+        public new DateTime? DeletedAt { get; set; }
 
         public TransactionDetail() { }
 
-        public TransactionDetail(int Id, int TransactionId, int CategoryId, double Quantity, decimal PriceAtPurchase, decimal Subtotal)
+        public TransactionDetail(int Id, int TransactionId, int CategoryId, double Quantity, double PriceAtPurchase, double Subtotal)
         {
             this.Id = Id;
             this.TransactionId = TransactionId;
