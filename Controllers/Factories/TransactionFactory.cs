@@ -24,7 +24,6 @@ namespace sipetok_api.Controllers.Factories
 
         public IStevanMethod CreateMethod(string actionType)
         {
-            // Menghindari NullReferenceException dan meratakan teks ke huruf kecil
             string action = actionType?.ToLower()?.Trim() ?? string.Empty;
 
             switch (action)
@@ -36,10 +35,6 @@ namespace sipetok_api.Controllers.Factories
                 case "save":
                 case "write":
                     return new StevanSaveData(_dbContext, appConfig, _mapper, _paymentService, _orderService);
-
-                // case "delete":
-                // case "remove":
-                //     return new DeleteData(_dbContext);
 
                 default:
                     throw new ArgumentException($"Aksi '{actionType}' tidak dikenal di TransactionFactory.");

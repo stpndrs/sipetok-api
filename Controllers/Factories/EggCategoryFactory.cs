@@ -1,6 +1,6 @@
-﻿using System; // Dibutuhkan untuk ArgumentException
+﻿using System; 
 using AutoMapper;
-using Microsoft.Extensions.Configuration; // Dibutuhkan untuk IConfiguration
+using Microsoft.Extensions.Configuration;
 using sipetok_api.Controllers.Products;
 using sipetok_api.Data;
 
@@ -10,14 +10,13 @@ namespace sipetok_api.Controllers.Factories
     {
         private readonly AppDbContext _dbContext;
         private readonly IMapper _mapper;
-        private readonly IConfiguration _config; // 1. Deklarasikan field configuration di sini
+        private readonly IConfiguration _config; 
 
-        // 2. Hapus koma gantung di ujung parameter mapper
         public EggCategoryFactory(AppDbContext dbContext, IConfiguration config, IMapper mapper)
         {
             _dbContext = dbContext;
             _mapper = mapper;
-            _config = config; // 3. Set nilainya ke field yang benar
+            _config = config;
         }
 
         public IStevanMethod CreateMethod(string actionType)

@@ -34,7 +34,6 @@ namespace sipetok_api.Controllers
                 return BadRequest(new ResponData<object?>(false, "Password is required"));
             }
 
-            // KISS: Mutasi properti request secara langsung & rapi
             request.Password = Bcrypt.HashPassword(request.Password);
             request.Role = 3;
             request.IsActive = true;
@@ -52,18 +51,15 @@ namespace sipetok_api.Controllers
             var getWorker = _factory.CreateMethod("get");
             var usernameCheckQuery = new[] { $"Username:{request.Username}" };
 
-            // 1. Ambil data via StevanGetData secara langsung tanpa deklarasi variabel sampah
             var checkResult = await getWorker.ActionAsync<User, UserResponseDto>(
                 new User(), new UserResponseDto(), searchQuery: usernameCheckQuery);
 
-            // KISS: Sederhanakan ekstraksi targetUser menggunakan pola matching C# modern
             UserResponseDto? targetUser = null;
             if (checkResult is OkObjectResult { Value: ResponData<List<UserResponseDto>> { Success: true, Data: { Count: > 0 } } responData })
             {
                 targetUser = responData.Data[0];
             }
 
-            // 2. Validasi kredensial & status user
             if (targetUser == null || !Bcrypt.VerifyPassword(request.Password, targetUser.Password))
             {
                 return BadRequest(new ResponData<object>(false, "Wrong Username or Password"));
@@ -74,7 +70,6 @@ namespace sipetok_api.Controllers
                 return BadRequest(new ResponData<object>(false, "Your account has been deactivated"));
             }
 
-            // 3. Generate token & kembalikan respon
             var userForToken = new User
             {
                 Username = targetUser.Username,

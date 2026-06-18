@@ -23,7 +23,6 @@ namespace sipetok_api.dto.Request
         {
             this.Date = DateTime.Now;
             this.PaymentAmount = PaymentAmount;
-            // this.TotalPrice = TotalPrice;
             this.TenantId = TenantId;
             this.CustomerName = CustomerName;
             this.CustomerPhoneNumber = CustomerPhoneNumber;

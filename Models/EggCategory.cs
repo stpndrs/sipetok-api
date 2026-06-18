@@ -6,8 +6,6 @@ namespace sipetok_api.Models
     public class EggCategory : BaseEntity
     {
         public int Id { get; set; }
-
-        // Gunakan double untuk harga
         public double Price { get; set; }
 
         [MaxLength(255)]

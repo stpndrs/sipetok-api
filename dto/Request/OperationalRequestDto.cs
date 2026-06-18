@@ -10,7 +10,6 @@ namespace sipetok_api.dto.Request
         [Required(ErrorMessage = "Operational cost is required!")]
         public string OperationalCost { get; set; } = string.Empty;
 
-        // [Required(ErrorMessage = "Tenant ID is required!")]
         public int? TenantId { get; set; } = null;
 
         [Required(ErrorMessage = "Operational date is required!")]

@@ -22,7 +22,7 @@ namespace sipetok_api.Controllers
 
         private int CurrentUserId => int.Parse(User.FindFirst("userId")?.Value ?? "0");
 
-        public UserController(AuthFactory factory)
+        public UserController(UserFactory factory)
         {
             _factory = factory;
         }

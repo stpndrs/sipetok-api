@@ -3,12 +3,13 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using sipetok_api.Controllers.Factories;
-using sipetok_api.Data;
 using sipetok_api.dto.Request;
 using sipetok_api.dto.Response;
-using sipetok_api.dto.Response;
 using sipetok_api.Models;
+using sipetok_api.Data;
+using System;
 using System.Threading.Tasks;
+using sipetok_api.Repositories;
 
 namespace sipetok_api.Controllers
 {
@@ -18,37 +19,63 @@ namespace sipetok_api.Controllers
     public class EggCategoryController : ControllerBase
     {
         private readonly StevanModuleFactory _factory;
+        private readonly IConfiguration appConfig;
         private readonly AppDbContext _dbContext;
-
-        
-        private int CurrentUserId => int.Parse(User.FindFirst("userId")?.Value ?? "0");
+        private readonly IMapper _mapper;
 
         public EggCategoryController(AppDbContext context, IConfiguration config, IMapper mapper)
         {
             _dbContext = context;
-            _factory = new EggCategoryFactory(context, config, mapper);
+            _factory = new EggCategoryFactory(context, appConfig, mapper);
         }
 
         [HttpGet]
+        [Authorize(Roles = "TENANT")]
         public async Task<IActionResult> GetAllEggCategory()
         {
+            int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
+
             var worker = _factory.CreateMethod("get");
+            EggCategory model = new EggCategory();
+            EggCategoryResponseDto response = new EggCategoryResponseDto();
+
+            var repository = new TenantRepository(_dbContext);
+            var tenant = await repository.GetTenantByUserId(userId);
+            if (tenant == null) return Forbid();
+
+            var searchQuery = new[] { $"TenantId : {tenant.Id}" };
+
             return await worker.ActionAsync<EggCategory, EggCategoryResponseDto>(
-                new EggCategory(), new EggCategoryResponseDto(), null, CurrentUserId, null, new[] { "Tenant" });
+                model, response, null, userId, searchQuery, new[] { "Tenant" });
         }
 
         [HttpGet("{id:int}")]
+        [Authorize(Roles = "TENANT")]
         public async Task<IActionResult> GetEggCategoryById(int id)
         {
+            int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
+
             var worker = _factory.CreateMethod("get");
+            EggCategory model = new EggCategory();
+            EggCategoryResponseDto response = new EggCategoryResponseDto();
+
+            var repository = new TenantRepository(_dbContext);
+            var tenant = await repository.GetTenantByUserId(userId);
+            if (tenant == null) return Forbid();
+
+            var searchQuery = new[] { $"TenantId : {tenant.Id}" };
+
             return await worker.ActionAsync<EggCategory, EggCategoryResponseDto>(
-                new EggCategory(), new EggCategoryResponseDto(), id, CurrentUserId, null, new[] { "Tenant" });
+                model, response, id, userId, searchQuery, new[] { "Tenant" });
         }
 
         [HttpPost]
+        [Authorize(Roles = "TENANT")]
         public async Task<IActionResult> AddEggCategory([FromBody] EggCategoryRequestDto request)
         {
-            var tenant = await _dbContext.Tenants.FirstOrDefaultAsync(a => a.UserId == CurrentUserId);
+            int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
+
+            Tenant tenant = await _dbContext.Tenants.FirstOrDefaultAsync(a => a.UserId == userId);
             if (tenant == null) return Forbid();
 
             var eggCategoryData = new EggCategory
@@ -59,42 +86,45 @@ namespace sipetok_api.Controllers
             };
 
             var worker = _factory.CreateMethod("save");
+
             return await worker.ActionAsync<EggCategory, EggCategoryResponseDto, EggCategory>(
                 new EggCategory(), new EggCategoryResponseDto(), eggCategoryData, "POST");
         }
 
         [HttpPut("{id:int}")]
+        [Authorize(Roles = "TENANT")]
         public async Task<IActionResult> UpdateEggCategory(int id, [FromBody] EggCategoryRequestDto request)
         {
-            var authResult = await ValidateOwnershipAsync(id);
-            if (authResult != null) return authResult;
+            int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
 
-            var worker = _factory.CreateMethod("save");
-            return await worker.ActionAsync<EggCategory, EggCategoryResponseDto, EggCategoryRequestDto>(
-                new EggCategory(), new EggCategoryResponseDto(), request, "PUT", id, CurrentUserId);
-        }
-
-        [HttpDelete("{id:int}")]
-        public async Task<IActionResult> DeleteEggCategory(int id)
-        {
-            var authResult = await ValidateOwnershipAsync(id);
-            if (authResult != null) return authResult;
-
-            var worker = _factory.CreateMethod("delete");
-            return await worker.ActionAsync<EggCategory, EggCategoryResponseDto, object>(
-                new EggCategory(), new EggCategoryResponseDto(), null!, "DELETE", id, CurrentUserId);
-        }
-
-        private async Task<IActionResult?> ValidateOwnershipAsync(int id)
-        {
-            var existingCategory = await _dbContext.EggCategories
-                .Include(c => c.Tenant)
+            var existingCategory = await _dbContext.EggCategories.Include(c => c.Tenant)
                 .FirstOrDefaultAsync(c => c.Id == id);
 
             if (existingCategory == null) return NotFound();
-            if (existingCategory.Tenant?.UserId != CurrentUserId) return Forbid();
+            if (existingCategory.Tenant?.UserId != userId) return Forbid();
 
-            return null;
+            var worker = _factory.CreateMethod("save");
+
+            return await worker.ActionAsync<EggCategory, EggCategoryResponseDto, EggCategoryRequestDto>(
+                new EggCategory(), new EggCategoryResponseDto(), request, "PUT", id, userId);
+        }
+
+        [HttpDelete("{id:int}")]
+        [Authorize(Roles = "TENANT")]
+        public async Task<IActionResult> DeleteEggCategory(int id)
+        {
+            int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
+
+            var existingCategory = await _dbContext.EggCategories.Include(c => c.Tenant)
+                .FirstOrDefaultAsync(c => c.Id == id);
+
+            if (existingCategory == null) return NotFound();
+            if (existingCategory.Tenant?.UserId != userId) return Forbid();
+
+            var worker = _factory.CreateMethod("delete");
+
+            return await worker.ActionAsync<EggCategory, EggCategoryResponseDto, object>(
+                new EggCategory(), new EggCategoryResponseDto(), null!, "DELETE", id, userId);
         }
     }
 }
