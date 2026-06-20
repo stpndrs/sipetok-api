@@ -8,6 +8,7 @@ using sipetok_api.dto;
 using sipetok_api.dto.Request;
 using sipetok_api.dto.Response;
 using sipetok_api.Models;
+using sipetok_api.Repositories;
 using sipetok_api.Respon;
 using System.Threading.Tasks;
 
@@ -19,9 +20,14 @@ namespace sipetok_api.Controllers
     public class EggInventoryController : ControllerBase
     {
         private readonly StevanModuleFactory _factory;
+        private readonly AppDbContext _dbContext;
+        private int CurrentUserId => int.Parse(User.FindFirst("userId")?.Value ?? "0");
+        private readonly EggInventory _eggInventory = new EggInventory();
+        private readonly EggInventoryResponseDto _response = new EggInventoryResponseDto();
 
         public EggInventoryController(AppDbContext context, IMapper mapper)
         {
+            _dbContext = context;
             _factory = new EggInventoryFactory(context, mapper);
         }
 
@@ -29,11 +35,17 @@ namespace sipetok_api.Controllers
         [Authorize(Roles = "TENANT")]
         public async Task<IActionResult> GetAllEggs()
         {
+            var tenant = await getExistingTenant();
             var worker = _factory.CreateMethod("get");
-            EggInventory eggModel = new EggInventory();
-            EggInventoryResponseDto response = new EggInventoryResponseDto();
 
-            return await worker.ActionAsync<EggInventory, EggInventoryResponseDto>(eggModel, response);
+            return await worker.ActionAsync<EggInventory, EggInventoryResponseDto>(
+                model: _eggInventory, 
+                response: _response,
+                id:null, 
+                userId:null,
+                includes: new[] { "Category" },
+                searchQuery: new[] { $"Category.tenantId : {tenant.Id}" }
+            );
         }
 
         [HttpGet("{id:int}")]
@@ -41,9 +53,12 @@ namespace sipetok_api.Controllers
         public async Task<IActionResult> GetEggById(int id)
         {
             IStevanMethod worker = _factory.CreateMethod("get");
-            EggInventory eggModel = new EggInventory();
-            EggInventoryResponseDto response = new EggInventoryResponseDto();
-            return await worker.ActionAsync<EggInventory, EggInventoryResponseDto>(eggModel, response, id);
+
+            return await worker.ActionAsync<EggInventory, EggInventoryResponseDto>(
+                model: _eggInventory, 
+                response: _response, 
+                id: id
+            );
         }
 
         [HttpPost]
@@ -51,10 +66,23 @@ namespace sipetok_api.Controllers
         public async Task<IActionResult> AddEgg([FromBody] EggInventoryRequestDto request)
         {
             IStevanMethod worker = _factory.CreateMethod("save");
-            EggInventory eggModel = new EggInventory();
-            EggInventoryResponseDto response = new EggInventoryResponseDto();
 
-            return await worker.ActionAsync<EggInventory, EggInventoryResponseDto, EggInventoryRequestDto>(eggModel, response, request, "POST");
+            var category = await _dbContext.EggCategories.FindAsync(request.CategoryId);
+            if(category == null)
+            {
+                return NotFound(new { message = "Kategori telur tidak ditemukan" });
+            }
+            if (category.TenantId != getExistingTenant().Result.Id)
+            {
+                return NotFound(new { message = "Kategori telur tidak ditemukan" });
+            }
+
+            return await worker.ActionAsync<EggInventory, EggInventoryResponseDto, EggInventoryRequestDto>(
+                model: _eggInventory, 
+                response: _response, 
+                request: request, 
+                httpMethod: "POST"
+            );
         }
 
         [HttpPut("{id:int}")]
@@ -62,10 +90,14 @@ namespace sipetok_api.Controllers
         public async Task<IActionResult> UpdateEgg(int id, [FromBody] EggInventoryRequestDto request)
         {
             IStevanMethod worker = _factory.CreateMethod("save");
-            EggInventory eggModel = new EggInventory();
-            EggInventoryResponseDto response = new EggInventoryResponseDto();
 
-            return await worker.ActionAsync<EggInventory, EggInventoryResponseDto, EggInventoryRequestDto>(eggModel, response, request, "PUT", id);
+            return await worker.ActionAsync<EggInventory, EggInventoryResponseDto, EggInventoryRequestDto>(
+                model: _eggInventory, 
+                response: _response, 
+                request: request, 
+                httpMethod: "PUT", 
+                id: id
+            );
         }
 
         [HttpDelete("{id:int}")]
@@ -76,7 +108,26 @@ namespace sipetok_api.Controllers
             EggInventory eggModel = new EggInventory();
             EggInventoryResponseDto response = new EggInventoryResponseDto();
 
-            return await worker.ActionAsync<EggInventory, EggInventoryResponseDto, object>(eggModel, response, null, "DELETE", id);
+            return await worker.ActionAsync<EggInventory, EggInventoryResponseDto, object>(
+                model: _eggInventory, 
+                response: _response, 
+                request: null, 
+                httpMethod: "DELETE", 
+                id: id
+            );
+        }
+
+        private async Task<Tenant> getExistingTenant()
+        {
+            var repository = new TenantRepository(_dbContext);
+            var tenant = await repository.GetTenantByUserId(CurrentUserId);
+
+            if (tenant == null)
+            {
+                throw new InvalidOperationException("Tenant tidak ditemukan");
+            }
+
+            return tenant;
         }
     }
 }
