@@ -9,6 +9,7 @@ using sipetok_api.Models;
 using sipetok_api.Data;
 using System;
 using System.Threading.Tasks;
+using sipetok_api.Repositories;
 
 namespace sipetok_api.Controllers
 {
@@ -21,8 +22,11 @@ namespace sipetok_api.Controllers
         private readonly IConfiguration appConfig;
         private readonly AppDbContext _dbContext;
         private readonly IMapper _mapper;
+        private int CurrentUserId => int.Parse(User.FindFirst("userId")?.Value ?? "0");
+        private readonly EggCategory _eggCategory = new EggCategory();
+        private readonly EggCategoryResponseDto _response = new EggCategoryResponseDto();
 
-        public EggCategoryController(AppDbContext context, IConfiguration config, IMapper mapper)
+        public EggCategoryController(AppDbContext context, IConfiguration appConfig, IMapper mapper)
         {
             _dbContext = context;
             _factory = new EggCategoryFactory(context, appConfig, mapper);
@@ -32,37 +36,41 @@ namespace sipetok_api.Controllers
         [Authorize(Roles = "TENANT")]
         public async Task<IActionResult> GetAllEggCategory()
         {
-            int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
+            var tenant = await getExistingTenant();
 
             var worker = _factory.CreateMethod("get");
-            EggCategory model = new EggCategory();
-            EggCategoryResponseDto response = new EggCategoryResponseDto();
 
             return await worker.ActionAsync<EggCategory, EggCategoryResponseDto>(
-                model, response, null, userId, null, new[] { "Tenant" });
+                model:_eggCategory, 
+                response:_response, 
+                id:null, 
+                userId:tenant.Id, 
+                searchQuery: new[] { $"TenantId : {tenant.Id}" }
+            );
         }
 
         [HttpGet("{id:int}")]
         [Authorize(Roles = "TENANT")]
         public async Task<IActionResult> GetEggCategoryById(int id)
         {
-            int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
+            var tenant = await getExistingTenant();
 
             var worker = _factory.CreateMethod("get");
-            EggCategory model = new EggCategory();
-            EggCategoryResponseDto response = new EggCategoryResponseDto();
 
             return await worker.ActionAsync<EggCategory, EggCategoryResponseDto>(
-                model, response, id, userId, null, new[] { "Tenant" });
+                model:_eggCategory, 
+                response:_response, 
+                id:id, 
+                userId:tenant.Id, 
+                searchQuery: new[] { $"TenantId : {tenant.Id}" }
+            );
         }
 
         [HttpPost]
         [Authorize(Roles = "TENANT")]
         public async Task<IActionResult> AddEggCategory([FromBody] EggCategoryRequestDto request)
         {
-            int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
-
-            Tenant tenant = await _dbContext.Tenants.FirstOrDefaultAsync(a => a.UserId == userId);
+            var tenant = await getExistingTenant();
             if (tenant == null) return Forbid();
 
             var eggCategoryData = new EggCategory
@@ -75,43 +83,72 @@ namespace sipetok_api.Controllers
             var worker = _factory.CreateMethod("save");
 
             return await worker.ActionAsync<EggCategory, EggCategoryResponseDto, EggCategory>(
-                new EggCategory(), new EggCategoryResponseDto(), eggCategoryData, "POST");
+                model: _eggCategory, 
+                response: _response, 
+                request: eggCategoryData, 
+                httpMethod: "POST"
+            );
         }
 
         [HttpPut("{id:int}")]
         [Authorize(Roles = "TENANT")]
         public async Task<IActionResult> UpdateEggCategory(int id, [FromBody] EggCategoryRequestDto request)
         {
-            int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
+            var tenant = await getExistingTenant();
 
             var existingCategory = await _dbContext.EggCategories.Include(c => c.Tenant)
                 .FirstOrDefaultAsync(c => c.Id == id);
 
             if (existingCategory == null) return NotFound();
-            if (existingCategory.Tenant?.UserId != userId) return Forbid();
+            if (existingCategory.Tenant?.UserId != tenant.Id) return Forbid();
 
             var worker = _factory.CreateMethod("save");
 
             return await worker.ActionAsync<EggCategory, EggCategoryResponseDto, EggCategoryRequestDto>(
-                new EggCategory(), new EggCategoryResponseDto(), request, "PUT", id, userId);
+                model: _eggCategory, 
+                response: _response, 
+                request: request, 
+                httpMethod: "PUT", 
+                id: id, 
+                userId: tenant.Id
+            );
         }
 
         [HttpDelete("{id:int}")]
         [Authorize(Roles = "TENANT")]
         public async Task<IActionResult> DeleteEggCategory(int id)
         {
-            int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
+            var tenant = await getExistingTenant();
 
             var existingCategory = await _dbContext.EggCategories.Include(c => c.Tenant)
                 .FirstOrDefaultAsync(c => c.Id == id);
 
             if (existingCategory == null) return NotFound();
-            if (existingCategory.Tenant?.UserId != userId) return Forbid();
+            if (existingCategory.Tenant?.UserId != tenant.Id) return Forbid();
 
             var worker = _factory.CreateMethod("delete");
 
             return await worker.ActionAsync<EggCategory, EggCategoryResponseDto, object>(
-                new EggCategory(), new EggCategoryResponseDto(), null!, "DELETE", id, userId);
+                model: _eggCategory, 
+                response: _response, 
+                request: null!, 
+                httpMethod: "DELETE", 
+                id: id, userId: 
+                tenant.Id
+            );
+        }
+
+        private async Task<Tenant> getExistingTenant()
+        {
+            var repository = new TenantRepository(_dbContext);
+            var tenant = await repository.GetTenantByUserId(CurrentUserId);
+
+            if (tenant == null)
+            {
+                throw new InvalidOperationException("Tenant tidak ditemukan");
+            }
+
+            return tenant;
         }
     }
 }
