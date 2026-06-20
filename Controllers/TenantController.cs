@@ -8,7 +8,7 @@ using sipetok_api.dto.Request;
 using sipetok_api.dto.Response;
 using sipetok_api.dto;
 using sipetok_api.Models;
-using sipetok_api.helper; 
+using sipetok_api.helper;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -23,6 +23,8 @@ namespace sipetok_api.Controllers
         private readonly AppDbContext _dbContext;
 
         private int CurrentUserId => int.Parse(User.FindFirst("userId")?.Value ?? "0");
+        private readonly Tenant _tenant = new Tenant();
+        private readonly TenantResponseDto _response = new TenantResponseDto();
 
         public TenantController(AppDbContext context, IConfiguration config, IMapper mapper)
         {
@@ -35,7 +37,10 @@ namespace sipetok_api.Controllers
         public async Task<IActionResult> GetAllTenant()
         {
             var worker = _factory.CreateMethod("get");
-            return await worker.ActionAsync<Tenant, TenantResponseDto>(new Tenant(), new TenantResponseDto());
+            return await worker.ActionAsync<Tenant, TenantResponseDto>(
+                model: _tenant, 
+                response: _response
+            );
         }
 
         [HttpGet("{id:int}")]
@@ -43,7 +48,11 @@ namespace sipetok_api.Controllers
         public async Task<IActionResult> GetTenantById(int id)
         {
             var worker = _factory.CreateMethod("get");
-            return await worker.ActionAsync<Tenant, TenantResponseDto>(new Tenant(), new TenantResponseDto(), id);
+            return await worker.ActionAsync<Tenant, TenantResponseDto>(
+                model: _tenant,
+                response: _response,
+                id: id
+            );
         }
 
         [HttpGet("myprofile")]
@@ -51,7 +60,15 @@ namespace sipetok_api.Controllers
         public async Task<IActionResult> GetMyProfile()
         {
             var worker = _factory.CreateMethod("get");
-            return await worker.ActionAsync<Tenant, TenantResponseDto>(new Tenant(), new TenantResponseDto(), null, CurrentUserId);
+
+            int tenantId = _dbContext.Tenants.Where(t => t.UserId == CurrentUserId).Select(t => t.Id).FirstOrDefault();
+
+            return await worker.ActionAsync<Tenant, TenantResponseDto>(
+                model: _tenant,
+                response: _response,
+                id: tenantId,
+                userId: CurrentUserId
+            );
         }
 
         [HttpPost]
@@ -67,7 +84,11 @@ namespace sipetok_api.Controllers
 
             var worker = _factory.CreateMethod("save");
             return await worker.ActionAsync<Tenant, TenantResponseDto, TenantRequestDto>(
-                new Tenant(), new TenantResponseDto(), request, "POST");
+                model: _tenant,
+                response: _response,
+                request: request,
+                httpMethod: "POST"
+            );
         }
 
         [HttpPut("{id:int}")]
@@ -78,7 +99,12 @@ namespace sipetok_api.Controllers
 
             var worker = _factory.CreateMethod("save");
             return await worker.ActionAsync<Tenant, TenantResponseDto, TenantRequestDto>(
-                new Tenant(), new TenantResponseDto(), request, "PUT", id);
+                model: _tenant,
+                response: _response,
+                request: request,
+                httpMethod: "PUT",
+                id: id
+            );
         }
 
         [HttpPut("updatemyprofile")]
@@ -90,7 +116,12 @@ namespace sipetok_api.Controllers
 
             var worker = _factory.CreateMethod("save");
             return await worker.ActionAsync<Tenant, TenantResponseDto, TenantRequestDto>(
-                new Tenant(), new TenantResponseDto(), request, "PUT", tenantId);
+                model: _tenant,
+                response: _response,
+                request: request,
+                httpMethod: "PUT",
+                id: tenantId
+            );
         }
 
         [HttpDelete("{id:int}")]
@@ -105,14 +136,24 @@ namespace sipetok_api.Controllers
 
             var worker = _factory.CreateMethod("save");
             return await worker.ActionAsync<Tenant, TenantResponseDto, object>(
-                new Tenant(), new TenantResponseDto(), null!, "DELETE", id);
+                model: _tenant,
+                response: _response,
+                request: null,
+                httpMethod: "DELETE",
+                id: id
+            );
         }
 
         private async Task<IActionResult> DeleteUserTenant(int id)
         {
             var worker = _factory.CreateMethod("save");
             return await worker.ActionAsync<User, UserResponseDto, object>(
-                new User(), new UserResponseDto(), null!, "DELETE", id);
+                model: new User(),
+                response: new UserResponseDto(),
+                request: null,
+                httpMethod: "DELETE",
+                id: id
+            );
         }
 
         private void HashUserPasswordIfPresent(TenantRequestDto request)
