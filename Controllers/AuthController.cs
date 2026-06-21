@@ -81,7 +81,7 @@ namespace sipetok_api.Controllers
 
             var response = new ResponData<AuthResponseDto>(
                 true,
-                new AuthResponseDto(token != "false" ? token : null),
+                new AuthResponseDto(token != "false" ? token : null, userForToken.Username, userForToken.Role),
                 "Login berhasil"
             );
 
