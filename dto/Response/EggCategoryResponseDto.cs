@@ -11,11 +11,11 @@ namespace sipetok_api.dto.Response
 
         public EggCategoryResponseDto(int Id, double Price, string Description, string Name, int TenantId)
         {
-            Id = Id;
-            Price = Price;
-            Description = Description;
-            Name = Name;
-            TenantId = TenantId;
+            this.Id = Id;
+            this.Price = Price;
+            this.Description = Description;
+            this.Name = Name;
+            this.TenantId = TenantId;
         }
     }
 }
