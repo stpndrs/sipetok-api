@@ -6,9 +6,12 @@ using sipetok_api.Controllers.Factories;
 using sipetok_api.dto.Request;
 using sipetok_api.dto.Response;
 using sipetok_api.Models;
+<<<<<<< HEAD
+=======
 using sipetok_api.Data;
 using System;
 using System.Threading.Tasks;
+using sipetok_api.Repositories;
 
 namespace sipetok_api.Controllers
 {
@@ -38,8 +41,14 @@ namespace sipetok_api.Controllers
             EggCategory model = new EggCategory();
             EggCategoryResponseDto response = new EggCategoryResponseDto();
 
+            var repository = new TenantRepository(_dbContext);
+            var tenant = await repository.GetTenantByUserId(userId);
+            if (tenant == null) return Forbid();
+
+            var searchQuery = new[] { $"TenantId : {tenant.Id}" };
+
             return await worker.ActionAsync<EggCategory, EggCategoryResponseDto>(
-                model, response, null, userId, null, new[] { "Tenant" });
+                model, response, null, userId, searchQuery, new[] { "Tenant" });
         }
 
         [HttpGet("{id:int}")]
@@ -52,8 +61,14 @@ namespace sipetok_api.Controllers
             EggCategory model = new EggCategory();
             EggCategoryResponseDto response = new EggCategoryResponseDto();
 
+            var repository = new TenantRepository(_dbContext);
+            var tenant = await repository.GetTenantByUserId(userId);
+            if (tenant == null) return Forbid();
+
+            var searchQuery = new[] { $"TenantId : {tenant.Id}" };
+
             return await worker.ActionAsync<EggCategory, EggCategoryResponseDto>(
-                model, response, id, userId, null, new[] { "Tenant" });
+                model, response, id, userId, searchQuery, new[] { "Tenant" });
         }
 
         [HttpPost]

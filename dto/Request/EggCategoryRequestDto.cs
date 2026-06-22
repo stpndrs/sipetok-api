@@ -17,9 +17,9 @@ namespace sipetok_api.dto.Request
 
         public EggCategoryRequestDto(double Price, string Description, string Name)
         {
-            this.Price = Price;
-            this.Description = Description;
-            this.Name = Name;
+            Price = Price;
+            Description = Description;
+            Name = Name;
         }
     }
 }
