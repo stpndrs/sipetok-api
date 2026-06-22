@@ -6,10 +6,7 @@ using sipetok_api.Data;
 using sipetok_api.dto;
 using sipetok_api.dto.Request;
 using sipetok_api.dto.Response;
-<<<<<<< HEAD
-=======
 using sipetok_api.helper;
->>>>>>> 66185cb9672652d715a413bd97d21b5b6f10fbf7
 using sipetok_api.Models;
 using System.Threading.Tasks;
 

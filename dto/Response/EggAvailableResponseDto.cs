@@ -1,7 +1,3 @@
-<<<<<<<< HEAD:dto/Response/EggAvailableRespon.cs
-using sipetok_api.dto.Respon;
-========
->>>>>>>> 66185cb9672652d715a413bd97d21b5b6f10fbf7:dto/Response/EggAvailableResponseDto.cs
 using sipetok_api.dto.Response;
 
 namespace sipetok_api.dto.Response

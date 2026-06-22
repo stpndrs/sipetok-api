@@ -41,7 +41,6 @@ namespace sipetok_api.Controllers
             var worker = _factory.CreateMethod("get");
 
             var repository = new TenantRepository(_dbContext);
-            var tenant = await repository.GetTenantByUserId(userId);
             if (tenant == null) return Forbid();
 
             var searchQuery = new[] { $"TenantId : {tenant.Id}" };
@@ -64,7 +63,6 @@ namespace sipetok_api.Controllers
             var worker = _factory.CreateMethod("get");
 
             var repository = new TenantRepository(_dbContext);
-            var tenant = await repository.GetTenantByUserId(userId);
             if (tenant == null) return Forbid();
 
             return await worker.ActionAsync<EggCategory, EggCategoryResponseDto>(
