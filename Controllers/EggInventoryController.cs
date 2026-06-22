@@ -38,10 +38,10 @@ namespace sipetok_api.Controllers
             var worker = _factory.CreateMethod("get");
 
             return await worker.ActionAsync<EggInventory, EggInventoryResponseDto>(
-                model: _eggInventory, 
+                model: _eggInventory,
                 response: _response,
-                id:null, 
-                userId:null,
+                id: null,
+                userId: null,
                 includes: new[] { "Category" },
                 searchQuery: new[] { $"Category.tenantId : {tenant.Id}" }
             );
@@ -53,8 +53,8 @@ namespace sipetok_api.Controllers
             IStevanMethod worker = _factory.CreateMethod("get");
 
             return await worker.ActionAsync<EggInventory, EggInventoryResponseDto>(
-                model: _eggInventory, 
-                response: _response, 
+                model: _eggInventory,
+                response: _response,
                 id: id
             );
         }
@@ -65,7 +65,7 @@ namespace sipetok_api.Controllers
             IStevanMethod worker = _factory.CreateMethod("save");
 
             var category = await _dbContext.EggCategories.FindAsync(request.CategoryId);
-            if(category == null)
+            if (category == null)
             {
                 return NotFound(new { message = "Kategori telur tidak ditemukan" });
             }
@@ -75,9 +75,9 @@ namespace sipetok_api.Controllers
             }
 
             return await worker.ActionAsync<EggInventory, EggInventoryResponseDto, EggInventoryRequestDto>(
-                model: _eggInventory, 
-                response: _response, 
-                request: request, 
+                model: _eggInventory,
+                response: _response,
+                request: request,
                 httpMethod: "POST"
             );
         }
@@ -88,10 +88,10 @@ namespace sipetok_api.Controllers
             IStevanMethod worker = _factory.CreateMethod("save");
 
             return await worker.ActionAsync<EggInventory, EggInventoryResponseDto, EggInventoryRequestDto>(
-                model: _eggInventory, 
-                response: _response, 
-                request: request, 
-                httpMethod: "PUT", 
+                model: _eggInventory,
+                response: _response,
+                request: request,
+                httpMethod: "PUT",
                 id: id
             );
         }
@@ -104,10 +104,10 @@ namespace sipetok_api.Controllers
             EggInventoryResponseDto response = new EggInventoryResponseDto();
 
             return await worker.ActionAsync<EggInventory, EggInventoryResponseDto, object>(
-                model: _eggInventory, 
-                response: _response, 
-                request: null, 
-                httpMethod: "DELETE", 
+                model: _eggInventory,
+                response: _response,
+                request: null,
+                httpMethod: "DELETE",
                 id: id
             );
         }

@@ -46,10 +46,10 @@ namespace sipetok_api.Controllers
             var searchQuery = new[] { $"TenantId : {tenant.Id}" };
 
             return await worker.ActionAsync<EggCategory, EggCategoryResponseDto>(
-                model:_eggCategory, 
-                response:_response, 
-                id:null, 
-                userId:tenant.Id, 
+                model: _eggCategory,
+                response: _response,
+                id: null,
+                userId: tenant.Id,
                 searchQuery: new[] { $"TenantId : {tenant.Id}" }
             );
         }
@@ -66,10 +66,10 @@ namespace sipetok_api.Controllers
             if (tenant == null) return Forbid();
 
             return await worker.ActionAsync<EggCategory, EggCategoryResponseDto>(
-                model:_eggCategory, 
-                response:_response, 
-                id:id, 
-                userId:tenant.Id, 
+                model: _eggCategory,
+                response: _response,
+                id: id,
+                userId: tenant.Id,
                 searchQuery: new[] { $"TenantId : {tenant.Id}" }
             );
         }
@@ -91,9 +91,9 @@ namespace sipetok_api.Controllers
             var worker = _factory.CreateMethod("save");
 
             return await worker.ActionAsync<EggCategory, EggCategoryResponseDto, EggCategory>(
-                model: _eggCategory, 
-                response: _response, 
-                request: eggCategoryData, 
+                model: _eggCategory,
+                response: _response,
+                request: eggCategoryData,
                 httpMethod: "POST"
             );
         }
@@ -113,11 +113,11 @@ namespace sipetok_api.Controllers
             var worker = _factory.CreateMethod("save");
 
             return await worker.ActionAsync<EggCategory, EggCategoryResponseDto, EggCategoryRequestDto>(
-                model: _eggCategory, 
-                response: _response, 
-                request: request, 
-                httpMethod: "PUT", 
-                id: id, 
+                model: _eggCategory,
+                response: _response,
+                request: request,
+                httpMethod: "PUT",
+                id: id,
                 userId: tenant.Id
             );
         }
@@ -137,11 +137,11 @@ namespace sipetok_api.Controllers
             var worker = _factory.CreateMethod("delete");
 
             return await worker.ActionAsync<EggCategory, EggCategoryResponseDto, object>(
-                model: _eggCategory, 
-                response: _response, 
-                request: null!, 
-                httpMethod: "DELETE", 
-                id: id, userId: 
+                model: _eggCategory,
+                response: _response,
+                request: null!,
+                httpMethod: "DELETE",
+                id: id, userId:
                 tenant.Id
             );
         }

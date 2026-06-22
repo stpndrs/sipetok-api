@@ -116,7 +116,7 @@ namespace sipetok_api.Controllers
         public async Task<IActionResult> DeleteOperational(int id)
         {
             IStevanMethod worker = _factory.CreateMethod("save");
-            
+
             var tenant = await getExistingTenant();
             var operational = await getExistingOperational(id);
             if (tenant.Id != operational.TenantId) return Forbid();
