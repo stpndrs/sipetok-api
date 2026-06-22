@@ -104,8 +104,7 @@ namespace sipetok_api.Controllers
         {
             var tenant = await getExistingTenant();
 
-            var existingCategory = await _dbContext.EggCategories.Include(c => c.Tenant)
-                .FirstOrDefaultAsync(c => c.Id == id);
+            var existingCategory = await GetEggCategoryWithTenantAsync(id);
 
             if (existingCategory == null) return NotFound();
             if (existingCategory.Tenant?.UserId != tenant.Id) return Forbid();
@@ -128,8 +127,7 @@ namespace sipetok_api.Controllers
         {
             var tenant = await getExistingTenant();
 
-            var existingCategory = await _dbContext.EggCategories.Include(c => c.Tenant)
-                .FirstOrDefaultAsync(c => c.Id == id);
+            var existingCategory = await GetEggCategoryWithTenantAsync(id);
 
             if (existingCategory == null) return NotFound();
             if (existingCategory.Tenant?.UserId != tenant.Id) return Forbid();
@@ -145,7 +143,12 @@ namespace sipetok_api.Controllers
                 tenant.Id
             );
         }
-
+        private async Task<EggCategory?> GetEggCategoryWithTenantAsync(int id)
+        {
+            return await _dbContext.EggCategories
+                .Include(c => c.Tenant)
+                .FirstOrDefaultAsync(c => c.Id == id);
+        }
         private async Task<Tenant> getExistingTenant()
         {
             var repository = new TenantRepository(_dbContext);
