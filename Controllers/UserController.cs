@@ -24,10 +24,13 @@ namespace sipetok_api.Controllers
         private readonly AppDbContext _dbContext;
 
         private int CurrentUserId => int.Parse(User.FindFirst("userId")?.Value ?? "0");
+        private readonly User _user = new User();
+        private readonly UserResponseDto _response = new UserResponseDto();
 
-        public UserController(UserFactory factory)
+        public UserController(UserFactory factory, AppDbContext dbContext)
         {
             _factory = factory;
+            _dbContext = dbContext;
         }
 
         [HttpGet]
@@ -35,7 +38,10 @@ namespace sipetok_api.Controllers
         public async Task<IActionResult> GetAllUsers()
         {
             var worker = _factory.CreateMethod("get");
-            return await worker.ActionAsync<User, UserResponseDto>(new User(), new UserResponseDto());
+            return await worker.ActionAsync<User, UserResponseDto>(
+                model:_user, 
+                response:_response
+            );
         }
 
         [HttpGet("{id:int}")]
@@ -43,14 +49,22 @@ namespace sipetok_api.Controllers
         public async Task<IActionResult> GetUserById(int id)
         {
             var worker = _factory.CreateMethod("get");
-            return await worker.ActionAsync<User, UserResponseDto>(new User(), new UserResponseDto(), id);
+            return await worker.ActionAsync<User, UserResponseDto>(
+                model:_user, 
+                response:_response, 
+                id:id
+            );
         }
 
         [HttpGet("myaccount")]
         public async Task<IActionResult> GetMyAccount()
         {
             var worker = _factory.CreateMethod("get");
-            return await worker.ActionAsync<User, UserResponseDto>(new User(), new UserResponseDto(), null, CurrentUserId);
+            return await worker.ActionAsync<User, UserResponseDto>(
+                model:_user, 
+                response:_response, 
+                id:CurrentUserId
+            );
         }
 
         [HttpPost]
@@ -61,18 +75,36 @@ namespace sipetok_api.Controllers
 
             var worker = _factory.CreateMethod("save");
             return await worker.ActionAsync<User, UserResponseDto, UserRequestDto>(
-                new User(), new UserResponseDto(), request, "POST");
+                model:_user, 
+                response:_response, 
+                request:request, 
+                httpMethod:"POST"
+            );
         }
 
         [HttpPut("{id:int}")]
         [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> UpdateUser(int id, [FromBody] UserRequestDto request)
         {
-            HashUserPassword(request);
+            var existingUser = await getExistingUser(id);
+            if (request.Role == 0) request.Role = existingUser.Role;
+            if (!string.IsNullOrWhiteSpace(request.Password))
+            {
+                request.Password = Bcrypt.HashPassword(request.Password);
+            }
+            else
+            {
+                request.Password = existingUser.Password;
+            }
 
             var worker = _factory.CreateMethod("save");
             return await worker.ActionAsync<User, UserResponseDto, UserRequestDto>(
-                new User(), new UserResponseDto(), request, "PUT", id);
+                model:_user, 
+                response:_response, 
+                request:request, 
+                httpMethod:"PUT", 
+                id:id
+            );
         }
 
         [HttpDelete("{id:int}")]
@@ -81,7 +113,11 @@ namespace sipetok_api.Controllers
         {
             var worker = _factory.CreateMethod("delete");
             return await worker.ActionAsync<User, UserResponseDto, object>(
-                new User(), new UserResponseDto(), null!, "DELETE", id);
+                model:_user, 
+                response:_response, 
+                request:null!, 
+                httpMethod:"DELETE", 
+                id:id);
         }
 
         private void HashUserPassword(UserRequestDto request)
@@ -90,6 +126,16 @@ namespace sipetok_api.Controllers
             {
                 request.Password = Bcrypt.HashPassword(request.Password);
             }
+        }
+
+        private async Task<User> getExistingUser(int id)
+        {
+            var existingUser = await _dbContext.Users.FindAsync(id);
+            if (existingUser is null)
+            {
+                throw new InvalidOperationException("User tidak ditemukan");
+            }
+            return existingUser;
         }
     }
 }

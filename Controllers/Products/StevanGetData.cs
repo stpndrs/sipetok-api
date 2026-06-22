@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using sipetok_api.Data;
 using sipetok_api.dto.Response;
+using sipetok_api.Models;
 using sipetok_api.Repositories;
 using sipetok_api.Repositories.Interfaces;
 using System;
@@ -62,6 +63,28 @@ namespace sipetok_api.Controllers.Products
 
                     var mappedResponseList = _mapper.Map<List<TResponse>>(filteredEntities);
                     return new OkObjectResult(new ResponData<List<TResponse>>(true, mappedResponseList, $"Successfully retrieved items"));
+                }
+                else if (typeof(TModel) == typeof(EggInventory) && searchQuery != null && searchQuery.Length > 0)
+                {
+                    var filteredEntities = entities.ToList();
+                    var tenantFilter = searchQuery.FirstOrDefault(q => q.Contains("Category.tenantId") || q.Contains("Category.TenantId"));
+
+                    if (tenantFilter != null)
+                    {
+                        var parts = tenantFilter.Split(':');
+                        if (parts.Length > 1 && int.TryParse(parts[1].Trim(), out int targetTenantId))
+                        {
+                            filteredEntities = filteredEntities
+                                .Where(e =>
+                                {
+                                    var egg = e as EggInventory;
+                                    return egg?.Category != null && egg.Category.TenantId == targetTenantId;
+                                }).ToList();
+                        }
+                    }
+
+                    var mappedResponseList = _mapper.Map<List<TResponse>>(filteredEntities);
+                    return new OkObjectResult(new ResponData<List<TResponse>>(true, mappedResponseList, "Successfully retrieved egg inventory data"));
                 }
                 else
                 {

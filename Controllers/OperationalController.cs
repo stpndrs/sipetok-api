@@ -22,6 +22,10 @@ namespace sipetok_api.Controllers
     {
         private readonly StevanModuleFactory _factory;
         private readonly AppDbContext _dbContext;
+        private int CurrentUserId => int.Parse(User.FindFirst("userId")?.Value ?? "0");
+        private readonly Operational _operational = new Operational();
+        private readonly OperationalResponseDto _response = new OperationalResponseDto();
+
 
         public OperationalController(AppDbContext context, IMapper mapper)
         {
@@ -33,53 +37,58 @@ namespace sipetok_api.Controllers
         [Authorize(Roles = "TENANT")]
         public async Task<IActionResult> GetAllOperationals()
         {
-            int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
+            var tenant = await getExistingTenant();
+            if (tenant == null) return Forbid();
+
+            var searchQuery = new[] { $"TenantId : {tenant.Id}" };
 
             var worker = _factory.CreateMethod("get");
             Operational operationalModel = new Operational();
             OperationalResponseDto response = new OperationalResponseDto();
 
-            var repository = new TenantRepository(_dbContext);
-            var tenant = await repository.GetTenantByUserId(userId);
-            if (tenant == null) return Forbid();
-
-            var searchQuery = new[] { $"TenantId : {tenant.Id}" };
-
-            return await worker.ActionAsync<Operational, OperationalResponseDto>(operationalModel, response, null, null, searchQuery);
+            return await worker.ActionAsync<Operational, OperationalResponseDto>(
+                model: operationalModel,
+                response: response,
+                id: null,
+                userId: CurrentUserId,
+                searchQuery: searchQuery,
+                includes: null
+            );
         }
+
 
         [HttpGet("{id:int}")]
         [Authorize(Roles = "TENANT")]
         public async Task<IActionResult> GetOperationalById(int id)
         {
-            int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
-
-            var worker = _factory.CreateMethod("get");
-            Operational operationalModel = new Operational();
-            OperationalResponseDto response = new OperationalResponseDto();
-
-            var repository = new TenantRepository(_dbContext);
-            var tenant = await repository.GetTenantByUserId(userId);
-            if (tenant == null) return Forbid();
-
-            var searchQuery = new[] { $"TenantId : {tenant.Id}" };
-
-            return await worker.ActionAsync<Operational, OperationalResponseDto>(operationalModel, response, id, null, searchQuery);
+            IStevanMethod worker = _factory.CreateMethod("get");
+            return await worker.ActionAsync<Operational, OperationalResponseDto>(
+                model: _operational,
+                response: _response,
+                id: id,
+                userId: CurrentUserId,
+                searchQuery: null,
+                includes: null
+            );
         }
 
         [HttpPost]
         [Authorize(Roles = "TENANT")]
         public async Task<IActionResult> AddOperational([FromBody] OperationalRequestDto request)
         {
-            int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
             IStevanMethod worker = _factory.CreateMethod("save");
-            Operational operationalModel = new Operational();
-            OperationalResponseDto response = new OperationalResponseDto();
-            var repository = new TenantRepository(_dbContext);
-            var tenant = await repository.GetTenantByUserId(userId);
+
+            Tenant tenant = await getExistingTenant();
+            if (tenant == null) return NotFound();
+
             request.TenantId = tenant!.Id;
 
-            return await worker.ActionAsync<Operational, OperationalResponseDto, OperationalRequestDto>(operationalModel, response, request, "POST");
+            return await worker.ActionAsync<Operational, OperationalResponseDto, OperationalRequestDto>(
+                model: _operational,
+                response: _response,
+                request: request,
+                httpMethod: "POST"
+            );
         }
 
         [HttpPut("{id:int}")]
@@ -87,10 +96,20 @@ namespace sipetok_api.Controllers
         public async Task<IActionResult> UpdateOperational(int id, [FromBody] OperationalRequestDto request)
         {
             IStevanMethod worker = _factory.CreateMethod("save");
-            Operational operationalModel = new Operational();
-            OperationalResponseDto response = new OperationalResponseDto();
 
-            return await worker.ActionAsync<Operational, OperationalResponseDto, OperationalRequestDto>(operationalModel, response, request, "PUT", id);
+            Tenant tenant = await getExistingTenant();
+            if (tenant == null) return NotFound();
+
+            request.TenantId = tenant!.Id;
+
+            return await worker.ActionAsync<Operational, OperationalResponseDto, OperationalRequestDto>(
+                model: _operational,
+                response: _response,
+                request: request,
+                httpMethod: "PUT",
+                id: id,
+                userId: CurrentUserId
+            );
         }
 
         [HttpDelete("{id:int}")]
@@ -98,10 +117,45 @@ namespace sipetok_api.Controllers
         public async Task<IActionResult> DeleteOperational(int id)
         {
             IStevanMethod worker = _factory.CreateMethod("save");
-            Operational operationalModel = new Operational();
-            OperationalResponseDto response = new OperationalResponseDto();
+            
+            var tenant = await getExistingTenant();
+            var operational = await getExistingOperational(id);
+            if (tenant.Id != operational.TenantId) return Forbid();
 
-            return await worker.ActionAsync<Operational, OperationalResponseDto, object>(operationalModel, response, null, "DELETE", id);
+            return await worker.ActionAsync<Operational, OperationalResponseDto, object>(
+                model: _operational,
+                response: _response,
+                request: null,
+                httpMethod: "DELETE",
+                id: id,
+                userId: CurrentUserId
+            );
+        }
+
+        private async Task<Tenant> getExistingTenant()
+        {
+            var repository = new TenantRepository(_dbContext);
+            var tenant = await repository.GetTenantByUserId(CurrentUserId);
+
+            if (tenant == null)
+            {
+                throw new InvalidOperationException("Tenant tidak ditemukan");
+            }
+
+            return tenant;
+        }
+
+        private async Task<Operational> getExistingOperational(int id)
+        {
+            var repository = new OperationalRepository(_dbContext);
+            var operational = await repository.GetOperationalById(id);
+
+            if (operational == null)
+            {
+                throw new InvalidOperationException("Operational tidak ditemukan");
+            }
+
+            return operational;
         }
     }
 }

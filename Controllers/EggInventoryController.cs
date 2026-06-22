@@ -20,9 +20,12 @@ namespace sipetok_api.Controllers
         private readonly StevanModuleFactory _factory;
         private readonly AppDbContext _dbContext;
         private int CurrentUserId => int.Parse(User.FindFirst("userId")?.Value ?? "0");
+        private readonly EggInventory _eggInventory = new EggInventory();
+        private readonly EggInventoryResponseDto _response = new EggInventoryResponseDto();
 
         public EggInventoryController(AppDbContext context, IMapper mapper)
         {
+            _dbContext = context;
             _factory = new EggInventoryFactory(context, mapper);
             _dbContext = context;
         }
@@ -30,65 +33,95 @@ namespace sipetok_api.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAllEggs()
         {
+            var tenant = await getExistingTenant();
             var worker = _factory.CreateMethod("get");
-            EggInventory eggModel = new EggInventory();
-            EggInventoryResponseDto response = new EggInventoryResponseDto();
 
-            var tenantRepository = new TenantRepository(_dbContext);
-            var tenant = await tenantRepository.GetTenantByUserId(CurrentUserId);
-            if (tenant == null) return Forbid();
-
-            var eggCategoryRepository = new EggCategoryRepository(_dbContext);
-            var eggCategory = await eggCategoryRepository.GetEggCategoryByTenantId(tenant.Id);
-            if (tenant == null) return Forbid();
-
-            var searchQuery = new[] { $"CategoryId:{eggCategory.Id}" };
-
-            return await worker.ActionAsync<EggInventory, EggInventoryResponseDto>(eggModel, response, null, null, searchQuery, new[] { "Category" });
+            return await worker.ActionAsync<EggInventory, EggInventoryResponseDto>(
+                model: _eggInventory, 
+                response: _response,
+                id:null, 
+                userId:null,
+                includes: new[] { "Category" },
+                searchQuery: new[] { $"Category.tenantId : {tenant.Id}" }
+            );
         }
 
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetEggById(int id)
         {
             IStevanMethod worker = _factory.CreateMethod("get");
-            EggInventory eggModel = new EggInventory();
-            EggInventoryResponseDto response = new EggInventoryResponseDto();
 
-            var tenantRepository = new TenantRepository(_dbContext);
-            var tenant = await tenantRepository.GetTenantByUserId(CurrentUserId);
-            if (tenant == null) return Forbid();
-
-            var eggCategoryRepository = new EggCategoryRepository(_dbContext);
-            var eggCategory = await eggCategoryRepository.GetEggCategoryByTenantId(tenant.Id);
-            if (tenant == null) return Forbid();
-
-            var searchQuery = new[] { $"CategoryId:{eggCategory.Id}" };
-
-            return await worker.ActionAsync<EggInventory, EggInventoryResponseDto>(eggModel, response, id, null, searchQuery, new[] { "Category" });
+            return await worker.ActionAsync<EggInventory, EggInventoryResponseDto>(
+                model: _eggInventory, 
+                response: _response, 
+                id: id
+            );
         }
 
         [HttpPost]
         public async Task<IActionResult> AddEgg([FromBody] EggInventoryRequestDto request)
         {
-            var worker = _factory.CreateMethod("save");
+            IStevanMethod worker = _factory.CreateMethod("save");
+
+            var category = await _dbContext.EggCategories.FindAsync(request.CategoryId);
+            if(category == null)
+            {
+                return NotFound(new { message = "Kategori telur tidak ditemukan" });
+            }
+            if (category.TenantId != getExistingTenant().Result.Id)
+            {
+                return NotFound(new { message = "Kategori telur tidak ditemukan" });
+            }
+
             return await worker.ActionAsync<EggInventory, EggInventoryResponseDto, EggInventoryRequestDto>(
-                new EggInventory(), new EggInventoryResponseDto(), request, "POST");
+                model: _eggInventory, 
+                response: _response, 
+                request: request, 
+                httpMethod: "POST"
+            );
         }
 
         [HttpPut("{id:int}")]
         public async Task<IActionResult> UpdateEgg(int id, [FromBody] EggInventoryRequestDto request)
         {
-            var worker = _factory.CreateMethod("save");
+            IStevanMethod worker = _factory.CreateMethod("save");
+
             return await worker.ActionAsync<EggInventory, EggInventoryResponseDto, EggInventoryRequestDto>(
-                new EggInventory(), new EggInventoryResponseDto(), request, "PUT", id);
+                model: _eggInventory, 
+                response: _response, 
+                request: request, 
+                httpMethod: "PUT", 
+                id: id
+            );
         }
 
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> DeleteEgg(int id)
         {
-            var worker = _factory.CreateMethod("save");
+            IStevanMethod worker = _factory.CreateMethod("save");
+            EggInventory eggModel = new EggInventory();
+            EggInventoryResponseDto response = new EggInventoryResponseDto();
+
             return await worker.ActionAsync<EggInventory, EggInventoryResponseDto, object>(
-                new EggInventory(), new EggInventoryResponseDto(), null!, "DELETE", id);
+                model: _eggInventory, 
+                response: _response, 
+                request: null, 
+                httpMethod: "DELETE", 
+                id: id
+            );
+        }
+
+        private async Task<Tenant> getExistingTenant()
+        {
+            var repository = new TenantRepository(_dbContext);
+            var tenant = await repository.GetTenantByUserId(CurrentUserId);
+
+            if (tenant == null)
+            {
+                throw new InvalidOperationException("Tenant tidak ditemukan");
+            }
+
+            return tenant;
         }
     }
 }

@@ -1,13 +1,15 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using sipetok_api.Controllers.Factories;
-using sipetok_api.Controllers.Products;
 using sipetok_api.Data;
 using sipetok_api.dto.Request;
 using sipetok_api.dto.Response;
 using sipetok_api.dto;
 using sipetok_api.Models;
+using sipetok_api.helper;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace sipetok_api.Controllers
@@ -17,14 +19,17 @@ namespace sipetok_api.Controllers
     [ApiController]
     public class TenantController : ControllerBase
     {
-        private readonly IConfiguration appConfig;
         private readonly StevanModuleFactory _factory;
         private readonly AppDbContext _dbContext;
+
+        private int CurrentUserId => int.Parse(User.FindFirst("userId")?.Value ?? "0");
+        private readonly Tenant _tenant = new Tenant();
+        private readonly TenantResponseDto _response = new TenantResponseDto();
 
         public TenantController(AppDbContext context, IConfiguration config, IMapper mapper)
         {
             _dbContext = context;
-            _factory = new TenantFactory(context, appConfig, mapper);
+            _factory = new TenantFactory(context, config, mapper);
         }
 
         [HttpGet]
@@ -32,138 +37,131 @@ namespace sipetok_api.Controllers
         public async Task<IActionResult> GetAllTenant()
         {
             var worker = _factory.CreateMethod("get");
-            Tenant tenantModel = new Tenant();
-            TenantResponseDto response = new TenantResponseDto();
-
-            return await worker.ActionAsync<Tenant, TenantResponseDto>(tenantModel, response);
+            return await worker.ActionAsync<Tenant, TenantResponseDto>(
+                model: _tenant, 
+                response: _response
+            );
         }
 
-        [HttpGet]
-        [Route("{id:int}")]
+        [HttpGet("{id:int}")]
         [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> GetTenantById(int id)
         {
-            IStevanMethod worker = _factory.CreateMethod("get");
-            Tenant tenantModel = new Tenant();
-            TenantResponseDto response = new TenantResponseDto();
-            return await worker.ActionAsync<Tenant, TenantResponseDto>(tenantModel, response, id);
+            var worker = _factory.CreateMethod("get");
+            return await worker.ActionAsync<Tenant, TenantResponseDto>(
+                model: _tenant,
+                response: _response,
+                id: id
+            );
         }
 
-        [HttpGet]
-        [Route("myprofile")]
+        [HttpGet("myprofile")]
         [Authorize(Roles = "TENANT")]
         public async Task<IActionResult> GetMyProfile()
         {
-            int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
+            var worker = _factory.CreateMethod("get");
 
-            IStevanMethod worker = _factory.CreateMethod("get");
-            Tenant tenantModel = new Tenant();
-            TenantResponseDto response = new TenantResponseDto();
+            int tenantId = _dbContext.Tenants.Where(t => t.UserId == CurrentUserId).Select(t => t.Id).FirstOrDefault();
 
-            return await worker.ActionAsync<Tenant, TenantResponseDto>(tenantModel, response, null, userId);
+            return await worker.ActionAsync<Tenant, TenantResponseDto>(
+                model: _tenant,
+                response: _response,
+                id: tenantId,
+                userId: CurrentUserId
+            );
         }
 
         [HttpPost]
         [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> AddTenant([FromBody] TenantRequestDto request)
         {
-            IStevanMethod worker = _factory.CreateMethod("save");
-            Tenant tenantModel = new Tenant();
-            TenantResponseDto response = new TenantResponseDto();
-
             if (request.User == null || string.IsNullOrWhiteSpace(request.User.Password))
             {
-                return new BadRequestObjectResult(new ResponData<object?>(false, "Password is required"));
+                return BadRequest(new ResponData<object?>(false, "Password is required"));
             }
-            string hashedPassword = Bcrypt.HashPassword(request.User.Password);
-            request.User.Password = hashedPassword;
 
-            return await worker.ActionAsync<Tenant, TenantResponseDto, TenantRequestDto>(tenantModel, response, request, "POST");
+            request.User.Password = Bcrypt.HashPassword(request.User.Password);
+
+            var worker = _factory.CreateMethod("save");
+            return await worker.ActionAsync<Tenant, TenantResponseDto, TenantRequestDto>(
+                model: _tenant,
+                response: _response,
+                request: request,
+                httpMethod: "POST"
+            );
         }
 
-        [HttpPut]
-        [Route("{id:int}")]
+        [HttpPut("{id:int}")]
         [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> UpdateTenant(int id, [FromBody] TenantRequestDto request)
         {
-            IStevanMethod worker = _factory.CreateMethod("save");
-            Tenant tenantModel = new Tenant();
-            TenantResponseDto response = new TenantResponseDto();
+            HashUserPasswordIfPresent(request);
 
-            if (request.User?.Password != null)
-            {
-                string hashedPassword = Bcrypt.HashPassword(request.User.Password);
-                request.User.Password = hashedPassword;
-            }
-
+            var worker = _factory.CreateMethod("save");
             return await worker.ActionAsync<Tenant, TenantResponseDto, TenantRequestDto>(
-                model: tenantModel,
-                response: response,
+                model: _tenant,
+                response: _response,
                 request: request,
                 httpMethod: "PUT",
                 id: id
             );
         }
 
-        [HttpPut]
-        [Route("updatemyprofile")]
+        [HttpPut("updatemyprofile")]
         [Authorize(Roles = "TENANT")]
         public async Task<IActionResult> UpdateMyProfile([FromBody] TenantRequestDto request)
         {
-            int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
-            int tenantId = _dbContext.Tenants.Where(t => t.UserId == userId).Select(t => t.Id).FirstOrDefault();
+            int tenantId = _dbContext.Tenants.Where(t => t.UserId == CurrentUserId).Select(t => t.Id).FirstOrDefault();
+            HashUserPasswordIfPresent(request);
 
-            IStevanMethod worker = _factory.CreateMethod("save");
-            Tenant tenantModel = new Tenant();
-            TenantResponseDto response = new TenantResponseDto();
-
-            if (request.User?.Password != null)
-            {
-                string hashedPassword = Bcrypt.HashPassword(request.User.Password);
-                request.User.Password = hashedPassword;
-            }
-
-            return await worker.ActionAsync<Tenant, TenantResponseDto, TenantRequestDto>(tenantModel, response, request, "PUT", tenantId);
+            var worker = _factory.CreateMethod("save");
+            return await worker.ActionAsync<Tenant, TenantResponseDto, TenantRequestDto>(
+                model: _tenant,
+                response: _response,
+                request: request,
+                httpMethod: "PUT",
+                id: tenantId
+            );
         }
 
-        [HttpDelete]
-        [Route("{id:int}")]
+        [HttpDelete("{id:int}")]
         [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> DeleteTenant(int id)
         {
-            IStevanMethod worker = _factory.CreateMethod("save");
-            Tenant tenantModel = new Tenant();
-            TenantResponseDto response = new TenantResponseDto();
-
-            var userId = _dbContext.Tenants.Where(t => t.Id == id).Select(t => t.UserId).FirstOrDefault();
-            if (userId != 0)
+            var associatedUserId = _dbContext.Tenants.Where(t => t.Id == id).Select(t => t.UserId).FirstOrDefault();
+            if (associatedUserId != 0)
             {
-                await DeleteUserTenant(userId);
+                await DeleteUserTenant(associatedUserId);
             }
 
-
+            var worker = _factory.CreateMethod("save");
             return await worker.ActionAsync<Tenant, TenantResponseDto, object>(
-                model: tenantModel,
-                response: response,
+                model: _tenant,
+                response: _response,
                 request: null,
                 httpMethod: "DELETE",
                 id: id
             );
         }
 
-        public async Task<IActionResult> DeleteUserTenant(int id)
+        private async Task<IActionResult> DeleteUserTenant(int id)
         {
-            IStevanMethod worker = _factory.CreateMethod("save");
-            User userModel = new User();
-            UserResponseDto response = new UserResponseDto();
-
+            var worker = _factory.CreateMethod("save");
             return await worker.ActionAsync<User, UserResponseDto, object>(
-                model: userModel,
-                response: response,
+                model: new User(),
+                response: new UserResponseDto(),
                 request: null,
                 httpMethod: "DELETE",
                 id: id
             );
+        }
+
+        private void HashUserPasswordIfPresent(TenantRequestDto request)
+        {
+            if (!string.IsNullOrEmpty(request.User?.Password))
+            {
+                request.User.Password = Bcrypt.HashPassword(request.User.Password);
+            }
         }
     }
 }
