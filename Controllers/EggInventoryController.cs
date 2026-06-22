@@ -1,12 +1,10 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using sipetok_api.Controllers.Factories;
-using sipetok_api.Controllers.Products;
 using sipetok_api.Data;
-using sipetok_api.dto;
-using sipetok_api.dto.Request;
-using sipetok_api.dto.Response;
+using sipetok_api.dto.Request; // Disesuaikan jika Dto berada di subfolder ini
 using sipetok_api.Models;
 using sipetok_api.Repositories;
 using sipetok_api.Respon;
@@ -14,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace sipetok_api.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "TENANT")]
     [Route("api/eggs")]
     [ApiController]
     public class EggInventoryController : ControllerBase
@@ -29,10 +27,10 @@ namespace sipetok_api.Controllers
         {
             _dbContext = context;
             _factory = new EggInventoryFactory(context, mapper);
+            _dbContext = context;
         }
 
         [HttpGet]
-        [Authorize(Roles = "TENANT")]
         public async Task<IActionResult> GetAllEggs()
         {
             var tenant = await getExistingTenant();
@@ -49,7 +47,6 @@ namespace sipetok_api.Controllers
         }
 
         [HttpGet("{id:int}")]
-        [Authorize(Roles = "TENANT")]
         public async Task<IActionResult> GetEggById(int id)
         {
             IStevanMethod worker = _factory.CreateMethod("get");
@@ -62,7 +59,6 @@ namespace sipetok_api.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "TENANT")]
         public async Task<IActionResult> AddEgg([FromBody] EggInventoryRequestDto request)
         {
             IStevanMethod worker = _factory.CreateMethod("save");
@@ -86,7 +82,6 @@ namespace sipetok_api.Controllers
         }
 
         [HttpPut("{id:int}")]
-        [Authorize(Roles = "TENANT")]
         public async Task<IActionResult> UpdateEgg(int id, [FromBody] EggInventoryRequestDto request)
         {
             IStevanMethod worker = _factory.CreateMethod("save");
@@ -101,7 +96,6 @@ namespace sipetok_api.Controllers
         }
 
         [HttpDelete("{id:int}")]
-        [Authorize(Roles = "TENANT")]
         public async Task<IActionResult> DeleteEgg(int id)
         {
             IStevanMethod worker = _factory.CreateMethod("save");

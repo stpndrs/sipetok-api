@@ -40,6 +40,12 @@ namespace sipetok_api.Controllers
 
             var worker = _factory.CreateMethod("get");
 
+            var repository = new TenantRepository(_dbContext);
+            var tenant = await repository.GetTenantByUserId(userId);
+            if (tenant == null) return Forbid();
+
+            var searchQuery = new[] { $"TenantId : {tenant.Id}" };
+
             return await worker.ActionAsync<EggCategory, EggCategoryResponseDto>(
                 model:_eggCategory, 
                 response:_response, 
@@ -56,6 +62,10 @@ namespace sipetok_api.Controllers
             var tenant = await getExistingTenant();
 
             var worker = _factory.CreateMethod("get");
+
+            var repository = new TenantRepository(_dbContext);
+            var tenant = await repository.GetTenantByUserId(userId);
+            if (tenant == null) return Forbid();
 
             return await worker.ActionAsync<EggCategory, EggCategoryResponseDto>(
                 model:_eggCategory, 

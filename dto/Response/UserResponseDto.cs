@@ -2,7 +2,7 @@ using System.ComponentModel;
 using sipetok_api.Services;
 using sipetok_api.Utils;
 
-namespace sipetok_api.dto
+namespace sipetok_api.dto.Response
 {
     public class UserResponseDto
     {
