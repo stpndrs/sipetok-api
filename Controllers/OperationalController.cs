@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace sipetok_api.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "TENANT")]
     [Route("api/operationals")]
     [ApiController]
     public class OperationalController : ControllerBase
@@ -49,7 +49,6 @@ namespace sipetok_api.Controllers
         }
 
         [HttpGet("{id:int}")]
-        [Authorize(Roles = "TENANT")]
         public async Task<IActionResult> GetOperationalById(int id)
         {
             int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
@@ -68,7 +67,6 @@ namespace sipetok_api.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "TENANT")]
         public async Task<IActionResult> AddOperational([FromBody] OperationalRequestDto request)
         {
             int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
@@ -83,7 +81,6 @@ namespace sipetok_api.Controllers
         }
 
         [HttpPut("{id:int}")]
-        [Authorize(Roles = "TENANT")]
         public async Task<IActionResult> UpdateOperational(int id, [FromBody] OperationalRequestDto request)
         {
             IStevanMethod worker = _factory.CreateMethod("save");
@@ -94,7 +91,6 @@ namespace sipetok_api.Controllers
         }
 
         [HttpDelete("{id:int}")]
-        [Authorize(Roles = "TENANT")]
         public async Task<IActionResult> DeleteOperational(int id)
         {
             IStevanMethod worker = _factory.CreateMethod("save");
