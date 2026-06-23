@@ -30,7 +30,6 @@ namespace sipetok_api.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "TENANT")]
         public async Task<IActionResult> GetAllOperationals()
         {
             int userId = int.Parse(User.FindFirst("userId")?.Value ?? "0");
