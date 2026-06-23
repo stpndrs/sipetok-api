@@ -26,6 +26,8 @@ namespace sipetok_api.Controllers
         private readonly PaymentService _paymentService;
         private readonly OrderService _orderService;
         private readonly IMapper _mapper;
+        private Transaction _transaction = new Transaction();
+        private TransactionResponseDto _respon = new TransactionResponseDto();
 
         private int CurrentUserId => int.Parse(User.FindFirst("userId")?.Value ?? "0");
 
@@ -45,11 +47,16 @@ namespace sipetok_api.Controllers
             var tenant = await repository.GetTenantByUserId(CurrentUserId);
             if (tenant == null) return Forbid();
 
-            var searchQuery = new[] { $"TenantId : {tenant.Id}" };
+            var searchQuery = new[] { $"Details.Category.tenantId : {tenant.Id}" };
 
             var worker = _factory.CreateMethod("get");
             return await worker.ActionAsync<Transaction, TransactionResponseDto>(
-                new Transaction(), new TransactionResponseDto(), null, CurrentUserId, searchQuery, new[] { "Details", "Details.Category" });
+                model: _transaction, 
+                response: _respon, 
+                id: null, 
+                userId: null, 
+                searchQuery: new[] { $"TenantId : {tenant.Id}" },
+                includes: new[] { "Details", "Details.Category" });
         }
 
         [HttpGet("{id:int}")]
@@ -63,7 +70,13 @@ namespace sipetok_api.Controllers
 
             var worker = _factory.CreateMethod("get");
             return await worker.ActionAsync<Transaction, TransactionResponseDto>(
-                new Transaction(), new TransactionResponseDto(), id, CurrentUserId, searchQuery, new[] { "Details", "Details.Category" });
+                model: _transaction, 
+                response: _respon, 
+                id: id, 
+                userId: null, 
+                searchQuery: new[] { $"TenantId : {tenant.Id}" },
+                includes: new[] { "Details", "Details.Category" }
+            );
         }
 
         [HttpPost]
@@ -83,7 +96,6 @@ namespace sipetok_api.Controllers
                     Date = request.Date,
                     PaymentAmount = 0,
                     TotalPrice = 0,
-                    TenantId = request.TenantId,
                     PaymentStatus = PaymentState.WaitingForPayment,
                     OrderStatus = OrderState.OrderComeIn,
                     CustomerName = request.CustomerName,

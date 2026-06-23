@@ -71,7 +71,7 @@ namespace sipetok_api.Controllers
             }
             if (category.TenantId != getExistingTenant().Result.Id)
             {
-                return NotFound(new { message = "Kategori telur tidak ditemukan" });
+                return Forbid("Akses ditolak, bukan milik Anda");
             }
 
             return await worker.ActionAsync<EggInventory, EggInventoryResponseDto, EggInventoryRequestDto>(

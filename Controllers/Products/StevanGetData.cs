@@ -86,6 +86,28 @@ namespace sipetok_api.Controllers.Products
                     var mappedResponseList = _mapper.Map<List<TResponse>>(filteredEntities);
                     return new OkObjectResult(new ResponData<List<TResponse>>(true, mappedResponseList, "Successfully retrieved egg inventory data"));
                 }
+                else if (typeof(TModel) == typeof(Transaction) && searchQuery != null && searchQuery.Length > 0)
+                {
+                    var filteredEntities = entities.ToList();
+
+                    var tenantFilter = searchQuery.FirstOrDefault(q => q.Contains("TenantId"));
+
+                    if (tenantFilter != null)
+                    {
+                        var parts = tenantFilter.Split(':');
+                        if (parts.Length > 1 && int.TryParse(parts[1].Trim(), out int targetTenantId))
+                        {
+                            filteredEntities = filteredEntities
+                                .Cast<Transaction>()
+                                .Where(t => t.Details != null && t.Details.Any(d => d.Category != null && d.Category.TenantId == targetTenantId))
+                                .Cast<TModel>()
+                                .ToList();
+                        }
+                    }
+
+                    var mappedResponseList = _mapper.Map<List<TResponse>>(filteredEntities);
+                    return new OkObjectResult(new ResponData<List<TResponse>>(true, mappedResponseList, "Successfully retrieved tenant transactions"));
+                }
                 else
                 {
                     var mappedResponseList = _mapper.Map<List<TResponse>>(entities.ToList());
