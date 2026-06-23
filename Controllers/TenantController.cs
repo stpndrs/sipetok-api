@@ -66,8 +66,9 @@ namespace sipetok_api.Controllers
             return await worker.ActionAsync<Tenant, TenantResponseDto>(
                 model: _tenant,
                 response: _response,
-                id: tenantId,
-                userId: CurrentUserId
+                id: null,
+                userId: CurrentUserId,
+                searchQuery: new[] { $"UserId : {CurrentUserId}" }
             );
         }
 
@@ -111,7 +112,6 @@ namespace sipetok_api.Controllers
         [Authorize(Roles = "TENANT")]
         public async Task<IActionResult> UpdateMyProfile([FromBody] TenantRequestDto request)
         {
-            int tenantId = _dbContext.Tenants.Where(t => t.UserId == CurrentUserId).Select(t => t.Id).FirstOrDefault();
             HashUserPasswordIfPresent(request);
 
             var worker = _factory.CreateMethod("save");
@@ -120,7 +120,9 @@ namespace sipetok_api.Controllers
                 response: _response,
                 request: request,
                 httpMethod: "PUT",
-                id: tenantId
+                id: null,
+                userId: CurrentUserId,
+                searchQuery: new[] { $"UserId : {CurrentUserId}" }
             );
         }
 
