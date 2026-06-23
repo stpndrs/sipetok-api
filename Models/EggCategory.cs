@@ -18,6 +18,7 @@ namespace sipetok_api.Models
 
         [ForeignKey("TenantId")]
         public virtual Tenant? Tenant { get; set; }
+        public double TotalEgg {get; set;}
 
         public virtual ICollection<EggInventory> EggInventories { get; set; } = new List<EggInventory>();
 
@@ -26,12 +27,13 @@ namespace sipetok_api.Models
 
         public EggCategory() { }
 
-        public EggCategory(int Id, double Price, string Description, string Name)
+        public EggCategory(int Id, double Price, string Description, string Name, double TotalEgg)
         {
             this.Id = Id;
             this.Price = Price;
             this.Description = Description;
             this.Name = Name;
+            this.TotalEgg = TotalEgg;
         }
     }
 }

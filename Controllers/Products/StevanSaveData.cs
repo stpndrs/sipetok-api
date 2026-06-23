@@ -84,6 +84,16 @@ namespace sipetok_api.Controllers.Products
                         }
                     }
 
+                    if (entity is EggInventory eggInventory)
+                    {
+                        var category = _dbContext.EggCategories.Find(eggInventory.CategoryId);
+                        if (category != null)
+                        {
+                            category.TotalEgg += eggInventory.Stock;
+                            _dbContext.SaveChanges();
+                        }
+                    }
+
                     if (entity is Transaction) return new OkObjectResult(entity);
 
                     var responseData = _mapper.Map<TResponse>(entity);

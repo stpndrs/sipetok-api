@@ -48,12 +48,6 @@ namespace sipetok_api.Data
                 .Property(t => t.PaymentAmount)
                 .HasPrecision(18, 2);
 
-            modelBuilder.Entity<Transaction>()
-                .HasOne(ec => ec.Tenant)
-                .WithMany()
-                .HasForeignKey(ec => ec.TenantId)
-                .OnDelete(DeleteBehavior.Restrict);
-
             // TransactionDetail -> PriceAtPurchase & Subtotal menggunakan double
             modelBuilder.Entity<TransactionDetail>()
                 .Property(td => td.PriceAtPurchase)

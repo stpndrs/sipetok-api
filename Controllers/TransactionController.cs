@@ -83,7 +83,6 @@ namespace sipetok_api.Controllers
                     Date = request.Date,
                     PaymentAmount = 0,
                     TotalPrice = 0,
-                    TenantId = request.TenantId,
                     PaymentStatus = PaymentState.WaitingForPayment,
                     OrderStatus = OrderState.OrderComeIn,
                     CustomerName = request.CustomerName,
