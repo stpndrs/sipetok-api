@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using sipetok_api.Controllers.Factories;
 using sipetok_api.Controllers.Products;
 using sipetok_api.Data;
-using sipetok_api.dto.Request; // Disesuaikan jika Dto berada di subfolder ini
+using sipetok_api.dto.Request; 
 using sipetok_api.Models;
 using sipetok_api.Repositories;
 using sipetok_api.Response;
