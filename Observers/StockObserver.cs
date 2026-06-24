@@ -32,6 +32,16 @@ namespace sipetok_api.Observers
                     throw new Exception($"Stok telur tidak mencukupi! Total stok tersedia: {totalAvailableStock}, jumlah dibeli: {detail.Quantity}");
                 }
 
+                var eggCategory = await _dbContext.EggCategories.FindAsync(detail.CategoryId);
+                if (eggCategory != null)
+                {
+                    eggCategory.TotalEgg -= detail.Quantity;
+
+                    if (eggCategory.TotalEgg < 0) eggCategory.TotalEgg = 0;
+
+                    _dbContext.EggCategories.Update(eggCategory);
+                }
+
                 double quantityToDeduct = detail.Quantity;
                 foreach (var eggData in availableEggs)
                 {
@@ -47,8 +57,12 @@ namespace sipetok_api.Observers
                         quantityToDeduct -= eggData.Stock;
                         eggData.Stock = 0;
                     }
+
+                    _dbContext.EggInventories.Update(eggData);
                 }
             }
+
+            await _dbContext.SaveChangesAsync();
         }
 
         public Task OnPaymentCancelled(Transaction transaction)
