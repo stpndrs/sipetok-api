@@ -102,6 +102,7 @@ namespace sipetok_api.Controllers.Products
 
                 if (method == "PUT")
                 {
+                    var entity = _mapper.Map<TModel>(request);
                     int targetId = id ?? userId ?? 0;
 
                     if (targetId == 0)
@@ -113,6 +114,22 @@ namespace sipetok_api.Controllers.Products
                     if (existingEntity is null)
                     {
                         return new NotFoundObjectResult(new ResponData<object?>(false, $"Data dengan id {targetId} tidak ditemukan"));
+                    }
+
+                    if (entity is EggInventory eggInventory)
+                    {
+                        var category = _dbContext.EggCategories.Find(eggInventory.CategoryId);
+                        var eggInventoryDb = _dbContext.EggInventories.Find(id);
+                        if (category != null && eggInventoryDb != null)
+                        {
+                            double stockDifference = eggInventory.Stock - eggInventoryDb.Stock;
+                            category.TotalEgg += stockDifference;
+
+                            if (category.TotalEgg < 0)
+                            {
+                                return new BadRequestObjectResult(new ResponData<object?>(false, "Data yang dihasilkan mengakibatkan minus"));
+                            }
+                        }
                     }
 
                     _mapper.Map(request, existingEntity);
