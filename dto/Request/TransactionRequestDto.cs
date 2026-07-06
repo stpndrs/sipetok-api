@@ -1,6 +1,3 @@
-using sipetok_api.Utils;
-using System.ComponentModel.DataAnnotations;
-
 namespace sipetok_api.dto.Request
 {
     public class TransactionRequestDto

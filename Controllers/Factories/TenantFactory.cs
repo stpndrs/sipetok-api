@@ -4,7 +4,7 @@ using sipetok_api.Controllers.Products;
 
 namespace sipetok_api.Controllers.Factories
 {
-    public class TenantFactory : StevanModuleFactory
+    public class TenantFactory : IStevanModuleFactory
     {
         private readonly IConfiguration appConfig;
         private readonly AppDbContext _dbContext;
@@ -25,6 +25,7 @@ namespace sipetok_api.Controllers.Factories
             {
                 "get" or "read" => new StevanGetData(_dbContext, _mapper),
                 "save" or "write" => new StevanSaveData(_dbContext, appConfig, _mapper),
+                _ => throw new ArgumentException($"Aksi '{actionType}' tidak dikenal di TenantFactory."),
             };
         }
     }

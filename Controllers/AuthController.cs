@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using sipetok_api.Controllers.Factories;
-using sipetok_api.dto;
 using sipetok_api.dto.Request;
 using sipetok_api.dto.Response;
 using sipetok_api.helper;
@@ -15,7 +14,7 @@ namespace sipetok_api.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-        private readonly StevanModuleFactory _factory;
+        private readonly IStevanModuleFactory _factory;
         private readonly IConfiguration _appConfig;
 
         public AuthController(AuthFactory factory, IConfiguration config)
@@ -65,7 +64,7 @@ namespace sipetok_api.Controllers
                 return BadRequest(new ResponData<object>(false, "Wrong Username or Password"));
             }
 
-            if (targetUser.IsActive.key == 0)
+            if (targetUser.IsActive.Key == 0)
             {
                 return BadRequest(new ResponData<object>(false, "Your account has been deactivated"));
             }
@@ -73,7 +72,7 @@ namespace sipetok_api.Controllers
             var userForToken = new User
             {
                 Username = targetUser.Username,
-                Role = targetUser.Role.key,
+                Role = targetUser.Role.Key,
                 Id = targetUser.Id
             };
 

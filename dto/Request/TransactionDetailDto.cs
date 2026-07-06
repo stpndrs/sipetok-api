@@ -21,8 +21,6 @@ namespace sipetok_api.dto.Request
         {
             this.CategoryId = CategoryId;
             this.Quantity = Quantity;
-            this.PriceAtPurchase = PriceAtPurchase;
-            this.Subtotal = Subtotal;
         }
     }
 }

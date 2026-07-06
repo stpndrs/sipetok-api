@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 namespace sipetok_api.Models
 {
     public class TransactionDetail : BaseEntity

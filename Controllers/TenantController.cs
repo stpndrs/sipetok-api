@@ -1,4 +1,3 @@
-using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -6,7 +5,6 @@ using sipetok_api.Controllers.Factories;
 using sipetok_api.Data;
 using sipetok_api.dto.Request;
 using sipetok_api.dto.Response;
-using sipetok_api.dto;
 using sipetok_api.Models;
 using sipetok_api.helper;
 using System.Linq;
@@ -19,17 +17,17 @@ namespace sipetok_api.Controllers
     [ApiController]
     public class TenantController : ControllerBase
     {
-        private readonly StevanModuleFactory _factory;
+        private readonly IStevanModuleFactory _factory;
         private readonly AppDbContext _dbContext;
 
         private int CurrentUserId => int.Parse(User.FindFirst("userId")?.Value ?? "0");
         private readonly Tenant _tenant = new Tenant();
         private readonly TenantResponseDto _response = new TenantResponseDto();
 
-        public TenantController(AppDbContext context, IConfiguration config, IMapper mapper)
+        public TenantController(TenantFactory factory, AppDbContext context)
         {
+            _factory = factory;
             _dbContext = context;
-            _factory = new TenantFactory(context, config, mapper);
         }
 
         [HttpGet]
@@ -38,7 +36,7 @@ namespace sipetok_api.Controllers
         {
             var worker = _factory.CreateMethod("get");
             return await worker.ActionAsync<Tenant, TenantResponseDto>(
-                model: _tenant, 
+                model: _tenant,
                 response: _response
             );
         }

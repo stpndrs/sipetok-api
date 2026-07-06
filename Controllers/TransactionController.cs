@@ -21,13 +21,13 @@ namespace sipetok_api.Controllers
     [Route("api/transactions")]
     public class TransactionController : ControllerBase
     {
-        private readonly StevanModuleFactory _factory;
+        private readonly IStevanModuleFactory _factory;
         private readonly AppDbContext _dbContext;
         private readonly PaymentService _paymentService;
         private readonly OrderService _orderService;
         private readonly IMapper _mapper;
-        private Transaction _transaction = new Transaction();
-        private TransactionResponseDto _respon = new TransactionResponseDto();
+        private readonly Transaction _transaction = new Transaction();
+        private readonly TransactionResponseDto _response = new TransactionResponseDto();
 
         private int CurrentUserId => int.Parse(User.FindFirst("userId")?.Value ?? "0");
 
@@ -47,14 +47,12 @@ namespace sipetok_api.Controllers
             var tenant = await repository.GetTenantByUserId(CurrentUserId);
             if (tenant == null) return Forbid();
 
-            var searchQuery = new[] { $"Details.Category.tenantId : {tenant.Id}" };
-
             var worker = _factory.CreateMethod("get");
             return await worker.ActionAsync<Transaction, TransactionResponseDto>(
-                model: _transaction, 
-                response: _respon, 
-                id: null, 
-                userId: null, 
+                model: _transaction,
+                response: _response,
+                id: null,
+                userId: null,
                 searchQuery: new[] { $"TenantId : {tenant.Id}" },
                 includes: new[] { "Details", "Details.Category" });
         }
@@ -66,14 +64,12 @@ namespace sipetok_api.Controllers
             var tenant = await repository.GetTenantByUserId(CurrentUserId);
             if (tenant == null) return Forbid();
 
-            var searchQuery = new[] { $"TenantId : {tenant.Id}" };
-
             var worker = _factory.CreateMethod("get");
             return await worker.ActionAsync<Transaction, TransactionResponseDto>(
-                model: _transaction, 
-                response: _respon, 
-                id: id, 
-                userId: null, 
+                model: _transaction,
+                response: _response,
+                id: id,
+                userId: null,
                 searchQuery: new[] { $"TenantId : {tenant.Id}" },
                 includes: new[] { "Details", "Details.Category" }
             );

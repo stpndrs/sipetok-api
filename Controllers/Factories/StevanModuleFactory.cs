@@ -2,7 +2,7 @@
 
 namespace sipetok_api.Controllers.Factories
 {
-    public interface StevanModuleFactory
+    public interface IStevanModuleFactory
     {
         abstract IStevanMethod CreateMethod(string actionType);
     }

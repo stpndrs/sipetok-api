@@ -6,7 +6,7 @@ using System;
 
 namespace sipetok_api.Controllers.Factories
 {
-    public class AuthFactory : StevanModuleFactory
+    public class AuthFactory : IStevanModuleFactory
     {
         private readonly IConfiguration appConfig;
         private readonly AppDbContext _dbContext;

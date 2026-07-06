@@ -1,6 +1,4 @@
-using sipetok_api.dto.Response;
-
-namespace sipetok_api.Response
+namespace sipetok_api.dto.Response
 {
     public class EggInventoryResponseDto
     {

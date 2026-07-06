@@ -6,7 +6,7 @@ namespace sipetok_api.Repositories
 {
     public class EggInventoryRepository : GenericRepository<EggInventory>, IEggInventoryRepository
     {
-        public EggInventoryRepository (AppDbContext context) : base(context)
+        public EggInventoryRepository(AppDbContext context) : base(context)
         {
         }
     }

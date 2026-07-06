@@ -5,7 +5,6 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Extensions.Configuration;
-using sipetok_api.dto;
 using sipetok_api.Services;
 using sipetok_api.Models;
 

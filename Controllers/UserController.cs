@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using sipetok_api.Controllers.Factories;
 using sipetok_api.Data;
-using sipetok_api.dto;
 using sipetok_api.dto.Request;
 using sipetok_api.dto.Response;
 using sipetok_api.helper;
@@ -17,7 +16,7 @@ namespace sipetok_api.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-        private readonly StevanModuleFactory _factory;
+        private readonly IStevanModuleFactory _factory;
         private readonly AppDbContext _dbContext;
 
         private int CurrentUserId => int.Parse(User.FindFirst("userId")?.Value ?? "0");
@@ -36,8 +35,8 @@ namespace sipetok_api.Controllers
         {
             var worker = _factory.CreateMethod("get");
             return await worker.ActionAsync<User, UserResponseDto>(
-                model:_user, 
-                response:_response
+                model: _user,
+                response: _response
             );
         }
 
@@ -47,9 +46,9 @@ namespace sipetok_api.Controllers
         {
             var worker = _factory.CreateMethod("get");
             return await worker.ActionAsync<User, UserResponseDto>(
-                model:_user, 
-                response:_response, 
-                id:id
+                model: _user,
+                response: _response,
+                id: id
             );
         }
 
@@ -58,9 +57,9 @@ namespace sipetok_api.Controllers
         {
             var worker = _factory.CreateMethod("get");
             return await worker.ActionAsync<User, UserResponseDto>(
-                model:_user, 
-                response:_response, 
-                id:CurrentUserId
+                model: _user,
+                response: _response,
+                id: CurrentUserId
             );
         }
 
@@ -72,10 +71,10 @@ namespace sipetok_api.Controllers
 
             var worker = _factory.CreateMethod("save");
             return await worker.ActionAsync<User, UserResponseDto, UserRequestDto>(
-                model:_user, 
-                response:_response, 
-                request:request, 
-                httpMethod:"POST"
+                model: _user,
+                response: _response,
+                request: request,
+                httpMethod: "POST"
             );
         }
 
@@ -83,7 +82,7 @@ namespace sipetok_api.Controllers
         [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> UpdateUser(int id, [FromBody] UserRequestDto request)
         {
-            var existingUser = await getExistingUser(id);
+            var existingUser = await GetExistingUser(id);
             if (request.Role == 0) request.Role = existingUser.Role;
             if (!string.IsNullOrWhiteSpace(request.Password))
             {
@@ -96,11 +95,11 @@ namespace sipetok_api.Controllers
 
             var worker = _factory.CreateMethod("save");
             return await worker.ActionAsync<User, UserResponseDto, UserRequestDto>(
-                model:_user, 
-                response:_response, 
-                request:request, 
-                httpMethod:"PUT", 
-                id:id
+                model: _user,
+                response: _response,
+                request: request,
+                httpMethod: "PUT",
+                id: id
             );
         }
 
@@ -110,11 +109,11 @@ namespace sipetok_api.Controllers
         {
             var worker = _factory.CreateMethod("delete");
             return await worker.ActionAsync<User, UserResponseDto, object>(
-                model:_user, 
-                response:_response, 
-                request:null!, 
-                httpMethod:"DELETE", 
-                id:id);
+                model: _user,
+                response: _response,
+                request: null!,
+                httpMethod: "DELETE",
+                id: id);
         }
 
         private void HashUserPassword(UserRequestDto request)
@@ -125,7 +124,7 @@ namespace sipetok_api.Controllers
             }
         }
 
-        private async Task<User> getExistingUser(int id)
+        private async Task<User> GetExistingUser(int id)
         {
             var existingUser = await _dbContext.Users.FindAsync(id);
             if (existingUser is null)
