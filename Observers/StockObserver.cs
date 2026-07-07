@@ -1,8 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
-using sipetok_api.Data;
+﻿using sipetok_api.Data;
 using sipetok_api.Models;
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace sipetok_api.Observers
@@ -20,46 +18,21 @@ namespace sipetok_api.Observers
         {
             foreach (var detail in transaction.Details)
             {
-                var availableEggs = await _dbContext.EggInventories
-                    .Where(e => e.CategoryId == detail.CategoryId && e.Stock > 0)
-                    .OrderBy(e => e.ProductionDate)
-                    .ToListAsync();
-
-                double totalAvailableStock = availableEggs.Sum(e => e.Stock);
-
-                if (totalAvailableStock < detail.Quantity)
-                {
-                    throw new Exception($"Stok telur tidak mencukupi! Total stok tersedia: {totalAvailableStock}, jumlah dibeli: {detail.Quantity}");
-                }
-
                 var eggCategory = await _dbContext.EggCategories.FindAsync(detail.CategoryId);
-                if (eggCategory != null)
+
+                if (eggCategory == null)
                 {
-                    eggCategory.TotalEgg -= detail.Quantity;
-
-                    if (eggCategory.TotalEgg < 0) eggCategory.TotalEgg = 0;
-
-                    _dbContext.EggCategories.Update(eggCategory);
+                    throw new Exception($"Kategori telur dengan ID {detail.CategoryId} tidak ditemukan.");
                 }
 
-                double quantityToDeduct = detail.Quantity;
-                foreach (var eggData in availableEggs)
+                if (eggCategory.TotalEgg < detail.Quantity)
                 {
-                    if (quantityToDeduct <= 0) break;
-
-                    if (eggData.Stock >= quantityToDeduct)
-                    {
-                        eggData.Stock -= quantityToDeduct;
-                        quantityToDeduct = 0;
-                    }
-                    else
-                    {
-                        quantityToDeduct -= eggData.Stock;
-                        eggData.Stock = 0;
-                    }
-
-                    _dbContext.EggInventories.Update(eggData);
+                    throw new Exception($"Stok telur {eggCategory.Name} tidak mencukupi! Total stok tersedia: {eggCategory.TotalEgg}, jumlah dibeli: {detail.Quantity}");
                 }
+
+                eggCategory.TotalEgg -= detail.Quantity;
+
+                _dbContext.EggCategories.Update(eggCategory);
             }
 
             await _dbContext.SaveChangesAsync();
