@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using sipetok_api.Data;
-using sipetok_api.dto;
 using sipetok_api.dto.Response;
 using sipetok_api.helper;
 using sipetok_api.Models;
@@ -16,20 +15,20 @@ namespace sipetok_api.Controllers.Products
 {
     public class StevanSaveData : IStevanMethod
     {
-        private readonly IConfiguration appConfig;
+        private readonly IConfiguration? appConfig;
         private readonly AppDbContext _dbContext;
         private readonly IMapper _mapper;
-        private readonly PaymentService _paymentService;
-        private readonly OrderService _orderService;
+        private readonly PaymentService? _paymentService;
+        private readonly OrderService? _orderService;
 
-        public StevanSaveData(AppDbContext dbContext, IConfiguration config, IMapper mapper)
+        public StevanSaveData(AppDbContext dbContext, IConfiguration? config, IMapper mapper)
         {
             _dbContext = dbContext;
             _mapper = mapper;
             appConfig = config;
         }
 
-        public StevanSaveData(AppDbContext dbContext, IConfiguration config, IMapper mapper, PaymentService paymentService, OrderService orderService)
+        public StevanSaveData(AppDbContext dbContext, IConfiguration? config, IMapper mapper, PaymentService paymentService, OrderService orderService)
         {
             _dbContext = dbContext;
             _mapper = mapper;

@@ -2,7 +2,7 @@
 
 namespace sipetok_api.Controllers.Factories
 {
-    public interface ModuleFactory
+    public interface IModuleFactory
     {
         abstract IMethod CreateMethod(string actionType);
     }

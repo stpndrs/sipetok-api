@@ -1,4 +1,3 @@
-using sipetok_api.Utils;
 using System.ComponentModel.DataAnnotations;
 
 namespace sipetok_api.dto.Request
@@ -7,11 +6,15 @@ namespace sipetok_api.dto.Request
     {
         [Required(ErrorMessage = "Username is required!")]
         public string Username { get; set; } = string.Empty;
+
         public string Password { get; set; } = string.Empty;
+
         [Required(ErrorMessage = "Email is required!")]
         public string Email { get; set; } = string.Empty;
+
         public int Role { get; set; }
         public bool IsActive { get; set; }
+
         public UserRequestDto() { }
 
         public UserRequestDto(string Username, string Password, string Email, int Role, bool IsActive)

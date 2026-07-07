@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace sipetok_api.dto.Request
 {
@@ -14,9 +12,6 @@ namespace sipetok_api.dto.Request
         public string Username { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Password is required!")]
-        //[StringLength(100, MinimumLength = 8, ErrorMessage = "Password minimal 8 karakter")]
-        //[RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$",
-        //ErrorMessage = "Password harus mengandung huruf besar, huruf kecil, dan angka")]
         public string Password { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Email is required!")]

@@ -7,7 +7,7 @@ using System;
 
 namespace sipetok_api.Controllers.Factories
 {
-    public class EggCategoryFactory : StevanModuleFactory
+    public class EggCategoryFactory : IStevanModuleFactory
     {
         private readonly AppDbContext _dbContext;
         private readonly IMapper _mapper;
@@ -22,7 +22,9 @@ namespace sipetok_api.Controllers.Factories
 
         public IStevanMethod CreateMethod(string actionType)
         {
-            switch (actionType.ToLower())
+            string action = actionType?.ToLower()?.Trim() ?? string.Empty;
+
+            switch (action)
             {
                 case "get":
                 case "read":
@@ -34,7 +36,7 @@ namespace sipetok_api.Controllers.Factories
 
                 default:
                     throw new ArgumentException($"Aksi '{actionType}' tidak dikenal di EggCategoryFactory.");
-    }
-}
+            }
+        }
     }
 }

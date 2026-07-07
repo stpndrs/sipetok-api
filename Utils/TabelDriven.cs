@@ -2,13 +2,13 @@ namespace sipetok_api.Utils
 {
     public class TabelDriven
     {
-        public int key { get; set; }
-        public string label { get; set; }
+        public int Key { get; set; }
+        public string Label { get; set; }
 
         public TabelDriven(int key, string label)
         {
-            this.key = key;
-            this.label = label;
+            this.Key = key;
+            this.Label = label;
         }
     }
 }

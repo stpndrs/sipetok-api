@@ -5,7 +5,7 @@ using System;
 
 namespace sipetok_api.Controllers.Factories
 {
-    public class OperationalFactory : StevanModuleFactory
+    public class OperationalFactory : IStevanModuleFactory
     {
         private readonly AppDbContext _dbContext;
         private readonly IMapper _mapper;
@@ -24,6 +24,7 @@ namespace sipetok_api.Controllers.Factories
             {
                 "get" or "read" => new StevanGetData(_dbContext, _mapper),
                 "save" or "write" => new StevanSaveData(_dbContext, null, _mapper),
+                _ => throw new ArgumentException($"Aksi '{actionType}' tidak dikenal di OperationalFactory."),
             };
         }
     }

@@ -1,6 +1,6 @@
 namespace sipetok_api.dto.Response
 {
-    class ResponValidation
+    public class ResponValidation
     {
         public bool Success { get; set; } = false;
         public string Message { get; set; } = "Validation error";

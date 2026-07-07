@@ -7,13 +7,8 @@ namespace sipetok_api.Repositories
 {
     public class EggCategoryRepository : GenericRepository<EggCategory>, IEggCategoryRepository
     {
-        protected readonly AppDbContext _context;
-        protected readonly DbSet<Tenant> _dbSet;
-
         public EggCategoryRepository(AppDbContext context) : base(context)
         {
-            _context = context;
-            _dbSet = _context.Set<Tenant>();
         }
 
         public async Task<EggCategory> GetEggCategoryByTenantId(int tenantId)

@@ -1,11 +1,9 @@
-using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using sipetok_api.Controllers.Factories;
 using sipetok_api.Controllers.Products;
 using sipetok_api.Data;
-using sipetok_api.dto;
 using sipetok_api.dto.Request;
 using sipetok_api.dto.Response;
 using sipetok_api.Models;
@@ -19,41 +17,37 @@ namespace sipetok_api.Controllers
     [ApiController]
     public class OperationalController : ControllerBase
     {
-        private readonly StevanModuleFactory _factory;
+        private readonly IStevanModuleFactory _factory;
         private readonly AppDbContext _dbContext;
         private int CurrentUserId => int.Parse(User.FindFirst("userId")?.Value ?? "0");
         private readonly Operational _operational = new Operational();
         private readonly OperationalResponseDto _response = new OperationalResponseDto();
 
-
-        public OperationalController(AppDbContext context, IMapper mapper)
+        public OperationalController(OperationalFactory factory, AppDbContext context)
         {
-            _factory = new OperationalFactory(context, mapper);
+            _factory = factory;
             _dbContext = context;
         }
 
         [HttpGet]
         public async Task<IActionResult> GetAllOperationals()
         {
-            var tenant = await getExistingTenant();
+            var tenant = await GetExistingTenant();
             if (tenant == null) return Forbid();
 
             var searchQuery = new[] { $"TenantId : {tenant.Id}" };
 
             var worker = _factory.CreateMethod("get");
-            Operational operationalModel = new Operational();
-            OperationalResponseDto response = new OperationalResponseDto();
 
             return await worker.ActionAsync<Operational, OperationalResponseDto>(
-                model: operationalModel,
-                response: response,
+                model: _operational,
+                response: _response,
                 id: null,
                 userId: CurrentUserId,
                 searchQuery: searchQuery,
                 includes: null
             );
         }
-
 
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetOperationalById(int id)
@@ -74,7 +68,7 @@ namespace sipetok_api.Controllers
         {
             IStevanMethod worker = _factory.CreateMethod("save");
 
-            Tenant tenant = await getExistingTenant();
+            Tenant tenant = await GetExistingTenant();
             if (tenant == null) return NotFound();
 
             request.TenantId = tenant!.Id;
@@ -92,7 +86,7 @@ namespace sipetok_api.Controllers
         {
             IStevanMethod worker = _factory.CreateMethod("save");
 
-            Tenant tenant = await getExistingTenant();
+            Tenant tenant = await GetExistingTenant();
             if (tenant == null) return NotFound();
 
             request.TenantId = tenant!.Id;
@@ -111,9 +105,9 @@ namespace sipetok_api.Controllers
         public async Task<IActionResult> DeleteOperational(int id)
         {
             IStevanMethod worker = _factory.CreateMethod("save");
-            
-            var tenant = await getExistingTenant();
-            var operational = await getExistingOperational(id);
+
+            var tenant = await GetExistingTenant();
+            var operational = await GetExistingOperational(id);
             if (tenant.Id != operational.TenantId) return Forbid();
 
             return await worker.ActionAsync<Operational, OperationalResponseDto, object>(
@@ -126,7 +120,7 @@ namespace sipetok_api.Controllers
             );
         }
 
-        private async Task<Tenant> getExistingTenant()
+        private async Task<Tenant> GetExistingTenant()
         {
             var repository = new TenantRepository(_dbContext);
             var tenant = await repository.GetTenantByUserId(CurrentUserId);
@@ -139,7 +133,7 @@ namespace sipetok_api.Controllers
             return tenant;
         }
 
-        private async Task<Operational> getExistingOperational(int id)
+        private async Task<Operational> GetExistingOperational(int id)
         {
             var repository = new OperationalRepository(_dbContext);
             var operational = await repository.GetOperationalById(id);

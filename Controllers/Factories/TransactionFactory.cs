@@ -5,7 +5,7 @@ using sipetok_api.Services;
 
 namespace sipetok_api.Controllers.Factories
 {
-    public class TransactionFactory : StevanModuleFactory
+    public class TransactionFactory : IStevanModuleFactory
     {
         private readonly IConfiguration appConfig;
         private readonly AppDbContext _dbContext;
